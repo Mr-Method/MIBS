@@ -1,0 +1,434 @@
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+--
+--  File         : wrsMasterMib.mi2
+--  Description  : Sample WRS Master OID Definition MIB 
+--  Version      : 0.6 
+--  Date         : August 29, 2000     
+
+------------------------------------------------------------------------------
+--  Sample WRS Master Enterprise MIB
+--
+--  NOTES:
+--   1. This is a SMIv2 MIB - all definitions are automatically 'exported'.
+--
+--   2. This MIB:
+--        - defines the 'WRS Product' OIDs (used as IMPORTS)
+--        - defines the 'TMS Major Category' OIDs (used as IMPORTS)
+--        - defines the 'TMS Internal MIB Module' OIDs (used as IMPORTS)
+--        - defines/documents the 'TMS Generic' MIB OIDs
+--        - documents the 'TMS OEM swAPI' MIB OIDs
+--        - documents the 'TMS OEM Product' MIB OIDs
+--
+--   3. Note that the 'defined/documents' items provide a common place to
+--      define or document the required OIDs.  SMIv1 MIBs can be defined
+--      here and then imported into the corresponding MIB.  The SMIv2 
+--      'MODULE-IDENTITY' macro does not allow the second OID parameter to
+--      be imported from an external MIB file.  The authors of these
+--      'documented' MIBs must verify, by procedure, that the values used
+--      match the values in this document.
+--
+--   4. Note that some MIB compilers do not accept two sets of comments on the
+--      same line.  Consequently, for commented out document items, do not
+--      use a second comment on the same line.
+--
+--   5. Note that the Wind River enterprise ID (731) is used in the sample
+--      MIBs.  The customer "must" replace the Wind River enterprise ID with
+--      the registered enterprise identifier for the specific company or
+--      product.  The customer must also replace the WRS information
+--      located in the 'MODULE-IDENTITY' in each sample MIB.
+--
+------------------------------------------------------------------------------
+
+WRS-MASTER-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, enterprises              FROM SNMPv2-SMI;
+
+    zte MODULE-IDENTITY
+        LAST-UPDATED    "0008290000Z"  -- August 29, 2000
+        ORGANIZATION    "Wind River Systems, Inc."
+        CONTACT-INFO    "Wind River Systems, Inc.
+                         E-mail: support@windriver.com"
+
+        DESCRIPTION     "WRS Master MIB OID defines and documentation."
+
+        REVISION        "0008290000Z"  -- August 29, 2000
+        DESCRIPTION     "Initial MIB creation."
+
+        ::= { enterprises 3902 }
+    
+-- ZXA1- Products
+	zxDsl	OBJECT IDENTIFIER ::= { zte 1004 }
+	zxDslam OBJECT IDENTIFIER ::= { zxDsl 1 }
+	zxLan	OBJECT IDENTIFIER ::= { zxDslam 10 }
+  	zxIma   OBJECT IDENTIFIER  ::= { zxDslam 11 }
+  	zxWand  OBJECT IDENTIFIER  ::= { zxDslam 12 }
+  	zxE1Mib  OBJECT IDENTIFIER  ::= { zxDslam 16 }
+
+  	
+
+-- TMS Major MIB Categories
+    idb             OBJECT IDENTIFIER ::= { zxWand 1 }     -- IDB MIBs
+    oemSwapi        OBJECT IDENTIFIER ::= { zxWand 2 }     -- OEM swAPI MIBs
+    oemProd         OBJECT IDENTIFIER ::= { zxWand 3 }     -- OEM Product MIBs
+    ixpGeneric      OBJECT IDENTIFIER ::= { zxWand 4 }     -- IXP Generic MIBs
+    wandGeneric     OBJECT IDENTIFIER ::= { zxWand 5 }     -- IXP Generic MIBs
+
+-- TMS IDB Internal Module MIBs
+    rmonMib         OBJECT IDENTIFIER ::= { idb 1 }
+    garpMib         OBJECT IDENTIFIER ::= { idb 2 }       
+    stpMib          OBJECT IDENTIFIER ::= { idb 3 }         
+    
+-- Generic MIBs
+   lacpMib         OBJECT IDENTIFIER ::= { ixpGeneric 1 }  
+    
+-- wand MIBs
+	 wandComLagMib    	OBJECT IDENTIFIER ::= { wandGeneric 1 } 
+	 wandCommMib      	OBJECT IDENTIFIER ::= { wandGeneric 2 }
+	 wandPvcMib       	OBJECT IDENTIFIER ::= { wandGeneric 3 }
+	 wandVlanMultMib  	OBJECT IDENTIFIER ::= { wandGeneric 4 }
+ 	 wandPortSurMACMib  	OBJECT IDENTIFIER ::= { wandGeneric 5 }
+
+END
+
+
+
+ZXE1-BOARDTYPE-MIB DEFINITIONS ::= BEGIN
+ IMPORTS
+  	MODULE-IDENTITY, OBJECT-TYPE, Integer32, 
+  	Counter32, Gauge32, NOTIFICATION-TYPE     FROM SNMPv2-SMI
+		
+	MODULE-COMPLIANCE, OBJECT-GROUP, 
+	NOTIFICATION-GROUP                        FROM SNMPv2-CONF
+	                                
+                  
+	zxE1Mib     	                          FROM WRS-MASTER-MIB;
+
+zxE1CommMib	OBJECT IDENTIFIER ::= { zxE1Mib 1 }
+
+-- the current running board type
+RunningBoardType  OBJECT-TYPE
+	SYNTAX 	   INTEGER{
+			IMA(0),
+			E1(1)
+			}
+	MAX-ACCESS read-write
+	STATUS     current
+	DESCRIPTION
+	"the current running board type,e1 or ima "
+::= { zxE1CommMib 1 }
+
+END
+
+
+ZXE1-CONFIG-MIB DEFINITIONS ::= BEGIN
+ IMPORTS
+  	MODULE-IDENTITY, OBJECT-TYPE, Integer32, 
+  	Counter32, Gauge32, NOTIFICATION-TYPE     FROM SNMPv2-SMI
+		
+	MODULE-COMPLIANCE, OBJECT-GROUP, 
+	NOTIFICATION-GROUP                        FROM SNMPv2-CONF
+	                                
+                  
+	zxE1Mib     	                          FROM WRS-MASTER-MIB;
+
+zxE1ConfigMib	OBJECT IDENTIFIER ::= { zxE1Mib 2 }
+        
+E1BoardReset  OBJECT-TYPE
+	SYNTAX 	   INTEGER{
+	           NOOP(1),
+	           RESET(2),
+	           RESET_SAVE(3)
+	}
+	MAX-ACCESS read-write
+	STATUS     current
+	DESCRIPTION
+	"reset board  "
+::= { zxE1ConfigMib 1 }
+
+E1BoardLocation  OBJECT-TYPE
+	SYNTAX 	   INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	"reset board  "
+::= { zxE1ConfigMib 2 }
+
+E1FlashClear  OBJECT-TYPE
+        SYNTAX INTEGER {
+               noop(1),            -- no operation
+               clean(2),           -- clean the data in flash
+               cleanInProgress(3)  -- read-only: flash clean in progress
+        }
+	MAX-ACCESS read-write
+	STATUS     current
+	DESCRIPTION
+	"reset board  "
+::= { zxE1ConfigMib 3 }
+
+E1FlashSave  OBJECT-TYPE
+	SYNTAX 	   INTEGER{
+               noop(1),           -- no operation
+               save(2),           -- save all configuration parameters to NVM
+               saveInProgress(3)  -- read-only: NVM save in progress
+               }
+	MAX-ACCESS read-write
+	STATUS     current
+	DESCRIPTION
+	"reset board  "
+::= { zxE1ConfigMib 4 }
+
+E1VersionNumber OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..4))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Get this MIB Major version number.  This number should 
+             match the Major version given in the documentation header
+             at the beginning text of this MIB.  Note that the '.c' file
+             corresponding to this MIB has to be manually edited to
+             change the version number if this file is modified and
+             the version number is therefore changed."
+::= { zxE1ConfigMib 5 }
+
+-- E1 config table 
+E1LineConfigTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF E1LineConfigEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION
+	     "The E1 Link Configuration table."
+::= { zxE1ConfigMib 6 }
+
+e1LineConfigEntry OBJECT-TYPE
+	SYNTAX E1LineConfigEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION
+		"An entry in the E1 Config table."
+	INDEX { e1ConfLineIndex }
+::= { E1LineConfigTable 1 }
+
+E1LineConfigEntry ::= SEQUENCE {
+	e1ConfLineIndex     	INTEGER,
+	e1ConfLineType      	INTEGER,
+	e1ConfLineCoding    	INTEGER,
+	e1ConfLineLoopback 	INTEGER,
+	e1ConfLineSignalMode   	INTEGER,
+	e1ConfLineTxClockSource   	INTEGER,
+	e1ConfLineIdleCells       	INTEGER,
+	e1ConfLineRxScrambling    	INTEGER,
+	e1ConfLineTxScrambling    	INTEGER
+}
+	
+e1ConfLineIndex  OBJECT-TYPE
+	SYNTAX 	   INTEGER
+	MAX-ACCESS not-accessible
+	STATUS     current
+	DESCRIPTION
+	"A unique value for the E1 CONFIG-LINK."
+::= { e1LineConfigEntry 1 }
+
+e1ConfLineType   OBJECT-TYPE
+	SYNTAX 	   INTEGER{
+			e1E1(1),
+			e1E1MF(2),
+			e1E1Unframed(3)
+			}
+	MAX-ACCESS read-write
+	STATUS     current
+	DESCRIPTION
+	"A e1 line type"
+::= { e1LineConfigEntry 2 }
+
+e1ConfLineCoding  OBJECT-TYPE
+	SYNTAX 	   INTEGER{
+			e1HDB3(1),
+			e1AMI(2)
+			}
+	MAX-ACCESS read-write
+	STATUS     current
+	DESCRIPTION
+	"A e1 line code type"
+::= { e1LineConfigEntry 3 }
+
+e1ConfLineLoopback   OBJECT-TYPE
+	SYNTAX 	   INTEGER{
+			NoLoop(1),
+			PayloadLoop(2),
+			LineLoop(3),
+			InwardLoop(5)
+	}
+	MAX-ACCESS read-write
+	STATUS     current
+	DESCRIPTION
+	"A e1 line loopback test"
+::= { e1LineConfigEntry 4 }
+
+e1ConfLineSignalMode   OBJECT-TYPE
+	SYNTAX 	   INTEGER{
+			Nosingal(1),
+			CAS(2),
+			CCS(3)
+			}
+	MAX-ACCESS read-write
+	STATUS     current
+	DESCRIPTION
+	"A e1 line type config signal mode "
+::= { e1LineConfigEntry 5 }
+
+e1ConfLineTxClockSource   OBJECT-TYPE
+	SYNTAX 	   INTEGER{
+			loop(1),
+			local(2)
+			}
+	MAX-ACCESS read-write
+	STATUS     current
+	DESCRIPTION
+	"A e1 line tx clock source "
+::= { e1LineConfigEntry 6 }
+
+e1ConfLineIdleCells   OBJECT-TYPE
+	SYNTAX 	   INTEGER{
+			Unassigned(1),
+			idle(2)
+			}
+	MAX-ACCESS read-write
+	STATUS     current
+	DESCRIPTION
+	"A e1 line idle cells ."
+::= { e1LineConfigEntry 7 }
+
+e1ConfLineRxScrambling   OBJECT-TYPE
+	SYNTAX 	   INTEGER{
+			On(1),
+			Off(2)
+			}
+	MAX-ACCESS read-write
+	STATUS     current
+	DESCRIPTION
+	"A e1 line rx scramble "
+::= { e1LineConfigEntry 8 }
+
+e1ConfLineTxScrambling   OBJECT-TYPE
+	SYNTAX 	   INTEGER{
+			On(1),
+			Off(2)
+			}
+	MAX-ACCESS 	read-write
+	STATUS     	current
+	DESCRIPTION
+	"A e1 line tx scramble"
+::= { e1LineConfigEntry 9 }
+
+
+-- e1 alarm and static switch flag table 
+E1LineSwtichTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF E1LineSwitchEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION
+	     "The E1 Link swtich table."
+::= { zxE1ConfigMib 7}
+
+e1LineSwtichEntry OBJECT-TYPE
+	SYNTAX E1LineSwitchEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION
+		"An entry in the E1 swtich table."
+	INDEX { e1ConfLineIndex }
+::= { E1LineSwtichTable 1 }
+
+E1LineSwitchEntry ::= SEQUENCE {
+	e1LineAlarmSwitchFlag	INTEGER,
+	e1LineStatSwitchFlag  INTEGER
+}
+	
+e1LineAlarmSwitchFlag  OBJECT-TYPE
+	SYNTAX 	   INTEGER{
+			UNLOCK(1),
+			LOCK(2)
+			}
+	MAX-ACCESS read-write
+	STATUS     current
+	DESCRIPTION
+	"A E1 line alarm switch flag"
+::= { e1LineSwtichEntry 1 }
+
+e1LineStatSwitchFlag   OBJECT-TYPE
+	SYNTAX 	   INTEGER{
+			UNLOCK(1),
+			LOCK(2)
+			}
+	MAX-ACCESS read-write
+	STATUS     current
+	DESCRIPTION
+	"A E1 line static switch flag"
+::= { e1LineSwtichEntry 2 }	
+	
+-- dsx1 line static table
+E1LineStaticTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF E1LineStaticEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION
+	     "The E1 Link static table."
+::= { zxE1ConfigMib 8 }
+
+e1LineStaticEntry OBJECT-TYPE
+	SYNTAX E1LineStaticEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION
+		"An entry in the E1 static table."
+	INDEX { e1ConfLineIndex }
+::= { E1LineStaticTable 1 }
+
+E1LineStaticEntry ::= SEQUENCE {
+	e1LineCorrecthcs	Counter32,
+	e1LineUncorrecthcs    Counter32,
+	e1LineRxcell    	Counter32,
+	e1LineTxcell    	Counter32
+}
+	
+e1LineCorrecthcs  OBJECT-TYPE
+	SYNTAX 	   Counter32
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	"line correcthcs cells static object"
+::= { e1LineStaticEntry 1 }
+
+e1LineUncorrecthcs  OBJECT-TYPE
+	SYNTAX 	   Counter32
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	"line uncorrecthcs cells static object"
+::= { e1LineStaticEntry 2 }
+
+e1LineRxcell  OBJECT-TYPE
+	SYNTAX 	   Counter32
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	"line rxcell cells static object"
+::= { e1LineStaticEntry 3 }
+
+e1LineTxcell  OBJECT-TYPE
+	SYNTAX 	   Counter32
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	"line txcell cells static object"
+::= { e1LineStaticEntry 4 }
+
+
+END
+ 
+
+
+
+

@@ -1,0 +1,127 @@
+
+-- File Name : ZTE-DSL-TRUNKING-MIB.mi2
+-- Date      : Mon Oct 17 14:08:34 GMT+08:00 2005
+-- Author    : AdventNet Agent Toolkit C Edition - MibEditor 6
+
+
+
+ZTE-DSL-TRUNKING-MIB	DEFINITIONS ::= BEGIN
+	IMPORTS
+		zxDsl
+			FROM ZTE-DSL-MIB
+		RowStatus, TEXTUAL-CONVENTION
+			FROM SNMPv2-TC
+		MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE, Integer32
+			FROM SNMPv2-SMI;	
+
+	zxDslTrunkingMib	MODULE-IDENTITY
+		LAST-UPDATED	"200404151500Z"
+		ORGANIZATION	"ZTE Corporation"
+		CONTACT-INFO	"ma ke
+                  Mail: ZTE@zte.com.cn
+                  Tel : 021-68896477"
+		DESCRIPTION		"This MIB defines zte dsl ..........        managed objects."
+		::=  {  zxDsl  13  }
+
+-- TEXTUAL-CONVENTIONS --
+	PortList ::= TEXTUAL-CONVENTION 
+		DISPLAY-HINT	""
+		STATUS			current
+		DESCRIPTION
+			"Each octet within this value specifies a set of eight
+        ports, with the first octet specifying ports 1 through
+        8, the second octet specifying ports 9 through 16, etc.
+        Within each octet, the most significant bit represents
+        the lowest numbered port, and the least significant bit
+        represents the highest numbered port.  Thus, each port
+        of the bridge is represented by a single bit within the
+        value of this object.  If that bit has a value of '1'
+        then that port is included in the set of ports; the port
+        is not included if its bit has a value of '0'."
+		SYNTAX 			OCTET STRING
+
+	zxDslTrunkingObjects	OBJECT IDENTIFIER
+		::=  {  zxDslTrunkingMib  1  }
+
+	zxDslTrunkingTrapObjects	OBJECT IDENTIFIER
+		::=  {  zxDslTrunkingMib  2  }
+
+	zxDslTrunkingTable	OBJECT-TYPE
+		SYNTAX		SEQUENCE  OF  ZxDslTrunkingEntry
+		MAX-ACCESS	not-accessible
+		STATUS		current
+		DESCRIPTION	"This table includes common attributes describing
+                     both ends of the line.  It is required for all ADSL
+                     physical interfaces.  ADSL physical interfaces are
+                     those ifEntries where ifType is equal to adsl(94)."
+		::=  { zxDslTrunkingObjects  1 }
+
+	zxDslTrunkingEntry	OBJECT-TYPE
+		SYNTAX		ZxDslTrunkingEntry
+		MAX-ACCESS	not-accessible
+		STATUS		current
+		DESCRIPTION	"An entry in zxDslTrunkingTable."
+		INDEX		{  zxDslTrunkingIndex  }
+		::=  { zxDslTrunkingTable 1 }
+
+	ZxDslTrunkingEntry  ::=  SEQUENCE {
+		zxDslTrunkingIndex  Integer32,
+		zxDslTrunkingAgSlot  Integer32,
+		zxDslTrunkingAgPortList  PortList,
+		zxDslTrunkingLoadBalance  Integer32,
+		zxDslTrunkingRowStatus  RowStatus
+		}
+
+
+	zxDslTrunkingIndex	OBJECT-TYPE	
+		SYNTAX			Integer32  ( 1 .. 16  ) 
+		MAX-ACCESS		not-accessible
+		STATUS			current
+		DESCRIPTION		"The unique identifier allocated to this Aggregator by the 
+			local System. This attribute identifies an Aggregator instance 
+			among the subordinate managed objects of the containing object.
+			This value is read-only. This is the same value as the 
+			dot3adAggIndex in the dot3adAggTable."
+		REFERENCE		"IEEE 802.3 Section 30.7.1.1.1"
+		::=  {  zxDslTrunkingEntry  1  }
+
+
+	zxDslTrunkingAgSlot	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		" This item is indicate the slot included in link aggregation."
+		::=  {  zxDslTrunkingEntry  2  }
+
+
+	zxDslTrunkingAgPortList	OBJECT-TYPE	
+		SYNTAX			PortList
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		" This item is indicate the port included in link aggregation."
+		::=  {  zxDslTrunkingEntry  3  }
+	
+	zxDslTrunkingLoadBalance	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		"This item is indicate the style of load balance."
+		::=  {  zxDslTrunkingEntry  4  }
+
+	zxDslTrunkingRowStatus	OBJECT-TYPE	
+		SYNTAX			RowStatus
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		"This object is used to create a new row or modify or
+                 delete an existing row in this table.
+                 A trunk activated by setting this object to
+                 `active'.  When `active' is set, the system
+                 will validate the trunk.
+
+                 Before a trunk can be deleted or taken out of
+                 service, (by setting this object to `destroy' or
+                 `outOfService') it must be first unreferenced
+                 from all associated lines."
+		::=  {  zxDslTrunkingEntry  5  }
+
+END

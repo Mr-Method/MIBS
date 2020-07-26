@@ -1,0 +1,861 @@
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+--
+--  File         : oemZxMulticast.mib
+--  Description  : Sample TMS OEM Product Enterprise MIB for 
+--                 Multicast service of ZXDSL9210 v3.1.1
+--  Version      : 0.00   
+--  Date         : Aug 9, 2004     
+--
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+--  Sample ZTE Multicast MIB
+--
+--  NOTES:
+--   1. This is a SMIv2 MIB.
+--
+--   2. The following groups are supported in this MIB:
+--      -
+--
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+
+    OEMZXMULTICAST DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+        Integer32, Counter64,TimeTicks,Counter32,
+        IpAddress                            FROM SNMPv2-SMI
+        
+        DisplayString, TruthValue, RowStatus,              
+        MacAddress, DateAndTime			FROM SNMPv2-TC
+               
+        MODULE-COMPLIANCE, OBJECT-GROUP         FROM SNMPv2-CONF
+        wandOemProd                              FROM WRS-MASTER-MIB       
+        PortList                                FROM Q-BRIDGE-MIB;     
+--      Note:
+--         RowStatus: active(1),notInService(2),notReady(3),createAndGo(4),
+--                    createAndWait(5),destroy(6)
+--
+--
+
+    oemZxMulticastMib MODULE-IDENTITY
+        LAST-UPDATED    "0408090000Z"  -- Aug 9, 2004
+        ORGANIZATION    "ZTE."
+        CONTACT-INFO    "ZTE."
+
+        DESCRIPTION     "Description of Multicast Service of  ZXDSL9210 v3.1.1. "
+
+        REVISION        "0408090000Z"  -- Aug 9, 2004
+        DESCRIPTION     "Initial MIB creation."
+
+        ::= { wandOemProd 10 }
+
+
+    oemZxMulticastIGMP        OBJECT IDENTIFIER ::= { oemZxMulticastMib 1 }
+    oemZxMulticastMVR         OBJECT IDENTIFIER ::= { oemZxMulticastMib 2 }
+    oemZxMulticastCAC         OBJECT IDENTIFIER ::= { oemZxMulticastMib 3 }
+    oemZxMulticastPRW         OBJECT IDENTIFIER ::= { oemZxMulticastMib 4 }
+    oemZxMulticastCDR         OBJECT IDENTIFIER ::= { oemZxMulticastMib 5 }
+    
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+    
+
+
+    
+    oemZxIgmpEnabled  OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { false )
+             Setting this object to true(1) enables IGMP .  Setting
+             it to false(2) disables IGMP.
+             
+             Note that IGMP can function with or without GVRP and
+             GMRP enabled."
+        ::= { oemZxMulticastIGMP 1 }
+        
+     oemZxIgmpAging  OBJECT-TYPE
+        SYNTAX Integer32 (30..3600)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { 300 )
+             The timeout period in seconds for aging out Multicast Groups
+             dynamically learned with IGMP.  Note that aging operates
+             on a per interface per VLAN per multicast group basis."
+        ::= { oemZxMulticastIGMP 2 }
+        
+     oemZxIgmpMode  OBJECT-TYPE
+        SYNTAX 	INTEGER(1..3)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "IGMP mode"
+        ::= { oemZxMulticastIGMP 3 }
+     
+     oemZxIgmpTable OBJECT-TYPE
+    	SYNTAX SEQUENCE OF oemZxIgmpEntry
+    	MAX-ACCESS not-accessible
+    	STATUS current
+    	DESCRIPTION
+		"A table that contains all IGMP informations."
+	::= { oemZxMulticastIGMP 4 }
+
+	oemZxIgmpEntry OBJECT-TYPE
+		SYNTAX oemZxIgmpEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"A list of  entries of all IGMP information."
+		INDEX { oemZxIgmpPortIndex}
+	::= { oemZxIgmpTable 1 }
+
+	oemZxIgmpEntry ::=
+		SEQUENCE {
+          		oemZxIgmpPortIndex	    	INTEGER,
+	  		oemZxIgmpFastLeave		INTEGER,
+	  		oemZxIgmpsnoopMaxpermit         INTEGER,
+	  		oemZxIgmpBandwidth		 INTEGER
+		}   
+     
+     oemZxIgmpPortIndex            OBJECT-TYPE
+          SYNTAX         INTEGER
+          MAX-ACCESS     not-accessible
+          STATUS         current
+          DESCRIPTION
+           "The port No. 1-728"
+          ::= { oemZxIgmpEntry 1}
+     
+     oemZxIgmpFastLeave  OBJECT-TYPE
+        SYNTAX 	INTEGER
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "the status of fast-leave property."
+        ::= { oemZxIgmpEntry 2 }
+        
+    oemZxIgmpsnoopMaxpermit     OBJECT-TYPE
+        SYNTAX         INTEGER
+        MAX-ACCESS     read-write
+        STATUS         current
+        DESCRIPTION
+            "The maximum permitted number of the controlled multicast list about this port ."
+        ::= { oemZxIgmpEntry 3}
+----zry add 
+     oemZxIgmpBandwidth   OBJECT-TYPE
+        SYNTAX 	Unsigned32(1..1048576)
+	MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            ""
+        ::= { oemZxIgmpEntry 4 }
+        
+     oemZxIgmpRecognitionTime  OBJECT-TYPE
+        SYNTAX 	INTEGER
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Recognition Time"
+        ::= { oemZxMulticastIGMP 5 }
+        
+     oemZxIgmpBandwidthControl  OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { false )
+             Setting this object to true(1) enables bandwidth control. Setting
+             it to false(2) disables bandwidth control."
+        ::= { oemZxMulticastIGMP 6 }  
+---zry end        
+-----------------------------------------------------------------------------------------    
+    
+    
+    oemZxMVREnable OBJECT-TYPE
+        SYNTAX INTEGER{
+                        enable(1),
+                        disable(2)
+                        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Enable/disable MVR in this system."
+        ::= { oemZxMulticastMVR 1 }
+
+    oemZxMVRMaxResponseTime OBJECT-TYPE
+        SYNTAX INTEGER
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Max response time ."
+        ::= { oemZxMulticastMVR 2 }
+       
+    oemZxMVRTable OBJECT-TYPE
+    	SYNTAX SEQUENCE OF oemZxMVREntry
+    	MAX-ACCESS not-accessible
+    	STATUS current
+    	DESCRIPTION
+		"A table that contains all ZXDSL informations in this stack system.
+		It is allowed to get in master module."
+	::= { oemZxMulticastMVR 3 }
+
+	oemZxMVREntry OBJECT-TYPE
+		SYNTAX oemZxMVREntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"A list of  entries of all ZXDSL information."
+		INDEX { oemZxMVRMvlan, oemZxMVRIpaddress}
+	::= { oemZxMVRTable 1 }
+
+	oemZxMVREntry ::=
+		SEQUENCE {
+		oemZxMVRMvlan			INTEGER,
+		oemZxMVRIpaddress   		IpAddress,
+            	oemZxMVRSrcPorts		PortList,
+		oemZxMVRRecvPorts   		PortList,
+           	oemZxMVRResev1			INTEGER,
+           	oemZxDynamicRecvPorts		DisplayString,
+           	oemZxStaticRecvPorts		DisplayString,
+           	oemZxMVRRowStatus		INTEGER,
+           	oemZxMVRMaxGroup		INTEGER,
+           	oemZxMVRHostIpaddress  		IpAddress,
+           	oemZxMVRHostIpaddressMask	IpAddress,
+           	oemZxIgmpGpBandwidthCost  Integer32,
+		oemZxIgmpGpFastJoin       Integer32
+		}
+
+	oemZxMVRMvlan OBJECT-TYPE
+		SYNTAX INTEGER(1..4095)
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"vlan."
+	::= { oemZxMVREntry 1 }
+
+	oemZxMVRIpaddress OBJECT-TYPE
+		SYNTAX IpAddress
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"multicast ip address . it can be 0.0.0.0 when setting "
+	::= { oemZxMVREntry 2 }
+
+	oemZxMVRSrcPorts OBJECT-TYPE
+		SYNTAX PortList
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION
+			"the ports that send multicast"
+	::= { oemZxMVREntry 3 }
+
+	oemZxMVRRecvPorts OBJECT-TYPE
+		SYNTAX PortList
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION
+			"the ports that receive multicast"
+	::= { oemZxMVREntry 4 }
+
+	oemZxMVRResev1 OBJECT-TYPE
+		SYNTAX INTEGER
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"Interface ."
+	::= { oemZxMVREntry 5 }
+
+	oemZxDynamicRecvPorts OBJECT-TYPE
+		SYNTAX DisplayString
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION
+			"Interface ."
+	::= { oemZxMVREntry 6 }
+
+	oemZxStaticRecvPorts OBJECT-TYPE
+		SYNTAX DisplayString (SIZE (0..4))
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION
+			"Interface ."
+	::= { oemZxMVREntry 7 }
+	
+	oemZxMVRRowStatus OBJECT-TYPE
+		SYNTAX INTEGER
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION
+			"Interface ."
+	::= { oemZxMVREntry 8 }
+
+	oemZxMVRMaxGroup OBJECT-TYPE
+		SYNTAX INTEGER(1..128)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION
+			""
+	::= { oemZxMVREntry 9 }
+	
+	oemZxMVRHostIpaddress OBJECT-TYPE
+		SYNTAX IpAddress
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION
+			"mvr host ip address . "
+	::= { oemZxMVREntry 10 }
+
+     oemZxMVRHostIpaddressMask  OBJECT-TYPE
+		SYNTAX IpAddress
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION
+			"mvr host ip address mask. "
+	::= { oemZxMVREntry 11 }
+----zry add	
+    oemZxIgmpGpBandwidthCost	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		""
+		::=  {  oemZxMVREntry  12  }
+
+    oemZxIgmpGpFastJoin	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		""
+		::=  {  oemZxMVREntry  13  }	
+---zry end 		
+	
+    oemZxMVRRouterIpaddress OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "mvr router ip address."
+        ::= { oemZxMulticastMVR 4 }
+
+    oemZxMVRRouterIpaddressMask OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "mvr router ip address."
+        ::= { oemZxMulticastMVR 5 }
+                
+------------------------------------------------------------------------------------
+
+oemZxACGpIpTable OBJECT-TYPE
+    	SYNTAX SEQUENCE OF oemZxACGpIpEntry
+    	MAX-ACCESS not-accessible
+    	STATUS current
+    	DESCRIPTION
+		"CAC Address Table info"
+	::= { oemZxMulticastCAC 1 }
+
+	oemZxACGpIpEntry OBJECT-TYPE
+		SYNTAX oemZxACGpIpEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"A list of  entries of all Multicast address information."
+		INDEX { oemZxGpIp}
+	::= { oemZxACGpIpTable 1 }
+
+	oemZxACGpIpEntry ::=
+		SEQUENCE {
+		oemZxGpIp			IpAddress,
+		oemZxMaxPrwCount   		Counter,
+            	oemZxMaxPrwInter		Counter,
+		oemZxPrwResumeInter   		INTEGER,
+		oemZxGpIpPortList  		PortList,
+		oemZxGpIpPortRight  		PortList,
+		oemZxGpIpName        		DisplayString,
+                oemZxGpIpViewParamPrf   	DisplayString,
+           	oemZxACRowStatus		INTEGER
+           	}
+
+	oemZxGpIp 	OBJECT-TYPE
+		SYNTAX 		IpAddress
+		MAX-ACCESS 	not-accessible
+		STATUS current
+		DESCRIPTION
+			"Group IP."
+	::= { oemZxACGpIpEntry 1 }
+
+	oemZxMaxPrwCount OBJECT-TYPE
+		SYNTAX 		Counter
+		MAX-ACCESS 	read-write
+		STATUS current
+		DESCRIPTION
+			"The max preview count of the multicast group."
+	::= { oemZxACGpIpEntry 2 }
+
+	oemZxMaxPrwInter OBJECT-TYPE
+		SYNTAX 		Counter
+		MAX-ACCESS 	read-write
+		STATUS current
+		DESCRIPTION
+			"The max preview time."
+	::= { oemZxACGpIpEntry 3 }
+
+	oemZxPrwResumeInter OBJECT-TYPE
+		SYNTAX 		INTEGER
+		MAX-ACCESS 	read-write
+		STATUS current
+		DESCRIPTION
+			"The interval of two continuous previews."
+	::= { oemZxACGpIpEntry 4 }
+	
+	oemZxGpIpPortList	OBJECT-TYPE	
+		SYNTAX			PortList
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		"port list."
+		::=  {  oemZxACGpIpEntry  5  }
+
+
+	oemZxGpIpPortRight	OBJECT-TYPE	
+		SYNTAX			PortList
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		"The Group Right for multicast."
+		::=  {  oemZxACGpIpEntry  6  }
+		
+	oemZxGpIpName OBJECT-TYPE
+	        SYNTAX DisplayString
+	        MAX-ACCESS read-create
+	        STATUS current
+	        DESCRIPTION
+	            "zxACGpName"
+	        ::= { oemZxACGpIpEntry 7 }   
+
+        oemZxGpIpViewParamPrf OBJECT-TYPE
+	        SYNTAX DisplayString
+	        MAX-ACCESS read-create
+	        STATUS current
+	        DESCRIPTION
+	            "ViewParamProfile name for this Group."
+	        ::= { oemZxACGpIpEntry 8 }   
+
+	oemZxACRowStatus OBJECT-TYPE
+		SYNTAX 		INTEGER
+		MAX-ACCESS 	read-write
+		STATUS current
+		DESCRIPTION
+			"Row Status of AC Table."
+	::= { oemZxACGpIpEntry 9 }
+
+--------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------
+oemZxACPortGpTable OBJECT-TYPE
+    	SYNTAX SEQUENCE OF oemZxACPortGpEntry
+    	MAX-ACCESS not-accessible
+    	STATUS current
+    	DESCRIPTION
+		"CAC Port Multicast info"
+	::= { oemZxMulticastCAC 2 }
+
+	oemZxACPortGpEntry OBJECT-TYPE
+		SYNTAX oemZxACPortGpEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"A list of  entries of all port multicast information."
+		INDEX { oemZxPort,oemZxACPortGpIp}
+	::= { oemZxACPortGpTable 1 }
+
+	oemZxACPortGpEntry ::=
+		SEQUENCE {
+		oemZxPort			INTEGER,
+		oemZxACPortGpIp   		IpAddress,
+            	oemZxRight			INTEGER,
+		oemZxPortTableItemRowStatus   	INTEGER
+           	}
+
+	oemZxPort 	OBJECT-TYPE
+		SYNTAX 		INTEGER
+		MAX-ACCESS 	not-accessible
+		STATUS current
+		DESCRIPTION
+			"port number."
+	::= { oemZxACPortGpEntry 1 }
+
+	oemZxACPortGpIp OBJECT-TYPE
+		SYNTAX 		IpAddress
+		MAX-ACCESS 	not-accessible
+		STATUS current
+		DESCRIPTION
+			"Group IP."
+	::= { oemZxACPortGpEntry 2 }
+
+	oemZxRight OBJECT-TYPE
+		SYNTAX 		INTEGER
+		MAX-ACCESS 	read-write
+		STATUS current
+		DESCRIPTION
+			"The Group Right for multicast."
+	::= { oemZxACPortGpEntry 3 }
+
+	oemZxPortTableItemRowStatus OBJECT-TYPE
+		SYNTAX 		INTEGER
+		MAX-ACCESS 	read-write
+		STATUS current
+		DESCRIPTION
+			"The RowStatus of port item."
+	::= { oemZxACPortGpEntry 4 }
+
+---------------------------------------------------------------------------
+oemZxACPortInfoTable OBJECT-TYPE
+    	SYNTAX SEQUENCE OF oemZxACPortInfoEntry
+    	MAX-ACCESS not-accessible
+    	STATUS current
+    	DESCRIPTION
+		"CAC Address Table info"
+	::= { oemZxMulticastCAC 3 }
+
+	oemZxACPortInfoEntry OBJECT-TYPE
+		SYNTAX oemZxACPortInfoEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"A list of  entries of all Multicast port information."
+		INDEX { oemZxACPort}
+	::= { oemZxACPortInfoTable 1 }
+
+	oemZxACPortInfoEntry ::=
+		SEQUENCE {
+		oemZxACPort		INTEGER,
+		profileIndex		INTEGER,
+		oemZxPortGpTotalInfo 	OCTET STRING
+           	}
+
+	oemZxACPort 	OBJECT-TYPE
+		SYNTAX 		INTEGER
+		MAX-ACCESS 	not-accessible
+		STATUS current
+		DESCRIPTION
+			"Port Number."
+	::= { oemZxACPortInfoEntry 1 }
+
+	profileIndex OBJECT-TYPE
+		SYNTAX 		INTEGER
+		MAX-ACCESS 	read-write
+		STATUS current
+		DESCRIPTION
+			"The port multicast information."
+	::= { oemZxACPortInfoEntry 2 }
+	
+	oemZxPortGpTotalInfo OBJECT-TYPE
+		SYNTAX 		OCTET STRING
+		MAX-ACCESS 	read-write
+		STATUS current
+		DESCRIPTION
+			"The port multicast information."
+	::= { oemZxACPortInfoEntry 3 }
+
+	oemZxACPrwSwitch OBJECT-TYPE
+        SYNTAX 		INTEGER
+        MAX-ACCESS 	read-write
+        STATUS current
+        DESCRIPTION
+            "the switch used by both CAC and PRW module, '1'-enable."
+        ::= { oemZxMulticastCAC 4 }
+
+----zry add---
+------------------------------------------------------------------------------------        
+        oemZxAcPkgTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF oemZxAcPkgEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A table that contains Pkg info."
+        ::= { oemZxMulticastCAC 5 }
+
+    oemZxAcPkgEntry OBJECT-TYPE
+        SYNTAX oemZxAcPkgEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A list of entries of all Pkg info.
+             Pkg is a collection of multicast groups."
+        INDEX {oemZxAcPkgName }
+        ::= { oemZxAcPkgTable 1 }
+
+    oemZxAcPkgEntry ::= SEQUENCE {
+        oemZxAcPkgName           DisplayString,
+        oemZxAcPkgDesc           DisplayString,
+        oemZxAcPkgUserRecvPortList    PortList,
+		oemZxAcPkgRowStatus      RowStatus
+    }
+		
+    oemZxAcPkgName OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Pkg Name is display name,only latin letter permit."
+        ::= { oemZxAcPkgEntry 1 } 
+        
+    oemZxAcPkgDesc OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Pkg Name is display name,only latin letter permit."
+        ::= { oemZxAcPkgEntry 3 }
+
+    oemZxAcPkgUserRecvPortList OBJECT-TYPE
+        SYNTAX      PortList
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "RecvPort of User who ordered this pkg."
+        ::= { oemZxAcPkgEntry 4 }
+
+    oemZxAcPkgRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "RowStatus of this row."
+        ::= { oemZxAcPkgEntry 5 }
+
+------------------------------------------------------------------------------------
+--  Groups info for Pkg
+
+    oemZxAcPkgGroupsTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF oemZxAcPkgEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A table that contains multicast Groups info for pkg."
+        ::= { oemZxMulticastCAC 6 }
+
+    oemZxAcPkgGroupsEntry OBJECT-TYPE
+        SYNTAX oemZxAcPkgGroupsEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A list of entries of all PkgGroups info.
+             This table indicates Pkg is a collection of multicast groups."
+        INDEX {oemZxAcPkgName, oemZxGpIp }
+        ::= { oemZxAcPkgGroupsTable 1 }
+
+    oemZxAcPkgGroupsEntry ::= SEQUENCE {
+        oemZxAcPkgGpAccessRight    INTEGER,
+        oemZxAcPkgGpDesc           DisplayString,
+        oemZxAcPkgGpRowStatus      RowStatus
+    }
+		
+
+    oemZxAcPkgGpAccessRight OBJECT-TYPE
+         SYNTAX      INTEGER  {
+              noRight (0),
+              view (1),
+              preview (2)
+            }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "User's Right of access multicast group in this pkg."
+
+        DEFVAL { 2 }
+        ::= { oemZxAcPkgGroupsEntry 1 }
+
+
+    oemZxAcPkgGpRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "RowStatus of this row."
+        ::= { oemZxAcPkgGroupsEntry 2 }
+	
+
+------------------------------------------------------------------------------------
+-- View(including preview) cfg param profile
+
+    oemZxAcViewParamPrfTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF oemZxAcViewParamPrfEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "   A table that contains view(including preview)  cfg param profile 
+             info.It is used to define group's preview attributes.
+             
+                When some of the parameters in a view Profile are changed, 
+             the new settings shall take effect for the channels using this 
+             Profile immediately."
+        ::= { oemZxMulticastCAC 7 }
+
+    oemZxAcViewParamPrfEntry OBJECT-TYPE
+        SYNTAX oemZxAcViewParamPrfEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A list of entries of all oemZxAcViewParamPrf info."
+        INDEX {oemZxAcViewParamPrfName }
+        ::= { oemZxAcViewParamPrfTable 1 }
+
+    oemZxAcViewParamPrfEntry ::= SEQUENCE {
+        oemZxAcViewParamPrfName  DisplayString,
+        oemZxAcViewParamMaxPrwCount  INTEGER,
+        oemZxAcViewParamMaxPrwInter  INTEGER,
+        oemZxAcViewParamPrwBlackoutInter INTEGER,
+        oemZxAcViewParamProfileRowStatus RowStatus
+    }
+		
+    oemZxAcViewParamPrfName OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Profile Name."
+        ::= {oemZxAcViewParamPrfEntry 1 }      
+        
+		
+    oemZxAcViewParamMaxPrwCount OBJECT-TYPE
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Max Preview Count for channels."
+        ::= {oemZxAcViewParamPrfEntry 2 }      
+        
+    oemZxAcViewParamMaxPrwInter OBJECT-TYPE
+        SYNTAX      INTEGER
+        UNITS       "seconds"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Max Preview Count for channels."
+        ::= {oemZxAcViewParamPrfEntry 3 }      
+
+    oemZxAcViewParamPrwBlackoutInter OBJECT-TYPE
+        SYNTAX      INTEGER
+        UNITS       "seconds"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "User's blackout interval of preview for channels."
+        ::= {oemZxAcViewParamPrfEntry 4 }      
+        
+        
+    oemZxAcViewParamProfileRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "RowStatus of this row."
+        ::= { oemZxAcViewParamPrfEntry 5 }    
+------------------------------------------------------------------------------
+
+	oemZxPRWManageReset OBJECT-TYPE
+        SYNTAX 		INTEGER
+        MAX-ACCESS 	read-write
+        STATUS current
+        DESCRIPTION
+            "used to manage reset in PRW module,when '1',need to reset."
+        ::= { oemZxMulticastPRW 1 }
+
+	oemZxPRWResetPeriod	OBJECT-TYPE
+	SYNTAX 		INTEGER
+	MAX-ACCESS 	read-write
+        STATUS current
+        DESCRIPTION
+            "specify the fix time of reseting the preview management structure."
+        ::= { oemZxMulticastPRW 2 }
+        
+        oemZxPRWResetTime OBJECT-TYPE
+        SYNTAX 		INTEGER
+        MAX-ACCESS 	read-write
+        STATUS current
+        DESCRIPTION
+            ""
+        ::= { oemZxMulticastPRW 3 }
+------------------------------------------------------------------------------------
+
+	oemZxCDRMaxSize OBJECT-TYPE
+        SYNTAX 		Unsigned32
+        MAX-ACCESS 	read-write
+        STATUS current
+        DESCRIPTION
+            "The max size of CDR."
+        ::= { oemZxMulticastCDR 1 }
+	
+	oemZxCDRServerIP OBJECT-TYPE
+        SYNTAX 		IpAddress
+        MAX-ACCESS 	read-write
+        STATUS current
+        DESCRIPTION
+            "The IP of SMS server."
+        ::= { oemZxMulticastCDR 2 }
+        
+        oemZxCDRMaxSendInterval	OBJECT-TYPE
+        SYNTAX		Unsigned32
+        MAX-ACCESS	read-write	
+        STATUS	current
+        DESCRIPTION
+        	"The Max Send Interval of CDR Record."
+        ::= { oemZxMulticastCDR 3 }
+        
+        oemZxCDREnable OBJECT-TYPE
+        SYNTAX 		TruthValue
+        MAX-ACCESS 	read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { false )
+             Setting this object to true(1) enables CDR .  Setting
+             it to false(2) disables CDR."
+        ::= { oemZxMulticastCDR 4 }
+        
+       oemZxCDRCurrentRecordNumber OBJECT-TYPE
+        SYNTAX   INTEGER
+        MAX-ACCESS  read-only
+        STATUS current
+        DESCRIPTION
+            "the number of CDR records"
+        ::= { oemZxMulticastCDR 5 }	
+    
+    oemZxCDRDenyEnable OBJECT-TYPE
+        SYNTAX   TruthValue
+        MAX-ACCESS  read-write
+        STATUS current
+        DESCRIPTION
+            "Setting this object to true(1) enables CDR if the right of user is deny.  Setting
+             it to false(2) disables CDR if the right of user is deny.."
+        ::= { oemZxMulticastCDR 6 }
+        
+    oemZxCDRPreviewEnable OBJECT-TYPE
+        SYNTAX   TruthValue
+        MAX-ACCESS  read-write
+        STATUS current
+        DESCRIPTION
+            "Setting this object to true(1) enables CDR after the number of access exceeded max preview count ,and if the right of user is preview.  Setting
+             it to false(2) disables CDR after the number of access exceeded max preview count,and if the right of user is preview."
+        ::= { oemZxMulticastCDR 7 }
+   
+   oemZxCDRInterval OBJECT-TYPE
+        SYNTAX   Unsigned32(0..360)
+        MAX-ACCESS  read-write
+        STATUS current
+        DESCRIPTION
+            "the interval  between two CDR in minutes"
+        ::= { oemZxMulticastCDR 8 }
+
+   oemZxCDRReportAction OBJECT-TYPE
+        SYNTAX   INTEGER
+        MAX-ACCESS  read-write
+        STATUS current
+        DESCRIPTION
+            ""
+        ::= { oemZxMulticastCDR 9 }	
+
+        
+   END

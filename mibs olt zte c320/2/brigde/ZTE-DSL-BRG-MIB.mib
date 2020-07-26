@@ -1,0 +1,335 @@
+ZTE-DSL-BRG-MIB DEFINITIONS ::= BEGIN
+IMPORTS 
+        MODULE-IDENTITY, OBJECT-TYPE,NOTIFICATION-TYPE      FROM SNMPv2-SMI
+        RowStatus                                           FROM SNMPv2-TC
+        ifIndex,ifPhysAddress                               FROM IF-MIB
+        dot1qPvid                                           FROM Q-BRIDGE-MIB
+        zxDsl                                               FROM ZTE-DSL-MIB;
+
+
+zxDslBridgeMib MODULE-IDENTITY
+    LAST-UPDATED "200705311500Z"
+    ORGANIZATION "ZTE Corporation"
+    CONTACT-INFO "su.chunshan@zte.com.cn"
+    DESCRIPTION  "This MIB defines zte dsl bridge  managed objects. "
+    ::= {zxDsl 22}
+
+
+zxDslBridgeObjects     OBJECT IDENTIFIER ::= {zxDslBridgeMib 1}
+zxDslBridgeTrapObjects OBJECT IDENTIFIER ::= {zxDslBridgeMib 2}
+
+
+
+-- Bridge 
+
+    zxDslBrgSelfLoopChkInterval  OBJECT-TYPE
+        SYNTAX      Integer32 (0..300)
+        UNITS       "sec"
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+             "Interval to check bridge self-loop.
+             0 mains disable the self loop check.
+             Recommended range is between 5 and 300 sec.If the value is too small,
+             the network or the cpu of device will have high loads.
+             "
+        DEFVAL { 20 }                   
+        ::= { zxDslBridgeObjects 1 }
+
+    zxDslBrgPortPerfTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF ZxDslBrgPortPerfEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+         "This table is bridge port performance table"
+     ::= { zxDslBridgeObjects 2 }
+
+     zxDslBrgPortPerfEntry  OBJECT-TYPE
+       SYNTAX      ZxDslBrgPortPerfEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION
+               "An entry containing bridge port performance information."
+       INDEX    { zxDslPortIfIndex,zxDslBrgPortId }
+     ::= { zxDslBrgPortPerfTable 1 }
+
+     
+     ZxDslBrgPortPerfEntry ::=
+          SEQUENCE {
+             zxDslPortIfIndex   	         Integer32,
+             zxDslBrgPortId                  Integer32,
+             zxDslBrgPortInOctets            Counter64,
+             zxDslBrgPortInUcastPkts         Counter64,
+             zxDslBrgPortInMulticastPkts     Counter64,
+             zxDslBrgPortInBroadcastPkts     Counter64,
+             zxDslBrgPortOutOctets           Counter64,
+             zxDslBrgPortOutUcastPkts        Counter64,
+             zxDslBrgPortOutMulticastPkts    Counter64,
+             zxDslBrgPortOutBroadcastPkts    Counter64
+             }
+          
+     zxDslPortIfIndex 	OBJECT-TYPE
+          SYNTAX  Integer32 
+          MAX-ACCESS  not-accessible
+          STATUS  current
+          DESCRIPTION
+                  "the physical port index of this bridge port."
+          ::= { zxDslBrgPortPerfEntry 1 }    
+              
+     zxDslBrgPortId 	OBJECT-TYPE
+          SYNTAX  Integer32(1..8) 
+          MAX-ACCESS  not-accessible
+          STATUS  current
+          DESCRIPTION
+                  "the pvc id of the pvc"
+          ::= { zxDslBrgPortPerfEntry 2 }   
+              
+
+    zxDslBrgPortInOctets OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The total number of octets received on the interface,
+                including framing characters.  This object is a 64-bit
+                version of ifInOctets.
+    
+                Discontinuities in the value of this counter can occur
+                at re-initialization of the management system, and at
+                other times as indicated by the value of
+                ifCounterDiscontinuityTime."
+        ::= { zxDslBrgPortPerfEntry 3 }
+    
+    zxDslBrgPortInUcastPkts OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The number of packets, delivered by this sub-layer to
+                a higher (sub-)layer, which were not addressed to a
+                multicast or broadcast address at this sub-layer.
+                This object is a 64-bit version of ifInUcastPkts.
+    
+                Discontinuities in the value of this counter can occur
+                at re-initialization of the management system, and at
+                other times as indicated by the value of
+                ifCounterDiscontinuityTime."
+        ::= { zxDslBrgPortPerfEntry 4 }
+    
+    zxDslBrgPortInMulticastPkts OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The number of packets, delivered by this sub-layer to
+                a higher (sub-)layer, which were addressed to a
+                multicast address at this sub-layer.  For a MAC layer
+                protocol, this includes both Group and Functional
+                addresses.  This object is a 64-bit version of
+                ifInMulticastPkts.
+    
+                Discontinuities in the value of this counter can occur
+                at re-initialization of the management system, and at
+                other times as indicated by the value of
+                ifCounterDiscontinuityTime."
+        ::= { zxDslBrgPortPerfEntry 5 }
+    
+    
+    zxDslBrgPortInBroadcastPkts OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The number of packets, delivered by this sub-layer to
+                a higher (sub-)layer, which were addressed to a
+                broadcast address at this sub-layer.  This object is a
+                64-bit version of ifInBroadcastPkts.
+    
+                Discontinuities in the value of this counter can occur
+                at re-initialization of the management system, and at
+                other times as indicated by the value of
+                ifCounterDiscontinuityTime."
+        ::= { zxDslBrgPortPerfEntry 6 }
+    
+    zxDslBrgPortOutOctets OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The total number of octets transmitted out of the
+                interface, including framing characters.  This object
+                is a 64-bit version of ifOutOctets.
+    
+                Discontinuities in the value of this counter can occur
+                at re-initialization of the management system, and at
+                other times as indicated by the value of
+                ifCounterDiscontinuityTime."
+        ::= { zxDslBrgPortPerfEntry 7 }
+    
+    zxDslBrgPortOutUcastPkts OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The total number of packets that higher-level
+                protocols requested be transmitted, and which were not
+                addressed to a multicast or broadcast address at this
+                sub-layer, including those that were discarded or not
+                sent.  This object is a 64-bit version of
+                ifOutUcastPkts.
+    
+                Discontinuities in the value of this counter can occur
+                at re-initialization of the management system, and at
+                other times as indicated by the value of
+                ifCounterDiscontinuityTime."
+        ::= { zxDslBrgPortPerfEntry 8 }
+    
+    zxDslBrgPortOutMulticastPkts OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The total number of packets that higher-level
+                protocols requested be transmitted, and which were
+                addressed to a multicast address at this sub-layer,
+                including those that were discarded or not sent.  For
+                a MAC layer protocol, this includes both Group and
+                Functional addresses.  This object is a 64-bit version
+                of ifOutMulticastPkts.
+                Discontinuities in the value of this counter can occur
+                at re-initialization of the management system, and at
+                other times as indicated by the value of
+                ifCounterDiscontinuityTime."
+        ::= { zxDslBrgPortPerfEntry 9 }
+    
+    zxDslBrgPortOutBroadcastPkts OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The total number of packets that higher-level
+                protocols requested be transmitted, and which were
+                addressed to a broadcast address at this sub-layer,
+                including those that were discarded or not sent.  This
+                object is a 64-bit version of ifOutBroadcastPkts.
+    
+                Discontinuities in the value of this counter can occur
+                at re-initialization of the management system, and at
+                other times as indicated by the value of
+                ifCounterDiscontinuityTime."
+        ::= { zxDslBrgPortPerfEntry 10 }
+    
+-- Bridge Loop Back
+
+    zxDslBrgSelfLoopDisappearDetectTime  OBJECT-TYPE
+        SYNTAX      Integer32 (0..7200)
+        UNITS       "min"
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+             "Interval to check whether bridge self-loop disappeared.
+             0 mains disable the self loop disappearance auto check.
+             Recommended range is between 6 and 7200 min.If the value is too small,
+             the network or the cpu of device will have high loads.
+             "
+        DEFVAL { 0 }                   
+        ::= { zxDslBridgeObjects 3 }
+
+    zxDslBrgPortLoopBackTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF ZxDslBrgPortLoopBackEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+         "This table is bridge port loop back information table"
+     ::= { zxDslBridgeObjects 4 }
+
+     zxDslBrgPortLoopBackEntry  OBJECT-TYPE
+       SYNTAX      ZxDslBrgPortLoopBackEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION
+               "An entry containing bridge port loop back information."
+       INDEX    { zxDslPortIfIndex,zxDslBrgPortId }
+     ::= { zxDslBrgPortLoopBackTable 1 }
+
+     
+     ZxDslBrgPortLoopBackEntry ::=
+          SEQUENCE {
+             zxDslPortIfIndex   	         Integer32,
+             zxDslBrgPortId                  Integer32,
+             zxDslBrgPortLoopBackPkts        Counter64,
+             zxDslBrgPortLoopBackLastPktTime TimeTicks,
+             zxDslBrgPortLoopBackStatus      INTEGER
+             }
+          
+    zxDslBrgPortLoopBackPkts OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The total number of received loop back packets."
+        ::= { zxDslBrgPortLoopBackEntry 1 }
+
+    zxDslBrgPortLoopBackLastPktTime OBJECT-TYPE
+        SYNTAX      TimeTicks
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The time of last received loop back packet."
+        ::= { zxDslBrgPortLoopBackEntry 2 }
+
+    zxDslBrgPortLoopBackStatus OBJECT-TYPE
+        SYNTAX      INTEGER
+                    {
+                          normal(1),
+                          selfLoopClose(2),
+                          selfLoopRecover(3)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The loop back status. The value selfLoopClose means 
+                 bridge port is closed because of selfLoop failure.
+                 selfLoopRecover means that the status of bridge port
+                 is trying to change from selfLoopClose to normal."
+        ::= { zxDslBrgPortLoopBackEntry 30 }
+
+    zxDslBrgSelfLoopDisappearDetectMaxNumber  OBJECT-TYPE
+        SYNTAX      Integer32 (1..10)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+             "Max number of Reopen port when bridge self-loop disappeared.
+             "             
+        DEFVAL { 3 }   
+        ::= { zxDslBridgeObjects 5 } 
+
+-- Bridge Trap definition
+
+    zxDslBrgSelfLoopTrap NOTIFICATION-TYPE
+        OBJECTS {  ifIndex  }
+        STATUS  current
+        DESCRIPTION
+            "SelfLoop failure of bridge port has been found.Varible ifIndex indicates 
+            which port has SelfLoop failure."
+        ::= { zxDslBridgeTrapObjects 1 }
+
+
+    zxDslBrgMacConflictTrap NOTIFICATION-TYPE
+        OBJECTS {  zxDslPortIfIndex,zxDslBrgPortId,dot1qPvid,
+                   zxDslPortIfIndex,zxDslBrgPortId,dot1qPvid,ifPhysAddress
+                }
+        STATUS  current
+        DESCRIPTION
+            "The agent has detected the MAC confliction has happened. "
+        ::= { zxDslBridgeTrapObjects 2 }
+    
+    zxDslBrgSelfLoopTrapClear NOTIFICATION-TYPE
+        OBJECTS {  ifIndex  }
+        STATUS  current
+        DESCRIPTION
+            "Clear selfLoop failure of bridge port.Varible ifIndex indicates 
+            which port's selfLoop failure disappeared."
+        ::= { zxDslBridgeTrapObjects 3 }
+                                     
+END

@@ -1,0 +1,88 @@
+
+-- File Name : ZTE-DSL-SNTP-MIB.mib
+-- Date      : Mon Oct 17 13:41:45 GMT+08:00 2005
+-- Author    : AdventNet Agent Toolkit C Edition - MibEditor 6
+
+
+
+ZTE-DSL-SNTP-MIB	DEFINITIONS ::= BEGIN
+	IMPORTS
+		zxDsl
+			FROM ZTE-DSL-MIB
+		DisplayString
+			FROM SNMPv2-TC
+		MODULE-IDENTITY, OBJECT-TYPE, enterprises, Integer32, IpAddress
+			FROM SNMPv2-SMI;
+
+	zxDslSntpMib	MODULE-IDENTITY
+		LAST-UPDATED	"200509301500Z"
+		ORGANIZATION	"ZTE Corporation"
+		CONTACT-INFO	"ma ke
+                  Mail: zte@zte.com.cn
+                  Tel : 021-68896477"
+		DESCRIPTION		"This MIB defines zte dsl SNTP managed objects."
+		::=  {  zxDsl  10  }
+
+	enterprises	OBJECT IDENTIFIER
+		::=  {  private  1  }
+
+	zxDslSntpObjects	OBJECT IDENTIFIER
+		::=  {  zxDslSntpMib  1  }
+
+	zxDslNTPEnable	OBJECT-TYPE	
+		SYNTAX			INTEGER  { enable ( 1 ) , disable ( 2 ) } 
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Enable/disable NTP in this system."
+		::=  {  zxDslSntpObjects  1  }
+
+	zxDslNTPServerAddr	OBJECT-TYPE	
+		SYNTAX			IpAddress
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		" the NTP server's IP address "
+		::=  {  zxDslSntpObjects  2  }
+
+	zxDslNTPInterval	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		" the NTP server's fetch time's interval time, the default is 64"
+		::=  {  zxDslSntpObjects  3  }
+
+	zxDslNTPSynchronize	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-only
+		STATUS			current
+		DESCRIPTION		" the NTP server whether is  synchronized or not "
+		::=  {  zxDslSntpObjects  4  }
+
+	zxDslNTPStratum	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-only
+		STATUS			current
+		DESCRIPTION		" the local NTP server 's stratum "
+		::=  {  zxDslSntpObjects  5  }
+
+	zxDslNTPServerIP	OBJECT-TYPE	
+		SYNTAX			IpAddress
+		MAX-ACCESS		read-only
+		STATUS			current
+		DESCRIPTION		" the NTP server's ip address, just for read only. "
+		::=  {  zxDslSntpObjects  6  }
+
+	zxDslNTPReftime	OBJECT-TYPE	
+		SYNTAX			DisplayString  ( SIZE ( 0 .. 64  ) ) 
+		MAX-ACCESS		read-only
+		STATUS			current
+		DESCRIPTION		" the NTP reference time, just for read only. "
+		::=  {  zxDslSntpObjects  7  }
+
+	zxDslNTPRefTimeZone	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		" the NTP reference timezone"
+		::=  {  zxDslSntpObjects  8  }
+
+END

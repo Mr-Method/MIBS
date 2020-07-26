@@ -1,0 +1,185 @@
+
+-- File Name : ZTE-DSL-ACL-MIB.mi2
+-- Date      : Mon Oct 17 11:29:24 GMT+08:00 2005
+-- Author    : AdventNet Agent Toolkit C Edition - MibEditor 6
+
+
+
+ZTE-DSL-ACL-MIB	DEFINITIONS ::= BEGIN
+	IMPORTS	
+	        zxDsl
+			FROM ZTE-DSL-MIB	
+		DisplayString, ifIndex
+			FROM RFC1213-MIB
+		RowStatus
+			FROM SNMPv2-TC
+		OBJECT-TYPE
+			FROM RFC-1212
+		enterprises
+			FROM RFC1155-SMI
+		SnmpAdminString
+			FROM SNMP-FRAMEWORK-MIB;
+        zxDslAclMib	MODULE-IDENTITY
+		LAST-UPDATED	"200404151500Z"
+		ORGANIZATION	"ZTE Corporation"
+		CONTACT-INFO	"ZTE."
+		DESCRIPTION		"This MIB defines Description of zte ACL Service managed objects."
+		::=  {  zxDsl  5  }
+
+        zxDslAclObjects	OBJECT IDENTIFIER
+		::=  {  zxDslAclMib  1  }
+	
+	zxDslAclTrapObjects	OBJECT IDENTIFIER
+		::=  {  zxDslAclMib  2  }
+	
+	zxDslAclTable	OBJECT-TYPE
+		SYNTAX		SEQUENCE  OF  ZxDslAclEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"This table includes common attributes describing
+           both ends of the line.  It is required for all ADSL
+           physical interfaces.  ADSL physical interfaces are
+           those ifEntries where ifType is equal to adsl(94)."
+		::=  { zxDslAclObjects  1 }
+
+	zxDslAclEntry	OBJECT-TYPE
+		SYNTAX		ZxDslAclEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"An entry in zxDslAclTable."
+		INDEX		{  zxDslAclNumber  }
+		::=  { zxDslAclTable 1 }
+
+	ZxDslAclEntry  ::=  SEQUENCE {
+		zxDslAclNumber  INTEGER,
+		zxDslAclRestricted  INTEGER,
+		zxDslAclRowStatus  RowStatus
+		}
+
+
+	zxDslAclNumber	OBJECT-TYPE	
+		SYNTAX			INTEGER  ( 1 .. 300  ) 
+		ACCESS			not-accessible
+		STATUS			mandatory
+		DESCRIPTION		"."
+		::=  {  zxDslAclEntry  1  }
+
+
+	zxDslAclRestricted	OBJECT-TYPE	
+		SYNTAX			INTEGER  { restricted ( 1 ) , unrestricted ( 2 ) } 
+		ACCESS			read-write
+		STATUS			mandatory
+		DESCRIPTION		""
+		::=  {  zxDslAclEntry  2  }
+
+
+	zxDslAclRowStatus	OBJECT-TYPE	
+		SYNTAX			RowStatus
+		ACCESS			read-write
+		STATUS			mandatory
+		DESCRIPTION		""
+		::=  {  zxDslAclEntry  3  }
+
+	zxDslAclConfigTable	OBJECT-TYPE
+		SYNTAX		SEQUENCE  OF  ZxDslAclConfigEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"This table includes common attributes describing
+           both ends of the line.  It is required for all ADSL
+           physical interfaces.  ADSL physical interfaces are
+           those ifEntries where ifType is equal to adsl(94)."
+		::=  { zxDslAclObjects  2 }
+
+	zxDslAclConfigEntry	OBJECT-TYPE
+		SYNTAX		ZxDslAclConfigEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"An entry in zxDslAclConfigTable."
+		INDEX		{  zxDslAclNumber, zxDslAclConfigSubitem  }
+		::=  { zxDslAclConfigTable 1 }
+
+	ZxDslAclConfigEntry  ::=  SEQUENCE {
+		zxDslAclConfigSubitem  INTEGER,
+		zxDslAclConfigAction  INTEGER,
+		zxDslAclConfigMatch  DisplayString,
+		zxDslAclConfigRowStatus  RowStatus
+		}
+
+
+	zxDslAclConfigSubitem	OBJECT-TYPE	
+		SYNTAX			INTEGER  ( 1 .. 128  ) 
+		ACCESS			not-accessible
+		STATUS			mandatory
+		DESCRIPTION		"the string is the class's name being applied in the policy."
+		::=  {  zxDslAclConfigEntry  1  }
+
+
+	zxDslAclConfigAction	OBJECT-TYPE	
+		SYNTAX			INTEGER  { permit ( 1 ) , deny ( 2 ) } 
+		ACCESS			read-write
+		STATUS			mandatory
+		DESCRIPTION		"The string contains one class's qualification and its meansing is defined before."
+		::=  {  zxDslAclConfigEntry  2  }
+
+
+	zxDslAclConfigMatch	OBJECT-TYPE	
+		SYNTAX			DisplayString  ( SIZE ( 0 .. 255  ) ) 
+		ACCESS			read-write
+		STATUS			mandatory
+		DESCRIPTION		"The string contains one class's qualification and its meansing is defined before."
+		::=  {  zxDslAclConfigEntry  3  }
+
+
+	zxDslAclConfigRowStatus	OBJECT-TYPE	
+		SYNTAX			RowStatus
+		ACCESS			read-write
+		STATUS			mandatory
+		DESCRIPTION		""
+		::=  {  zxDslAclConfigEntry  4  }
+
+	zxDslAclPortCfgTable	OBJECT-TYPE
+		SYNTAX		SEQUENCE  OF  ZxDslAclPortCfgEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"."
+		::=  { zxDslAclObjects  3 }
+
+	zxDslAclPortCfgEntry	OBJECT-TYPE
+		SYNTAX		ZxDslAclPortCfgEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"An entry in zxDslAclPortCfgTable."
+		INDEX		{  ifIndex, zxDslAclPortCfgDirect  }
+		::=  { zxDslAclPortCfgTable 1 }
+
+	ZxDslAclPortCfgEntry  ::=  SEQUENCE {
+		zxDslAclPortCfgDirect  INTEGER,
+		zxDslAclPortCfgAclNumber  INTEGER,
+		zxDslAclPortCfgRowStatus  RowStatus
+		}
+
+
+	zxDslAclPortCfgDirect	OBJECT-TYPE	
+		SYNTAX			INTEGER  { in ( 1 ) , out ( 2 ) } 
+		ACCESS			not-accessible
+		STATUS			mandatory
+		DESCRIPTION		""
+		::=  {  zxDslAclPortCfgEntry  1  }
+
+
+	zxDslAclPortCfgAclNumber	OBJECT-TYPE	
+		SYNTAX			INTEGER  ( 1 .. 300  ) 
+		ACCESS			read-write
+		STATUS			mandatory
+		DESCRIPTION		"The default COS value of one port ."
+		::=  {  zxDslAclPortCfgEntry  2  }
+
+
+	zxDslAclPortCfgRowStatus	OBJECT-TYPE	
+		SYNTAX			RowStatus
+		ACCESS			read-write
+		STATUS			mandatory
+		DESCRIPTION		""
+		::=  {  zxDslAclPortCfgEntry  3  }
+
+END

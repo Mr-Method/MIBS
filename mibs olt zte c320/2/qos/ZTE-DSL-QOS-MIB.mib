@@ -1,0 +1,2242 @@
+
+-- File Name : ZTE-DSL-QOS-MIB.mib
+-- Date      : Wed Oct 26 10:47:07 GMT+08:00 2005
+-- Author    : AdventNet Agent Toolkit C Edition - MibEditor 6
+
+
+
+ZTE-DSL-QOS-MIB DEFINITIONS ::= BEGIN
+  IMPORTS   
+    TEXTUAL-CONVENTION, RowStatus, DisplayString, MacAddress
+      FROM SNMPv2-TC
+    DisplayString, ifIndex
+      FROM RFC1213-MIB
+    MODULE-IDENTITY, OBJECT-TYPE, enterprises, Integer32, IpAddress, Unsigned32, Counter64
+      FROM SNMPv2-SMI
+    PortList
+      FROM Q-BRIDGE-MIB;                                
+
+  dod OBJECT IDENTIFIER   ::=  {  org  6  }
+  internet  OBJECT IDENTIFIER   ::=  {  dod  1  }
+  private OBJECT IDENTIFIER   ::=  {  internet  4  }
+  enterprises OBJECT IDENTIFIER   ::=  {  private  1  }
+
+  zte OBJECT IDENTIFIER   ::=  {  enterprises  3902  }
+  zxDsl OBJECT IDENTIFIER   ::=  {  zte  1004  }
+
+  zxDslQosMib             OBJECT IDENTIFIER   ::=  {  zxDsl  4  }
+  zxDslQosObjects         OBJECT IDENTIFIER   ::=  {  zxDslQosMib  1  }
+  zxDslQosTrapObjects     OBJECT IDENTIFIER   ::=  {  zxDslQosMib  2  }
+  zxDslQosGlobalTable     OBJECT IDENTIFIER   ::=  {  zxDslQosObjects  1  }
+  zxDslQosClass           OBJECT IDENTIFIER   ::=  {  zxDslQosObjects  2  }
+  zxDslQosPolicy          OBJECT IDENTIFIER   ::=  {  zxDslQosObjects  3  }
+  zxDslQosMapping         OBJECT IDENTIFIER   ::=  {  zxDslQosObjects  4  }
+  zxDslQosScheduler       OBJECT IDENTIFIER   ::=  {  zxDslQosObjects  5  }
+  zxQueuing               OBJECT IDENTIFIER   ::=  {  zxDslQosObjects  6  }
+  zxDslQosPortPolicy      OBJECT IDENTIFIER   ::=  {  zxDslQosObjects  7  }
+  zxDslQosPortInfo        OBJECT IDENTIFIER   ::=  {  zxDslQosObjects  8  }
+  zxDslQosStat            OBJECT IDENTIFIER   ::=  {  zxDslQosObjects  9  }
+  zxDslPortMirror         OBJECT IDENTIFIER   ::=  {  zxDslQosObjects  10 }
+  zxDslVInterface         OBJECT IDENTIFIER   ::=  {  zxDslQosObjects  11 }              
+  zxDslQosPvcPolicy       OBJECT IDENTIFIER   ::=  {  zxDslQosObjects  12 }
+  zxDslProtocolVlanMap    OBJECT IDENTIFIER   ::=  {  zxDslQosObjects  13 }
+  zxDslQosTraffic         OBJECT IDENTIFIER   ::=  {  zxDslQosObjects  14 }
+  zxDslQosCompatibility   OBJECT IDENTIFIER   ::=  {  zxDslQosObjects  50 }
+
+  zxDslQosTrustPriMode  OBJECT-TYPE 
+    SYNTAX      INTEGER  { none ( 0 ) , cos ( 1 ) , dscp ( 2 ) } 
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "The type of trust PRI"
+    ::=  {  zxDslQosGlobalTable  1  }
+
+  zxDslQosPriMapEnable  OBJECT-TYPE 
+    SYNTAX      INTEGER  { map ( 1 ) , no_Map ( 2 ) } 
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "The type of map"
+    ::=  {  zxDslQosGlobalTable  2  }
+    
+  zxDslQosNetWorkSideQueueNum OBJECT-TYPE 
+    SYNTAX      INTEGER  { one(1), two(2), four(4),  eight(8) } 
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "The number of networkside queue"
+    ::=  {  zxDslQosGlobalTable  3  }
+  
+  zxDslQosUserSideQueueNum  OBJECT-TYPE 
+    SYNTAX      INTEGER  { one(1), two(2), four(4),  eight(8) } 
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "The number of userside queue"
+    ::=  {  zxDslQosGlobalTable  4  }
+
+  zxDslQosVoipCos OBJECT-TYPE 
+    SYNTAX      Integer32  ( 0..7 ) 
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "The CoS value of VoIP signaling."
+    ::=  {  zxDslQosGlobalTable  5  }
+  
+  zxDslQosNetWorkSideQueueBufferSize  OBJECT-TYPE 
+    SYNTAX      Integer32  ( 64 .. 128  ) 
+    UNITS       "kbytes"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "The queue buffer size of networkside port."                   
+    DEFVAL       { 64 }
+    ::=  {  zxDslQosGlobalTable  6  }
+    
+  zxDslQosUserSideQueueBufferSize  OBJECT-TYPE 
+    SYNTAX      Integer32  ( 64 .. 128  ) 
+    UNITS       "kbytes"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "The queue buffer size of userside port."                
+    DEFVAL       { 64 }
+    ::=  {  zxDslQosGlobalTable  7  }        
+      
+  zxDslQosNetWorkSideQueueThreshold  OBJECT-TYPE 
+    SYNTAX      Integer32  ( 64 .. 128  ) 
+    UNITS       "kbytes"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "The queue threshold of networkside port.
+                   It should not be great than zxDslQosNetWorkSideQueueBufferSize."                   
+    DEFVAL       { 64 }
+    ::=  {  zxDslQosGlobalTable  8  }
+    
+  zxDslQosUserSideQueueThreshold  OBJECT-TYPE 
+    SYNTAX      Integer32  ( 64 .. 128  ) 
+    UNITS       "kbytes"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "The queue threshold of userside port.
+                   It should not be great than zxDslQosUserSideQueueBufferSize."                
+    DEFVAL       { 64 }
+    ::=  {  zxDslQosGlobalTable  9  }     
+        
+  zxDslQosMgmtPacketCos OBJECT-TYPE 
+    SYNTAX      Integer32  ( 0..7 ) 
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "The CoS value of management packet."             
+    DEFVAL      { 7 }
+    ::=  {  zxDslQosGlobalTable  10  }   
+            
+  zxDslQosUsersideEtherQueueNum  OBJECT-TYPE 
+    SYNTAX      INTEGER  { one(1), two(2), four(4),  eight(8)} 
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Queue number of User Network Interface for Ethernet card."
+    ::=  {  zxDslQosGlobalTable 11  }            
+  
+  zxDslQosVoipDscp  OBJECT-TYPE 
+    SYNTAX       INTEGER  ( 0..63 ) 
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION  "The DSCP value of VoIP Signaling."
+    DEFVAL       { 0 }
+    ::=  {  zxDslQosGlobalTable 12 }  
+  
+  zxDslQosVoipMediaCos  OBJECT-TYPE 
+    SYNTAX       INTEGER  ( 0..7 ) 
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION  "The CoS value of VoIP media."
+    DEFVAL       { 0 }
+    ::=  {  zxDslQosGlobalTable 13 }  
+  
+  zxDslQosVoipMediaDscp  OBJECT-TYPE 
+    SYNTAX       INTEGER  ( 0..63 ) 
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION  "The DSCP value of VoIP media."
+    DEFVAL       { 0 }
+    ::=  {  zxDslQosGlobalTable 14 }  
+  
+  zxDslQosClassTable  OBJECT-TYPE
+    SYNTAX    SEQUENCE  OF  ZxDslQosClassEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "The (conceptual) table listing all QoS class."
+    ::=  { zxDslQosClass  1 }
+
+  zxDslQosClassEntry  OBJECT-TYPE
+    SYNTAX    ZxDslQosClassEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "An entry (conceptual row) representing a QoS class."
+    INDEX   {  zxDslQosClassName  }
+    ::=  { zxDslQosClassTable 1 }
+
+  ZxDslQosClassEntry  ::=  SEQUENCE {
+    zxDslQosClassName  DisplayString,
+    zxDslQosClassMatch  DisplayString,
+    zxDslQosClassStatus  RowStatus
+    }
+
+
+  zxDslQosClassName OBJECT-TYPE 
+    SYNTAX      DisplayString  ( SIZE ( 0 .. 32  ) ) 
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "The name of this QoS class
+            referred to in this table entry."
+    ::=  {  zxDslQosClassEntry  1  }
+
+
+  zxDslQosClassMatch  OBJECT-TYPE 
+    SYNTAX      DisplayString  ( SIZE ( 0 .. 255  ) ) 
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "The string contains one class's qualification and its meansing is defined before."
+    ::=  {  zxDslQosClassEntry  2  }
+
+
+  zxDslQosClassStatus OBJECT-TYPE 
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "RowStatus"
+    ::=  {  zxDslQosClassEntry  3  }
+
+  zxDslQosPolicyTable OBJECT-TYPE
+    SYNTAX    SEQUENCE  OF  zxDslQosPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "The (conceptual) table listing all QoS policy."
+    ::=  { zxDslQosPolicy  1 }
+
+  zxDslQosPolicyEntry OBJECT-TYPE
+    SYNTAX    zxDslQosPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION ""
+    INDEX   {  zxDslQosPolicyName  }
+    ::=  { zxDslQosPolicyTable 1 }
+
+  zxDslQosPolicyEntry  ::=  SEQUENCE {
+    zxDslQosPolicyName  DisplayString,
+    zxDslQosClassOrder  Integer32,
+    zxDslQosPolicyRowStatus  RowStatus
+    }
+
+
+  zxDslQosPolicyName  OBJECT-TYPE 
+    SYNTAX      DisplayString  ( SIZE ( 0 .. 32  ) ) 
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "The name of this QoS policy
+                referred to in this table entry."
+    ::=  {  zxDslQosPolicyEntry  1  }
+
+
+  zxDslQosClassOrder  OBJECT-TYPE 
+    SYNTAX      INTEGER  { restricted ( 1 ) , unrestricted ( 2 ) } 
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "The index of this QoS policy
+                          referred to in this table entry."
+    ::=  {  zxDslQosPolicyEntry  2  }
+
+
+  zxDslQosPolicyRowStatus OBJECT-TYPE 
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   ""
+    ::=  {  zxDslQosPolicyEntry  3  }
+
+  zxDslQosPolicyConfigTable OBJECT-TYPE
+    SYNTAX    SEQUENCE  OF  zxDslQosPolicyConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "The (conceptual) table listing all QoS policy."
+    ::=  { zxDslQosPolicy  2 }
+
+  zxDslQosPolicyConfigEntry OBJECT-TYPE
+    SYNTAX    zxDslQosPolicyConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "An entry (conceptual row) representing a QoS policy."
+    INDEX   {  zxDslQosPolicyName, zxDslQosClassName  }
+    ::=  { zxDslQosPolicyConfigTable 1 }
+
+  zxDslQosPolicyConfigEntry  ::=  SEQUENCE {
+    zxDslQosPolicyAction                INTEGER,
+    zxDslQosPolicyRateLimit             Integer32,
+    zxDslQosPolicyBurst                 Integer32,
+    zxDslQosPolicyExceedAction          Integer32,
+    zxDslQosPolicyExceedActValue        Integer32,
+    zxDslQosPolicyActionCos             Integer32,
+    zxDslQosPolicyActionDSCP            Integer32,
+    zxDslQosPolicyActionVLAN            Integer32,
+    zxDslQosPolicyActionRedirectedTo    Integer32,
+    zxDslQosPolicyActionMirroredTo      Integer32,
+    zxDslQosPolicyActionISStatistics    Integer32,
+    zxDslQosPolicyStatus                RowStatus,
+    zxDslQosPolicyClassSerial           Integer32,
+    zxDslQosPolicyPir                   Integer32,
+    zxDslQosPolicyPbs                   Integer32,
+    zxDslQosPolicyActionCCos            Integer32,
+    zxDslQosPolicyTrTcmExceedAction     INTEGER,
+    zxDslQosPolicyActionTrafficClass    Integer32
+    }
+
+
+  zxDslQosPolicyAction  OBJECT-TYPE
+    SYNTAX      INTEGER  { permit ( 1 ) , deny ( 2 ) } 
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "If it is enabled, the flow will be denied"
+    ::=  {  zxDslQosPolicyConfigEntry  1  }
+
+
+  zxDslQosPolicyRateLimit OBJECT-TYPE 
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "the config rate of the corresponding token barrel of the class."
+    ::=  {  zxDslQosPolicyConfigEntry  2  }
+
+
+  zxDslQosPolicyBurst OBJECT-TYPE 
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "the config burst size of the corresponding token barrel of the class."
+    ::=  {  zxDslQosPolicyConfigEntry  3  }
+
+
+  zxDslQosPolicyExceedAction  OBJECT-TYPE 
+    SYNTAX      INTEGER  { drop ( 1 ) , SetDSCP ( 2 ), SetCos ( 3 )} 
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "The mib means the acion would be taken if the flow of the class exceeds 
+      the config rate. And if the acion is 1(drop),it means the flow will be droped at all.
+      However the following mib qoSPolicyExceedActValue has no meaning .
+      And if the action is 2(SetDSCP),it means the flow will be changed the DSCP value and 
+      the wanted DSCP value is stored in mib qoSPolicyExceedActValue."
+    ::=  {  zxDslQosPolicyConfigEntry  4  }
+
+
+  zxDslQosPolicyExceedActValue  OBJECT-TYPE 
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "if the qoSPolicyExceedAction mib = 2(SetDSCP) ,the mib's meaning is the value wanted."
+    ::=  {  zxDslQosPolicyConfigEntry  5  }
+
+
+  zxDslQosPolicyActionCos OBJECT-TYPE 
+    SYNTAX      Integer32  ( 0 .. 7  ) 
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "If the flow is classified, the action can be changed the COS value in the flow ."
+    ::=  {  zxDslQosPolicyConfigEntry  6  }
+
+
+  zxDslQosPolicyActionDSCP  OBJECT-TYPE 
+    SYNTAX      Integer32  ( 0 .. 63  ) 
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "If the flow is classified, the action can be changed the DSCP value in the flow ."
+    ::=  {  zxDslQosPolicyConfigEntry  7  }
+
+
+  zxDslQosPolicyActionVLAN  OBJECT-TYPE 
+    SYNTAX      Integer32  ( 0 .. 2048  ) 
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "If the flow is classified, the action can be changed the Vlan ID value in the flow ."
+    ::=  {  zxDslQosPolicyConfigEntry  8  }
+
+
+  zxDslQosPolicyActionRedirectedTo  OBJECT-TYPE 
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "If the flow is classified, the action can be changed the Port value in the flow ."
+    ::=  {  zxDslQosPolicyConfigEntry  9  }
+
+
+  zxDslQosPolicyActionMirroredTo  OBJECT-TYPE 
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "If the flow is classified, the action can be mirrored."
+    ::=  {  zxDslQosPolicyConfigEntry  10  }
+
+
+  zxDslQosPolicyActionISStatistics  OBJECT-TYPE 
+    SYNTAX      INTEGER  { enable ( 1 ) , disable ( 2 ) } 
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "If it is enabled, the flow's statistics will be started"
+    ::=  {  zxDslQosPolicyConfigEntry  11  }
+
+
+  zxDslQosPolicyStatus  OBJECT-TYPE 
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "RowStatus"
+    ::=  {  zxDslQosPolicyConfigEntry  12  }
+
+
+  zxDslQosPolicyClassSerial OBJECT-TYPE 
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   ""
+    ::=  {  zxDslQosPolicyConfigEntry  13  }
+
+
+  zxDslQosPolicyPir OBJECT-TYPE 
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   ""
+    ::=  {  zxDslQosPolicyConfigEntry  14  }
+
+
+  zxDslQosPolicyPbs OBJECT-TYPE     
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   ""
+    ::=  {  zxDslQosPolicyConfigEntry  15  }
+  
+  zxDslQosPolicyActionCCos OBJECT-TYPE 
+    SYNTAX      Integer32  ( 0 .. 7  ) 
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   
+        "If the flow is classified, the action can be changed the CCOS value
+         in the flow ."
+    ::=  {  zxDslQosPolicyConfigEntry  16  }
+  
+  zxDslQosPolicyTrTcmExceedAction OBJECT-TYPE 
+    SYNTAX      INTEGER
+        {
+            dropYellow(1),
+            forwardRed(2)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "TrTCM means Two Rate Three Color Marker. The mib means the action 
+         would be taken if the flow of the class exceeds the traffic limit. 
+        "
+    DEFVAL  {  dropYellow  }
+    ::=  {  zxDslQosPolicyConfigEntry  17  }
+    
+  zxDslQosPolicyActionTrafficClass OBJECT-TYPE 
+    SYNTAX      Integer32 ( 0 .. 255|4008636142)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "If the flow is classified, the action can change the traffic class
+         value in the IPv6 flow. 
+         
+         The value 0xeeeeeeee means that the parameter is not configured.
+        "
+    ::=  {  zxDslQosPolicyConfigEntry  18  } 
+    
+
+-- ---------------------------------------------------------------------------
+--  10.zxDslQos802.1pToDscp 
+-- ---------------------------------------------------------------------------
+
+    zxDslQos8021pToDscpTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF zxDslQos8021pToDscpEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "The 802.p mapping table given DSCP value."
+        ::= { zxDslQosMapping 1 }
+ 
+    zxDslQos8021pToDscpEntry OBJECT-TYPE
+        SYNTAX     zxDslQos8021pToDscpEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "An entry (conceptual row) representing a zxDslQos8021pToDscpTable."
+        INDEX      { zxDslQos8021pToDscp8021PValue }
+        ::= { zxDslQos8021pToDscpTable 1 }
+ 
+    zxDslQos8021pToDscpEntry ::= SEQUENCE {
+        zxDslQos8021pToDscp8021PValue      Integer32,
+        zxDslQos8021pToDscpDSCPValue       Integer32
+    }
+ 
+    zxDslQos8021pToDscp8021PValue OBJECT-TYPE
+        SYNTAX     Integer32(0..7)
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "The index of the 802.1P mapping DSCP value table."
+        ::= { zxDslQos8021pToDscpEntry 1 }
+ 
+    zxDslQos8021pToDscpDSCPValue  OBJECT-TYPE
+        SYNTAX Integer32 (0..63)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The DSCP value given one 802.1p value."
+        ::= { zxDslQos8021pToDscpEntry 2 }        
+
+-- ---------------------------------------------------------------------------
+--  11.zxDslQosDscpTo8021pTable
+-- ---------------------------------------------------------------------------
+    zxDslQosDscpTo8021pTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF zxDslQosDscpTo8021pEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "The DSCP mapping table given 802.1p value."
+        ::= { zxDslQosMapping 2 }
+ 
+    zxDslQosDscpTo8021pEntry OBJECT-TYPE
+        SYNTAX     zxDslQosDscpTo8021pEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "An entry (conceptual row) representing a zxDslQosDscpTo8021pTable"
+        INDEX  { zxDslQosDscpTo8021pDSCPValue }
+        ::= { zxDslQosDscpTo8021pTable 1 }
+ 
+    zxDslQosDscpTo8021pEntry ::= SEQUENCE {
+        zxDslQosDscpTo8021pDSCPValue      Integer32,
+        zxDslQosDscpTo8021p8021PValue     Integer32
+    }
+ 
+    zxDslQosDscpTo8021pDSCPValue OBJECT-TYPE
+        SYNTAX     Integer32(0..63)
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "The index of the DSCP mapping 802.1p value table."
+        ::= { zxDslQosDscpTo8021pEntry 1 }
+ 
+    zxDslQosDscpTo8021p8021PValue  OBJECT-TYPE
+        SYNTAX Integer32 (0..7)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The 802.1p value given one DSCP value."
+        ::= { zxDslQosDscpTo8021pEntry 2 }    
+
+
+-- ---------------------------------------------------------------------------
+--  12.zxDslQosCosRemarkTable
+-- ---------------------------------------------------------------------------
+    zxDslQosCosRemarkTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF ZxDslQosCosRemarkEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "The COS mapping table ."
+        ::= { zxDslQosMapping 3 }
+ 
+    zxDslQosCosRemarkEntry OBJECT-TYPE
+        SYNTAX     ZxDslQosCosRemarkEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "An entry (conceptual row) representing a zxDslQosCosRemarkTable"
+        INDEX  { zxDslQosCosValue }
+        ::= { zxDslQosCosRemarkTable 1 }
+ 
+    ZxDslQosCosRemarkEntry ::= SEQUENCE {
+        zxDslQosCosValue             Integer32,
+        zxDslQosCosRemarking         Integer32
+    }
+ 
+    zxDslQosCosValue OBJECT-TYPE
+        SYNTAX     Integer32(0..7)
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "The index of the Cos Value."
+        ::= { zxDslQosCosRemarkEntry 1 }
+ 
+    zxDslQosCosRemarking  OBJECT-TYPE
+        SYNTAX Integer32 (0..7)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The Remarking Cos Value for given one Cos Value."
+        ::= { zxDslQosCosRemarkEntry 2 }    
+
+
+
+
+  zxDslQosSchedulerTable  OBJECT-TYPE
+    SYNTAX    SEQUENCE  OF  zxDslQosSchedulerEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "The Scheduler Table enumerates packet schedulers. with each
+            algorithm described by one diffServSchedulerEntry."
+    ::=  { zxDslQosScheduler  1 }
+
+  zxDslQosSchedulerEntry  OBJECT-TYPE
+    SYNTAX    zxDslQosSchedulerEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "An entry in the Scheduler Table describing a single instance of
+             a scheduling algorithm."
+    INDEX   {  zxDslQosSchedulerID  }
+    ::=  { zxDslQosSchedulerTable 1 }
+
+  zxDslQosSchedulerEntry  ::=  SEQUENCE {
+    zxDslQosSchedulerID  Integer32,
+    zxDslQosSchedulerType  Integer32,
+    zxDslQosSchedulerWRRWFQParam1  Integer32,
+    zxDslQosSchedulerWRRWFQParam2  Integer32,
+    zxDslQosSchedulerWRRWFQParam3  Integer32,
+    zxDslQosSchedulerWRRWFQParam4  Integer32,
+    zxDslQosSchedulerWRRWFQParam5  Integer32,
+    zxDslQosSchedulerWRRWFQParam6  Integer32,
+    zxDslQosSchedulerWRRWFQParam7  Integer32,
+    zxDslQosSchedulerWRRWFQParam8  Integer32
+    }
+
+
+  zxDslQosSchedulerID OBJECT-TYPE 
+    SYNTAX      INTEGER  { NNI ( 0 ) , UNI ( 1 ) , UNI-ETCA ( 2 ) } 
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   
+        "An index that enumerates the Scheduler entries,NNI means Network Node Interface,
+        UNI meas User Network Interface,UNI-ETCA meas User Network Interface for Ethernet card.
+        compatibility refrence zxDslSysCompatible of ZTE-DSL-SYSCTRL-MIB."
+    ::=  {  zxDslQosSchedulerEntry  1  }
+
+
+  zxDslQosSchedulerType OBJECT-TYPE 
+    SYNTAX      INTEGER  { SP ( 1 ) , WRR ( 2 ) , WFQ ( 3 ) , SPplusWRR ( 4 ) , SPplusWFQ ( 5 ) } 
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "The scheduling algorithm used by this Scheduler."
+    ::=  {  zxDslQosSchedulerEntry  2  }
+
+
+  zxDslQosSchedulerWRRWFQParam1 OBJECT-TYPE 
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "Param1 of WRRWEQ"
+    ::=  {  zxDslQosSchedulerEntry  3  }
+
+
+  zxDslQosSchedulerWRRWFQParam2 OBJECT-TYPE 
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "Param2 of WRRWEQ"
+    ::=  {  zxDslQosSchedulerEntry  4  }
+
+
+  zxDslQosSchedulerWRRWFQParam3 OBJECT-TYPE 
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "Param3 of WRRWEQ"
+    ::=  {  zxDslQosSchedulerEntry  5  }
+
+
+  zxDslQosSchedulerWRRWFQParam4 OBJECT-TYPE 
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "Param4 of WRRWEQ"
+    ::=  {  zxDslQosSchedulerEntry  6  }
+
+
+  zxDslQosSchedulerWRRWFQParam5 OBJECT-TYPE 
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "Param5 of WRRWEQ"
+    ::=  {  zxDslQosSchedulerEntry  7  }
+
+
+  zxDslQosSchedulerWRRWFQParam6 OBJECT-TYPE 
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "Param6 of WRRWEQ"
+    ::=  {  zxDslQosSchedulerEntry  8  }
+
+
+  zxDslQosSchedulerWRRWFQParam7 OBJECT-TYPE 
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "Param7 of WRRWEQ"
+    ::=  {  zxDslQosSchedulerEntry  9  }
+
+
+  zxDslQosSchedulerWRRWFQParam8 OBJECT-TYPE 
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "Param8 of WRRWEQ"
+    ::=  {  zxDslQosSchedulerEntry  10  }
+
+  zxDslQos8021p2CosQTable OBJECT-TYPE
+    SYNTAX    SEQUENCE  OF  zxDslQos8021p2CosQEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "The 802.1p mapping table given CosQ value."
+    ::=  { zxQueuing  1 }
+
+  zxDslQos8021p2CosQEntry OBJECT-TYPE
+    SYNTAX    zxDslQos8021p2CosQEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "An entry (conceptual row) representing a zxDslQos8021p2CosQTable"
+    INDEX   {  zxDslQos8021p2CosQPortNumber  }
+    ::=  { zxDslQos8021p2CosQTable 1 }
+
+  zxDslQos8021p2CosQEntry  ::=  SEQUENCE {
+    zxDslQos8021p2CosQPortNumber  Integer32,
+    zxDslQoscosQIndexedBy8021pValue0  Integer32,
+    zxDslQoscosQIndexedBy8021pValue1  Integer32,
+    zxDslQoscosQIndexedBy8021pValue2  Integer32,
+    zxDslQoscosQIndexedBy8021pValue3  Integer32,
+    zxDslQoscosQIndexedBy8021pValue4  Integer32,
+    zxDslQoscosQIndexedBy8021pValue5  Integer32,
+    zxDslQoscosQIndexedBy8021pValue6  Integer32,
+    zxDslQoscosQIndexedBy8021pValue7  Integer32
+    }
+
+
+  zxDslQos8021p2CosQPortNumber  OBJECT-TYPE 
+    SYNTAX      INTEGER  { NNI ( 0 ) , UNI ( 1 ) ,UNI-ETCA ( 2 ) } 
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   
+        "An index that enumerates the zxDslQos8021p2CosQEntry,NNI means Network Node Interface,
+        UNI meas User Network Interface,UNI-ETCA meas User Network Interface for Ethernet card.
+        compatibility refrence zxDslSysCompatible of ZTE-DSL-SYSCTRL_MIB."
+    ::=  {  zxDslQos8021p2CosQEntry  1  }
+
+
+  zxDslQoscosQIndexedBy8021pValue0  OBJECT-TYPE 
+    SYNTAX      Integer32  ( 1 .. 8  ) 
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "The 802.1p value 0 given one cosQ value."
+    ::=  {  zxDslQos8021p2CosQEntry  2  }
+
+
+  zxDslQoscosQIndexedBy8021pValue1  OBJECT-TYPE 
+    SYNTAX      Integer32  ( 1 .. 8  ) 
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "The 802.1p value 1 given one cosQ value."
+    ::=  {  zxDslQos8021p2CosQEntry  3  }
+
+
+  zxDslQoscosQIndexedBy8021pValue2  OBJECT-TYPE 
+    SYNTAX      Integer32  ( 1 .. 8  ) 
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "The 802.1p value 2 given one cosQ value."
+    ::=  {  zxDslQos8021p2CosQEntry  4  }
+
+
+  zxDslQoscosQIndexedBy8021pValue3  OBJECT-TYPE 
+    SYNTAX      Integer32  ( 1 .. 8  ) 
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "The 802.1p value 3 given one cosQ value."
+    ::=  {  zxDslQos8021p2CosQEntry  5  }
+
+
+  zxDslQoscosQIndexedBy8021pValue4  OBJECT-TYPE 
+    SYNTAX      Integer32  ( 1 .. 8  ) 
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "The 802.1p value 4 given one cosQ value."
+    ::=  {  zxDslQos8021p2CosQEntry  6  }
+
+
+  zxDslQoscosQIndexedBy8021pValue5  OBJECT-TYPE 
+    SYNTAX      Integer32  ( 1 .. 8  ) 
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "The 802.1p value 5 given one cosQ value."
+    ::=  {  zxDslQos8021p2CosQEntry  7  }
+
+
+  zxDslQoscosQIndexedBy8021pValue6  OBJECT-TYPE 
+    SYNTAX      Integer32  ( 1 .. 8  ) 
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "The 802.1p value 6 given one cosQ value."
+    ::=  {  zxDslQos8021p2CosQEntry  8  }
+
+
+  zxDslQoscosQIndexedBy8021pValue7  OBJECT-TYPE 
+    SYNTAX      Integer32  ( 1 .. 8  ) 
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "The 802.1p value 7 given one cosQ value."
+    ::=  {  zxDslQos8021p2CosQEntry  9  }
+
+
+
+
+-- ---------------------------------------------------------------------------
+--  1.Pvc Queuing table
+-- ---------------------------------------------------------------------------
+ 
+    zxDslPvcQueuingTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF zxDslPvcQueuingEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            ""
+        ::= { zxQueuing 2 }
+ 
+    zxDslPvcQueuingEntry OBJECT-TYPE
+        SYNTAX     zxDslPvcQueuingEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "qos pvc to queue table"
+        INDEX      { zxDslPvcPortNumber}
+        ::= { zxDslPvcQueuingTable 1 }
+
+    zxDslPvcQueuingEntry ::= SEQUENCE {
+        zxDslPvcPortNumber              Integer32,
+        zxDslPvc1ToQueueid              Integer32,
+        zxDslPvc2ToQueueid              Integer32,
+        zxDslPvc3ToQueueid              Integer32,
+        zxDslPvc4ToQueueid              Integer32,
+        zxDslPvc5ToQueueid              Integer32,
+        zxDslPvc6ToQueueid              Integer32
+    }
+
+    zxDslPvcPortNumber OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "The pvc Port Number."
+        ::= { zxDslPvcQueuingEntry 1 }
+     
+    zxDslPvc1ToQueueid OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+            "The pvc 1 given one queue value[1-4]"
+        ::= { zxDslPvcQueuingEntry 2 }
+        
+    zxDslPvc2ToQueueid OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+            "The pvc 2 given one queue value"
+        ::= { zxDslPvcQueuingEntry 3 }
+        
+    zxDslPvc3ToQueueid OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+            "The pvc 3 given one queue value"
+        ::= { zxDslPvcQueuingEntry 4 }
+        
+    zxDslPvc4ToQueueid OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+            "The pvc 4 given one queue value"
+        ::= { zxDslPvcQueuingEntry 5 }
+        
+    zxDslPvc5ToQueueid OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+            "The pvc 5 given one queue value"
+        ::= { zxDslPvcQueuingEntry 6 }
+        
+    zxDslPvc6ToQueueid OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+            "The pvc 6 given one queue value"
+        ::= { zxDslPvcQueuingEntry 7 }
+  
+
+
+-- ---------------------------------------------------------------------------
+--  2.Uplink Pvc Queuing table
+-- ---------------------------------------------------------------------------
+ 
+
+    zxDslUplinkPvcQueuingTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF zxDslUplinkPvcQueuingEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            ""
+        ::= { zxQueuing 3 }
+ 
+    zxDslUplinkPvcQueuingEntry OBJECT-TYPE
+        SYNTAX     zxDslUplinkPvcQueuingEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "qos uplink pvc to queue table"
+        INDEX      { zxDslUplinkPvcPortNumber }
+        ::= { zxDslUplinkPvcQueuingTable 1 }
+
+    zxDslUplinkPvcQueuingEntry ::= SEQUENCE {
+        zxDslUplinkPvcPortNumber              Integer32,
+        zxDslUplinkPvcToQueueid               Integer32,
+        zxDslUplinkPvcQueuingRowStatus        RowStatus
+    }
+
+    zxDslUplinkPvcPortNumber OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "The pvc Port Number."
+        ::= { zxDslUplinkPvcQueuingEntry 1 }
+     
+    zxDslUplinkPvcToQueueid OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+            "The pvc given one queue value"
+        ::= { zxDslUplinkPvcQueuingEntry 2 }
+        
+
+    zxDslUplinkPvcQueuingRowStatus OBJECT-TYPE
+         SYNTAX         RowStatus
+         MAX-ACCESS     read-create
+         STATUS         current
+         DESCRIPTION
+          "The status of this entry."
+         DEFVAL { createAndWait }
+         ::= { zxDslUplinkPvcQueuingEntry 3 }
+
+
+
+-- ---------------------------------------------------------------------------
+--  3.zxDsl Queuing Buffer table
+-- ---------------------------------------------------------------------------
+          
+
+    zxDslQueuingBufTable  OBJECT-TYPE
+    SYNTAX    SEQUENCE  OF  ZxDslQueuingBufEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "Dslam port queue buffer configuration table."
+    ::=  { zxQueuing  4 }   
+
+    zxDslQueuingBufEntry  OBJECT-TYPE
+    SYNTAX    ZxDslQueuingBufEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "A entry of zxDslQueuingBufTable.The total buffer numer for 
+        one port is 128.
+                     
+        "
+        
+    INDEX   {  ifIndex  }
+    ::=  { zxDslQueuingBufTable 1 }
+
+  ZxDslQueuingBufEntry  ::=  SEQUENCE {   
+    zxDslQueue1ConfBufNumber      Integer32,
+    zxDslQueue2ConfBufNumber      Integer32,
+    zxDslQueue3ConfBufNumber      Integer32,
+    zxDslQueue4ConfBufNumber      Integer32,
+    zxDslQueue1ActualBufNumber    Integer32,
+    zxDslQueue2ActualBufNumber    Integer32,
+    zxDslQueue3ActualBufNumber    Integer32,
+    zxDslQueue4ActualBufNumber    Integer32   
+    }
+    
+  zxDslQueue1ConfBufNumber  OBJECT-TYPE 
+    SYNTAX      Integer32  
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   
+        " The configured buffer number for 1st queue on this port.
+    if it is 0, means to be auto."
+        
+        DEFVAL { 32 }
+    ::=  {  zxDslQueuingBufEntry  1  }
+                
+    zxDslQueue2ConfBufNumber  OBJECT-TYPE 
+    SYNTAX      Integer32  
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   
+        " The configured buffer number for 2nd queue on this port.
+    if it is 0, means to be auto."
+
+        DEFVAL { 32 }
+    ::=  {  zxDslQueuingBufEntry  2  }
+    
+  zxDslQueue3ConfBufNumber  OBJECT-TYPE 
+    SYNTAX      Integer32  
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   
+        " The configured buffer number for 3rd queue on this port.
+    if it is 0, means to be auto."
+
+        DEFVAL { 32 }
+    ::=  {  zxDslQueuingBufEntry  3  }
+       
+    zxDslQueue4ConfBufNumber  OBJECT-TYPE 
+    SYNTAX      Integer32  
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   
+        " The configured buffer number for 4th queue on this port.
+    if it is 0, means to be auto."
+
+        DEFVAL { 32 }
+    ::=  {  zxDslQueuingBufEntry  4  }    
+    
+    zxDslQueue1ActualBufNumber  OBJECT-TYPE 
+    SYNTAX      Integer32  
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   
+        " The actual buffer number of 1st queue on this port."
+    ::=  {  zxDslQueuingBufEntry  5  }
+                
+    zxDslQueue2ActualBufNumber  OBJECT-TYPE 
+    SYNTAX      Integer32  
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   
+        " The actual buffer number of 2nd queue on this port."
+    ::=  {  zxDslQueuingBufEntry  6  }
+    
+  zxDslQueue3ActualBufNumber  OBJECT-TYPE 
+    SYNTAX      Integer32  
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   
+        " The actual buffer number of 3rd queue on this port."
+    ::=  {  zxDslQueuingBufEntry  7  }
+       
+    zxDslQueue4ActualBufNumber  OBJECT-TYPE 
+    SYNTAX      Integer32  
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   
+        " The actual buffer number of 4th queue on this port."
+    ::=  {  zxDslQueuingBufEntry  8  }
+    
+    
+
+    
+------------------------------------------------------------------------------
+-- 4.Port Queue table
+------------------------------------------------------------------------------
+
+    zxDslQosPortQueueTable  OBJECT-TYPE
+    SYNTAX    SEQUENCE  OF  ZxDslQosPortQueueEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "Dslam port queue configuration table."
+    ::=  { zxQueuing  5 }   
+
+    zxDslQosPortQueueEntry  OBJECT-TYPE
+    SYNTAX    ZxDslQosPortQueueEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "A entry of zxDslQosPortQueueTable. "
+    INDEX   {  ifIndex, zxDslQosPortQueueId }
+    ::=  { zxDslQosPortQueueTable 1 }
+
+  ZxDslQosPortQueueEntry  ::=  SEQUENCE {   
+    zxDslQosPortQueueId                  Integer32,
+    zxDslQosPortShapingMaxRate           Integer32,
+    zxDslQosPortQueueBurstSize           Integer32
+    }
+    
+    
+
+  zxDslQosPortQueueId  OBJECT-TYPE 
+    SYNTAX      Integer32  
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   
+        "Queue Id on this port."
+    ::=  {  zxDslQosPortQueueEntry  1  }
+
+
+
+  zxDslQosPortShapingMaxRate  OBJECT-TYPE 
+    SYNTAX      Integer32  
+    UNITS       "kbps"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   
+        " Maximum egress shaping rate in this queue."
+    ::=  {  zxDslQosPortQueueEntry  2  }
+       
+       
+
+  zxDslQosPortQueueBurstSize  OBJECT-TYPE 
+    SYNTAX      Integer32  
+    UNITS       "kbps"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   
+        " Egress burst size of the queue on this port."
+    ::=  {  zxDslQosPortQueueEntry  3  }       
+                     
+
+-- ---------------------------------------------------------------------------
+--  Qos Queue Mapping table
+-- ---------------------------------------------------------------------------        
+        
+    zxDslQosQueueMappingTable OBJECT-TYPE
+        SYNTAX      SEQUENCE  OF  ZxDslQosQueueMappingEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION  
+            "qos queue mapping table."
+        ::=  { zxQueuing  7 }
+
+    zxDslQosQueueMappingEntry  OBJECT-TYPE
+        SYNTAX      ZxDslQosQueueMappingEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION  
+            "qos queue mapping entry."
+        INDEX  { zxDslQosQueueDirection }
+        ::=  { zxDslQosQueueMappingTable 1 }    
+             
+    ZxDslQosQueueMappingEntry  ::=  SEQUENCE {
+        zxDslQosQueueDirection           INTEGER,
+        zxDslQosQueueMappingMode         INTEGER,
+        zxDslQosQueue1MappingValue       DisplayString,
+        zxDslQosQueue2MappingValue       DisplayString,
+        zxDslQosQueue3MappingValue       DisplayString,
+        zxDslQosQueue4MappingValue       DisplayString
+    }           
+                
+    zxDslQosQueueDirection OBJECT-TYPE
+        SYNTAX      INTEGER  { vdslUpward (1) } 
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The direction for qos enqueue."
+        ::= { zxDslQosQueueMappingEntry 1 }
+        
+    zxDslQosQueueMappingMode OBJECT-TYPE
+        SYNTAX  INTEGER { 
+             cos(1), 
+             dscp(2), 
+             ipp(3), 
+             vid(4), 
+             etherType(5)  
+        } 
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The mapping mode for qos enqueue."
+        ::= { zxDslQosQueueMappingEntry 2 }                  
+
+    zxDslQosQueue1MappingValue OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE (0..255))  
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Queue 1 is the lowest priority queue.             
+             
+             The value of this string is all the mapping vlaue separated by
+             comma, just as 1,3,5 for cos type means cos 1,cos 3,cos 5 
+             mapping to this queue.              
+             
+             for cos type, the valid value is from 0 to 7,
+             for dscp type, the valid value is  from 0 to 63,
+             for ipp, the valid value is  from 0 to 7,
+             for vid, the valid value is  1 to 4094,
+             for etherType, the valid value is IP(1),ARP(2),PPPOE(3)...            
+            "
+        ::= { zxDslQosQueueMappingEntry 11 }                
+
+    zxDslQosQueue2MappingValue OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE (0..255))  
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The value of this string is all the mapping vlaue separated by
+             comma, just as 1,3,5 for cos type means cos 1,cos 3,cos 5 
+             mapping to this queue.              
+             
+             for cos type, the valid value is from 0 to 7,
+             for dscp type, the valid value is  from 0 to 63,
+             for ipp, the valid value is  from 0 to 7,
+             for vid, the valid value is  1 to 4094,
+             for etherType, the valid value is IP(1),ARP(2),PPPOE(3)...            
+            "
+        ::= { zxDslQosQueueMappingEntry 12 }                    
+    
+    zxDslQosQueue3MappingValue OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE (0..255))  
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The value of this string is all the mapping vlaue separated by
+             comma, just as 1,3,5 for cos type means cos 1,cos 3,cos 5 
+             mapping to this queue.              
+             
+             for cos type, the valid value is from 0 to 7,
+             for dscp type, the valid value is  from 0 to 63,
+             for ipp, the valid value is  from 0 to 7,
+             for vid, the valid value is  1 to 4094,
+             for etherType, the valid value is IP(1),ARP(2),PPPOE(3)...            
+            "
+        ::= { zxDslQosQueueMappingEntry 13 }     
+    
+    zxDslQosQueue4MappingValue OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE (0..255))  
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The value of this string is all the mapping vlaue separated by
+             comma, just as 1,3,5 for cos type means cos 1,cos 3,cos 5 
+             mapping to this queue.              
+             
+             for cos type, the valid value is from 0 to 7,
+             for dscp type, the valid value is  from 0 to 63,
+             for ipp, the valid value is  from 0 to 7,
+             for vid, the valid value is  1 to 4094,
+             for etherType, the valid value is IP(1),ARP(2),PPPOE(3)...            
+            "
+        ::= { zxDslQosQueueMappingEntry 14 }                    
+        
+    
+------------------------------------------------------------------------------
+-- 5.Qos Port Ingress Policy table
+------------------------------------------------------------------------------
+
+  zxDslQosPortIngressPolicyTable OBJECT-TYPE
+    SYNTAX    SEQUENCE  OF  ZxDslQosPortIngressPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "The Ingress QoS policy table being applied on one physical port."
+    ::=  { zxDslQosPortPolicy  1 }
+
+  zxDslQosPortIngressPolicyEntry OBJECT-TYPE
+    SYNTAX    ZxDslQosPortIngressPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "An entry conceptual row representing a QoS
+            policy table of physical port."
+    INDEX   {  ifIndex  }
+    ::=  { zxDslQosPortIngressPolicyTable 1 }
+
+  ZxDslQosPortIngressPolicyEntry  ::=  SEQUENCE {
+    zxDslQosPortIngressPolicyName          DisplayString,
+    zxDslQosPortIngressPolicyRowStatus     RowStatus
+    }
+
+
+  zxDslQosPortIngressPolicyName  OBJECT-TYPE 
+    SYNTAX      DisplayString  ( SIZE ( 0 .. 32  ) ) 
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "The applied policy index of one port."
+    ::=  {  zxDslQosPortIngressPolicyEntry  1  }
+
+
+  zxDslQosPortIngressPolicyRowStatus OBJECT-TYPE 
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "The status of thie policy."
+    ::=  {  zxDslQosPortIngressPolicyEntry  2  }
+
+
+
+------------------------------------------------------------------------------
+-- 6.Qos Port Egress Policy table
+------------------------------------------------------------------------------
+
+  zxDslQosPortEgressPolicyTable OBJECT-TYPE
+    SYNTAX    SEQUENCE  OF  ZxDslQosPortEgressPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "The Egress QoS policy table being applied on one physical port."
+    ::=  { zxDslQosPortPolicy  2 }
+
+  zxDslQosPortEgressPolicyEntry OBJECT-TYPE
+    SYNTAX    ZxDslQosPortEgressPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "An entry conceptual row representing a QoS
+            policy table of physical port."
+    INDEX   {  ifIndex  }
+    ::=  { zxDslQosPortEgressPolicyTable 1 }
+
+  ZxDslQosPortEgressPolicyEntry  ::=  SEQUENCE {
+    zxDslQosPortEgressPolicyName          DisplayString,
+    zxDslQosPortEgressPolicyRowStatus     RowStatus
+    }
+
+
+  zxDslQosPortEgressPolicyName  OBJECT-TYPE 
+    SYNTAX      DisplayString  ( SIZE ( 0 .. 32  ) ) 
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "The applied policy index of one port."
+    ::=  {  zxDslQosPortEgressPolicyEntry  1  }
+
+  zxDslQosPortEgressPolicyRowStatus OBJECT-TYPE 
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "The status of thie policy."
+    ::=  {  zxDslQosPortEgressPolicyEntry  2  }
+
+
+
+    
+------------------------------------------------------------------------------
+-- 6.Qos Pvc BaseInfo table
+------------------------------------------------------------------------------
+  zxDslQosPvcBaseInfoTable  OBJECT-TYPE
+    SYNTAX    SEQUENCE  OF  ZxDslQosPvcBaseInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "The QoS information of one physical port."
+    ::=  { zxDslQosPortInfo  2 }
+
+  zxDslQosPvcBaseInfoEntry  OBJECT-TYPE
+    SYNTAX    ZxDslQosPvcBaseInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+        DESCRIPTION
+           "An entry (conceptual row) representing QoS information of port pvc."
+        INDEX      { ifIndex, zxDslQosPvcNumber }
+    ::=  { zxDslQosPvcBaseInfoTable 1 }
+
+  ZxDslQosPvcBaseInfoEntry  ::=  SEQUENCE {
+        zxDslQosPvcNumber                  Integer32,
+        zxDslQosPvcCosDefault              Integer32,  
+        zxDslQosPvcDscpDefault             Integer32,
+        zxDslQosPvcCTagCosOverride         Integer32,
+        zxDslQosPvcCTagCosOverrideEnable   INTEGER,
+        zxDslQosPvcSTagCosOverride         Integer32,
+        zxDslQosPvcSTagCosOverrideEnable   INTEGER,
+        zxDslQosPvcTrusted                 INTEGER,
+        zxDslQosPvcISMapping               INTEGER,
+        zxDslQosPvcQosShaping              Integer32,
+        zxDslQosPvcBurstSize               Integer32,
+        zxDslQosPvcCosRemarking0           Integer32,
+        zxDslQosPvcCosRemarking1           Integer32,
+        zxDslQosPvcCosRemarking2           Integer32,
+        zxDslQosPvcCosRemarking3           Integer32,
+        zxDslQosPvcCosRemarking4           Integer32,
+        zxDslQosPvcCosRemarking5           Integer32,
+        zxDslQosPvcCosRemarking6           Integer32,
+        zxDslQosPvcCosRemarking7           Integer32,
+        zxDslQosPvcCosRemarkingEnabled     INTEGER,
+        zxDslQosPortQueueNumSetEnable      Integer32,
+        zxDslQosPvcVlanTranslateEnable     INTEGER,
+        zxDslQosPvcVlanMembershipEnable    INTEGER,
+        zxDslQosPvcVlanOverrideEnable      INTEGER,
+        zxDslQosPvcQosIngressShaping       Integer32,
+        zxDslQosPvcIngressBurstSize        Integer32
+    }
+
+    zxDslQosPvcNumber OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "The index of the pvc QoS information table."
+        ::= { zxDslQosPvcBaseInfoEntry 1 }
+ 
+    zxDslQosPvcCosDefault OBJECT-TYPE
+        SYNTAX     Integer32(0..7)
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+            "The default COS value of one pvc ."
+        ::= { zxDslQosPvcBaseInfoEntry 2 }
+ 
+    zxDslQosPvcDscpDefault  OBJECT-TYPE 
+        SYNTAX      Integer32  ( 0 .. 64  ) 
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION   "The default DSCP value of one port. Must accorates with
+            portQosDSCPDefOver"
+        ::=  {  zxDslQosPvcBaseInfoEntry  3  }
+    
+    zxDslQosPvcCTagCosOverride OBJECT-TYPE
+        SYNTAX     Integer32(0..7)
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+            "The C-Tag COS value will be override in the ingress flow ."
+        ::= { zxDslQosPvcBaseInfoEntry 4 }
+            
+    zxDslQosPvcCTagCosOverrideEnable  OBJECT-TYPE 
+        SYNTAX          INTEGER{ 
+            enabled(1),
+            disabled(2) 
+        } 
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION   
+            "if Enabled,The C-Tag COS value will be override"
+        ::=  { zxDslQosPvcBaseInfoEntry 5 }   
+        
+    zxDslQosPvcSTagCosOverride OBJECT-TYPE
+        SYNTAX     Integer32(0..7)
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+            "The S-Tag COS value will be override in the ingress flow ."
+        ::= { zxDslQosPvcBaseInfoEntry 6 }
+        
+    zxDslQosPvcSTagCosOverrideEnable  OBJECT-TYPE 
+        SYNTAX          INTEGER{ 
+            enabled(1),
+            disabled(2) 
+        } 
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION   
+            "if Enabled,The S-Tag COS value will be override"
+        ::=  { zxDslQosPvcBaseInfoEntry 7 }
+
+    zxDslQosPvcTrusted  OBJECT-TYPE 
+        SYNTAX          INTEGER  {
+            notTrusted(0), 
+            trustedCOS(1), 
+            trustedDSCP(2) 
+        } 
+        MAX-ACCESS  read-write
+        STATUS    current
+        DESCRIPTION   
+            "whether the pvc trust the value in the ingress flow."
+        ::=  { zxDslQosPvcBaseInfoEntry 8 }        
+        
+    zxDslQosPvcISMapping OBJECT-TYPE
+        SYNTAX     INTEGER{
+            enable(1), 
+            disable(2)
+        }
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+            "whether the pvc cos value mapping to dscp value."
+        ::= { zxDslQosPvcBaseInfoEntry 9 }        
+
+
+    zxDslQosPvcQosShaping OBJECT-TYPE 
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "1 up to 64Kbps"
+    ::=  {  zxDslQosPvcBaseInfoEntry  10  }
+
+
+    zxDslQosPvcBurstSize  OBJECT-TYPE 
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "2 up to 9 "
+    ::=  {  zxDslQosPvcBaseInfoEntry  11  }
+
+
+    zxDslQosPvcCosRemarking0 OBJECT-TYPE
+        SYNTAX     Integer32(0..7)
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+            "The Cos 0 remarking value."
+        ::= { zxDslQosPvcBaseInfoEntry 12 }
+
+    zxDslQosPvcCosRemarking1 OBJECT-TYPE
+        SYNTAX     Integer32(0..7)
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+            "The Cos 1 remarking value."
+        ::= { zxDslQosPvcBaseInfoEntry 13 }
+
+    zxDslQosPvcCosRemarking2 OBJECT-TYPE
+        SYNTAX     Integer32(0..7)
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+            "The Cos 2 remarking value."
+        ::= { zxDslQosPvcBaseInfoEntry 14 }
+
+    zxDslQosPvcCosRemarking3 OBJECT-TYPE
+        SYNTAX     Integer32(0..7)
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+            "The Cos 3 remarking value."
+        ::= { zxDslQosPvcBaseInfoEntry 15 }
+        
+    zxDslQosPvcCosRemarking4 OBJECT-TYPE
+        SYNTAX     Integer32(0..7)
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+            "The Cos 4 remarking value."
+        ::= { zxDslQosPvcBaseInfoEntry 16 }
+        
+    zxDslQosPvcCosRemarking5 OBJECT-TYPE
+        SYNTAX     Integer32(0..7)
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+            "The Cos 5 remarking value."
+        ::= { zxDslQosPvcBaseInfoEntry 17 }                
+
+    zxDslQosPvcCosRemarking6 OBJECT-TYPE
+        SYNTAX     Integer32(0..7)
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+            "The Cos 6 remarking value."
+        ::= { zxDslQosPvcBaseInfoEntry 18 }
+
+    zxDslQosPvcCosRemarking7 OBJECT-TYPE
+        SYNTAX     Integer32(0..7)
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+            "The Cos 7 remarking value."
+        ::= { zxDslQosPvcBaseInfoEntry 19 }
+
+    zxDslQosPvcCosRemarkingEnabled  OBJECT-TYPE 
+        SYNTAX          INTEGER{ 
+            enabled(1),
+            disabled(2) 
+        } 
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION   
+            "cos remarking en/dis"
+        ::=  { zxDslQosPvcBaseInfoEntry 20 }    
+
+    zxDslQosPortQueueNumSetEnable OBJECT-TYPE 
+    SYNTAX      INTEGER  { enabled ( 1 ) , disabled ( 2 ) } 
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "if Enabled,The value of zxDslQosNetWorkSideQueueNum/zxDslQosUserSideQueueNum if enable"
+    ::=  {  zxDslQosPvcBaseInfoEntry  21  }
+
+
+
+    zxDslQosPvcVlanTranslateEnable OBJECT-TYPE
+          SYNTAX     INTEGER{
+                        enable(1),
+                        disalbe(2)
+                     }
+          MAX-ACCESS     read-write
+          STATUS         current
+          DESCRIPTION
+              "enable or disable Vlan remark funtion for pvc."
+          ::= { zxDslQosPvcBaseInfoEntry 22}
+
+    zxDslQosPvcVlanMembershipEnable OBJECT-TYPE
+          SYNTAX     INTEGER{
+                        enable(1),
+                        disalbe(2)
+                     }
+          MAX-ACCESS     read-write
+          STATUS         current
+          DESCRIPTION
+              "enable or disable Vlan Filter funtion for pvc."
+          ::= { zxDslQosPvcBaseInfoEntry 23}
+
+
+
+    zxDslQosPvcVlanOverrideEnable OBJECT-TYPE
+          SYNTAX     INTEGER{
+                        enable(1),
+                        disalbe(2)
+                     }
+          MAX-ACCESS     read-write
+          STATUS         current
+          DESCRIPTION
+              "enable or disable Vlan tag override funtion for pvc."
+          ::= { zxDslQosPvcBaseInfoEntry 24}
+
+
+   zxDslQosPvcQosIngressShaping OBJECT-TYPE 
+        SYNTAX      Integer32
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION   "1 up to 64Kbps"
+        ::=  {  zxDslQosPvcBaseInfoEntry  25  }
+
+
+  zxDslQosPvcIngressBurstSize  OBJECT-TYPE 
+        SYNTAX      Integer32
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION   "2 up to 9 "
+        ::=  {  zxDslQosPvcBaseInfoEntry  26  }
+
+
+-- ---------------------------------------------------------------------------
+--  7.zxDslPvcVlanTranslate
+-- ---------------------------------------------------------------------------
+
+    zxDslPvcVlanTranslateTable OBJECT-TYPE
+         SYNTAX   SEQUENCE  OF  zxDslPvcVlanTranslateEntry
+         MAX-ACCESS not-accessible
+         STATUS   current
+         DESCRIPTION  "The Vlan mapping table given Vlan value."
+         ::=  { zxDslVInterface  1 }
+        
+    zxDslPvcVlanTranslateEntry  OBJECT-TYPE
+         SYNTAX   zxDslPvcVlanTranslateEntry
+         MAX-ACCESS not-accessible
+         STATUS   current
+         DESCRIPTION  "An entry (conceptual row) representing a Vlan
+              mapping table."
+         INDEX    {  ifIndex, zxDslQosPvcNumber, zxDslPvcVlanTranslateVlanId }
+         ::=  { zxDslPvcVlanTranslateTable 1 }    
+             
+    zxDslPvcVlanTranslateEntry  ::=  SEQUENCE {
+         zxDslPvcVlanTranslateVlanId         INTEGER,
+         zxDslPvcVlanTranslateGeneralVid     INTEGER,
+         zxDslPvcVlanTranslateSvid           INTEGER,
+         zxDslPvcVlanTranslateCvid           INTEGER,
+         zxDslPvcVlanTranslateRowStatus      RowStatus,
+         zxDslPvcVlanTranslateMvlanid        INTEGER
+         }           
+  
+ 
+    zxDslPvcVlanTranslateVlanId OBJECT-TYPE
+          SYNTAX     INTEGER(1..4094)
+          MAX-ACCESS     not-accessible
+          STATUS         current
+          DESCRIPTION
+              "The Vlan value given one Vlan value."
+          ::= { zxDslPvcVlanTranslateEntry 1}  
+ 
+ 
+    zxDslPvcVlanTranslateGeneralVid OBJECT-TYPE
+          SYNTAX     INTEGER(1..4094)
+          MAX-ACCESS     read-create
+          STATUS         current
+          DESCRIPTION
+              "The Vlan value given one Vlan value."
+          ::= { zxDslPvcVlanTranslateEntry 2}  
+ 
+    zxDslPvcVlanTranslateSvid OBJECT-TYPE
+          SYNTAX     INTEGER(1..4094)
+          MAX-ACCESS     read-create
+          STATUS         current
+          DESCRIPTION
+              "The Vlan value given one Vlan value."
+          ::= { zxDslPvcVlanTranslateEntry 3}  
+
+    zxDslPvcVlanTranslateCvid OBJECT-TYPE
+          SYNTAX     INTEGER(1..4094)
+          MAX-ACCESS     read-create
+          STATUS         current
+          DESCRIPTION
+              "The Vlan value given one Vlan value."
+          ::= { zxDslPvcVlanTranslateEntry 4}  
+
+
+    zxDslPvcVlanTranslateRowStatus  OBJECT-TYPE 
+          SYNTAX      RowStatus
+          MAX-ACCESS  read-create
+          STATUS      current
+          DESCRIPTION   "The status of this table."
+          ::=  {  zxDslPvcVlanTranslateEntry  5} 
+
+
+    zxDslPvcVlanTranslateMvlanid OBJECT-TYPE
+          SYNTAX     INTEGER(1..4094)
+          MAX-ACCESS     read-create
+          STATUS         current
+          DESCRIPTION
+              "Multicast services using VLAN translate."
+          ::= { zxDslPvcVlanTranslateEntry 6}  
+
+           
+
+------------------------------------------------------------------------------
+-- 8.Qos PolicyStat table
+------------------------------------------------------------------------------    
+  zxDslQosPolicyStatTable OBJECT-TYPE
+    SYNTAX    SEQUENCE  OF  zxDslQosPolicyStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "The (conceptual) table listing all QoS policy stat."
+    ::=  { zxDslQosStat  1 }
+
+  zxDslQosPolicyStatEntry OBJECT-TYPE
+    SYNTAX    zxDslQosPolicyStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "An entry (conceptual row) representing a QoS policy stat."
+    INDEX   {  ifIndex, zxDslQosClassName  }
+    ::=  { zxDslQosPolicyStatTable 1 }
+
+  zxDslQosPolicyStatEntry  ::=  SEQUENCE {
+    zxDslQosStatInProfCounter  Counter64,
+    zxDslQosStatOutProfCounter  Counter64
+    }
+
+
+  zxDslQosStatInProfCounter OBJECT-TYPE 
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Count of the InProf"
+    ::=  {  zxDslQosPolicyStatEntry  1  }
+
+
+  zxDslQosStatOutProfCounter  OBJECT-TYPE 
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Count of the OutProf"
+    ::=  {  zxDslQosPolicyStatEntry  2  }
+    
+
+
+  zxDslQosPolicyStatEgressTable OBJECT-TYPE
+    SYNTAX    SEQUENCE  OF  zxDslQosPolicyStatEgressEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "The (conceptual) table listing all QoS policy stat for Egress."
+    ::=  { zxDslQosStat  2 }
+
+  zxDslQosPolicyStatEgressEntry OBJECT-TYPE
+    SYNTAX    zxDslQosPolicyStatEgressEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "An entry (conceptual row) representing a QoS Egress policy stat."
+    INDEX   {  ifIndex, zxDslQosClassName  }
+    ::=  { zxDslQosPolicyStatEgressTable 1 }
+
+  zxDslQosPolicyStatEgressEntry  ::=  SEQUENCE {
+    zxDslQosStatEgressInProfCounter  Counter64,
+    zxDslQosStatEgressOutProfCounter  Counter64
+    }
+    
+  zxDslQosStatEgressInProfCounter OBJECT-TYPE 
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Egress Count of the InProf"
+    ::=  {  zxDslQosPolicyStatEgressEntry  1  }
+
+  zxDslQosStatEgressOutProfCounter  OBJECT-TYPE 
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Egress Count of the OutProf"
+    ::=  {  zxDslQosPolicyStatEgressEntry  2  }
+
+
+
+------------------------------------------------------------------------------
+-- 9.Port Mirror table
+------------------------------------------------------------------------------  
+  zxDslPortMirrorTable  OBJECT-TYPE
+    SYNTAX    SEQUENCE  OF  ZxDslPortMirrorEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "The (conceptual) table listing  of zxDsl system port mirror table."
+    ::=  { zxDslPortMirror  1 }
+
+  zxDslPortMirrorEntry  OBJECT-TYPE
+    SYNTAX    ZxDslPortMirrorEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "The entry (conceptual) table listing  of zxDsl system port mirror table."
+    INDEX   {  ifIndex  }
+    ::=  { zxDslPortMirrorTable 1 }
+
+  ZxDslPortMirrorEntry  ::=  SEQUENCE {
+    zxDslPortInMirror  PortList,
+    zxDslPortOutMirror  PortList,
+    zxDslPortMirrorRowStatus  RowStatus
+    }
+
+
+  zxDslPortInMirror OBJECT-TYPE 
+    SYNTAX      PortList
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "The ingress portlist to receive of the mirror port on this port."
+    ::=  {  zxDslPortMirrorEntry  1  }
+
+
+  zxDslPortOutMirror  OBJECT-TYPE 
+    SYNTAX      PortList
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "The ingress portlist to send of the mirror port on this port."
+    ::=  {  zxDslPortMirrorEntry  2  }
+
+
+  zxDslPortMirrorRowStatus  OBJECT-TYPE 
+    SYNTAX      RowStatus  { active ( 1 ) , notInService ( 2 ) , notReady ( 3 ) , createAndGo ( 4 ) , createAndWait ( 5 ) , destroy ( 6 ) } 
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "This object indicates the status of this entry."
+    ::=  {  zxDslPortMirrorEntry  3  }
+
+
+------------------------------------------------------------------------------
+-- 10.Qos Pvc Ingress Policy table
+------------------------------------------------------------------------------
+
+  zxDslQosPvcIngressPolicyTable OBJECT-TYPE
+    SYNTAX    SEQUENCE  OF  zxDslQosPvcIngressPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "The Ingress QoS policy table being applied on one physical Pvc."
+    ::=  { zxDslQosPvcPolicy  1 }
+
+  zxDslQosPvcIngressPolicyEntry OBJECT-TYPE
+    SYNTAX    zxDslQosPvcIngressPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "An entry conceptual row representing a QoS
+            policy table of physical Pvc."
+    INDEX   {  ifIndex, zxDslQosPvcNumber  }
+    ::=  { zxDslQosPvcIngressPolicyTable 1 }
+
+  zxDslQosPvcIngressPolicyEntry  ::=  SEQUENCE {
+    zxDslQosPvcIngressPolicyName          DisplayString,
+    zxDslQosPvcIngressPolicyRowStatus     RowStatus
+    }
+
+
+  zxDslQosPvcIngressPolicyName  OBJECT-TYPE 
+    SYNTAX      DisplayString  ( SIZE ( 0 .. 32  ) ) 
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "The applied policy index of one Pvc."
+    ::=  {  zxDslQosPvcIngressPolicyEntry  1  }
+
+
+  zxDslQosPvcIngressPolicyRowStatus OBJECT-TYPE 
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "The status of thie policy."
+    ::=  {  zxDslQosPvcIngressPolicyEntry  2  }
+
+
+------------------------------------------------------------------------------
+-- 11.Qos Pvc Egress Policy table
+------------------------------------------------------------------------------
+
+  zxDslQosPvcEgressPolicyTable OBJECT-TYPE
+    SYNTAX    SEQUENCE  OF  zxDslQosPvcEgressPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "The Egress QoS policy table being applied on one physical Pvc."
+    ::=  { zxDslQosPvcPolicy  2 }
+
+  zxDslQosPvcEgressPolicyEntry OBJECT-TYPE
+    SYNTAX    zxDslQosPvcEgressPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS    current
+    DESCRIPTION "An entry conceptual row representing a QoS
+            policy table of physical Pvc."
+    INDEX   {  ifIndex, zxDslQosPvcNumber  }
+    ::=  { zxDslQosPvcEgressPolicyTable 1 }
+
+  zxDslQosPvcEgressPolicyEntry  ::=  SEQUENCE {
+    zxDslQosPvcEgressPolicyName          DisplayString,
+    zxDslQosPvcEgressPolicyRowStatus     RowStatus
+    }
+
+  zxDslQosPvcEgressPolicyName  OBJECT-TYPE 
+    SYNTAX      DisplayString  ( SIZE ( 0 .. 32  ) ) 
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "The applied policy index of one Pvc."
+    ::=  {  zxDslQosPvcEgressPolicyEntry  1  }
+
+  zxDslQosPvcEgressPolicyRowStatus OBJECT-TYPE 
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "The status of thie policy."
+    ::=  {  zxDslQosPvcEgressPolicyEntry  2  }
+
+-- ---------------------------------------------------------------------------
+--  12.zxDslProtocolVlanMapTable
+-- ---------------------------------------------------------------------------
+
+    zxDslProtocolVlanMapTable OBJECT-TYPE
+        SYNTAX      SEQUENCE  OF  ZxDslProtocolVlanMapEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION  
+            "ethernet protocol vlan mapping."
+        ::=  { zxDslProtocolVlanMap  1 }
+
+    zxDslProtocolVlanMapEntry  OBJECT-TYPE
+        SYNTAX      ZxDslProtocolVlanMapEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION  
+            "ethernet protocol vlan mapping."
+        INDEX  { ifIndex, zxDslQosPvcNumber, zxDslEtherProtocolType }
+        ::=  { zxDslProtocolVlanMapTable 1 }    
+             
+    ZxDslProtocolVlanMapEntry  ::=  SEQUENCE {
+        zxDslEtherProtocolType           Integer32,
+        zxDslProtocolSVlanId             Integer32,
+        zxDslProtocolSVlanPriority       Integer32,
+        zxDslProtocolCVlanId             Integer32,
+        zxDslProtocolCVlanPriority       Integer32,
+        zxDslProtocolVlanRowStatus       RowStatus
+    }           
+  
+    zxDslEtherProtocolType OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            " zxDslEtherProtocolType uses a complex coding to support 
+              three different types in QinQ tag. Current supported 
+              types are CoS, Ethernet protocol type, VLAN ID and 
+              Ethernet protocol type.
+              
+              Each bit field of zxDslEtherProtocolType has its 
+              definitions such as follows.
+        
+            
+           |    Byte 4    |    Byte 2    |    Byte 1    |    Byte 0    |
+           |--------------|--------------+------|-------|--------------|
+           |   Reserved   |     VLAN ID         |  Ether Type  |  CoS  |
+           |    8 bits    |     12 bits         |    8 bits    | 4 bits|
+           |--------------|--------------+------|-------|--------------|
+           
+           ** CoS :         0 - 7   
+                            0xF indicates this field is not available(NA).
+           
+           ** Ethernet Protocol Type:
+                            IP(1),
+                            APP(2),
+                            PPPOE_discovery(3),
+                            PPPOE_session(4),
+                            IPv6(5)
+                            0xFF indicates this field is not available(NA).
+                            
+           ** VLAN ID:      1 - 4094 
+                            0xFFF indicates this field is not available(NA).
+           
+           ** Reserved:     default is 0x00.  "
+        ::= { zxDslProtocolVlanMapEntry 1 }
+
+    zxDslProtocolSVlanId OBJECT-TYPE
+        SYNTAX      Integer32 (1..4094) 
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "SVlanId ."
+        ::= { zxDslProtocolVlanMapEntry 2 }
+    
+    zxDslProtocolSVlanPriority OBJECT-TYPE
+        SYNTAX      Integer32 (0..7) 
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "SVlan cos priority"
+        ::= { zxDslProtocolVlanMapEntry 3 }
+        
+     zxDslProtocolCVlanId OBJECT-TYPE
+        SYNTAX      Integer32 (0..4094) 
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "CVlanId."
+        ::= { zxDslProtocolVlanMapEntry 4 }
+    
+     zxDslProtocolCVlanPriority OBJECT-TYPE
+        SYNTAX      Integer32 (0..7) 
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "CVlan cos priority"
+        ::= { zxDslProtocolVlanMapEntry 5 }
+
+    zxDslProtocolVlanRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "This object indicates the status of this entry."
+        ::= { zxDslProtocolVlanMapEntry 100 }    
+
+-- ---------------------------------------------------------------------------
+--  13.zxDslQosTraffic
+-- ---------------------------------------------------------------------------
+
+    zxDslQosTrafficProfileTable  OBJECT-TYPE
+        SYNTAX      SEQUENCE  OF  ZxDslQosTrafficProfileEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION  
+            "QoS traffic profile table."
+        ::=  { zxDslQosTraffic  2 }
+
+    zxDslQosTrafficProfileEntry  OBJECT-TYPE
+        SYNTAX      ZxDslQosTrafficProfileEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION  
+            "QoS traffic profile entry."
+        INDEX  { zxDslQosTrafficProfileName }
+        ::=  { zxDslQosTrafficProfileTable 1 }    
+             
+    ZxDslQosTrafficProfileEntry ::= 
+        SEQUENCE {  
+            zxDslQosTrafficProfileName         DisplayString,
+            zxDslQosTrafficProfileIngressCir   INTEGER,
+            zxDslQosTrafficProfileIngressCbs   INTEGER,
+            zxDslQosTrafficProfileIngressEbs   INTEGER,
+            zxDslQosTrafficProfileEgressCir    INTEGER,
+            zxDslQosTrafficProfileEgressCbs    INTEGER,
+            zxDslQosTrafficProfileEgressEbs    INTEGER,
+            zxDslQosTrafficProfileRowStatus    RowStatus
+        }
+        
+    zxDslQosTrafficProfileName  OBJECT-TYPE
+        SYNTAX      DisplayString (SIZE(1..32))
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "QoS traffic profile name."
+        ::= { zxDslQosTrafficProfileEntry 1 }
+
+    zxDslQosTrafficProfileIngressCir  OBJECT-TYPE 
+        SYNTAX       INTEGER(0..1048576)
+        UNITS        "kbps"
+        MAX-ACCESS   read-create 
+        STATUS       current 
+        DESCRIPTION
+            "This parameter indicates the ingress committed information rate
+             of the port."        
+        ::= { zxDslQosTrafficProfileEntry 2 }
+        
+    zxDslQosTrafficProfileIngressCbs  OBJECT-TYPE 
+        SYNTAX       INTEGER(0..16384)
+        UNITS        "kbytes"
+        MAX-ACCESS   read-create
+        STATUS       current
+        DESCRIPTION
+            "This parameter indicates the depth of this token bucket to
+             tolerant the ingress certain burst."        
+        ::= { zxDslQosTrafficProfileEntry 3 }
+        
+    zxDslQosTrafficProfileIngressEbs  OBJECT-TYPE 
+        SYNTAX       INTEGER(0..16384)
+        UNITS        "kbytes"
+        MAX-ACCESS   read-create 
+        STATUS       current 
+        DESCRIPTION
+            "This parameter indicates the extra token to permit the forwarding
+             engine to finish the packet when the ingress CBS is exhausted."
+        ::= { zxDslQosTrafficProfileEntry 4 }
+        
+    zxDslQosTrafficProfileEgressCir  OBJECT-TYPE 
+        SYNTAX       INTEGER(0..1048576)
+        UNITS        "kbps"
+        MAX-ACCESS   read-create 
+        STATUS       current 
+        DESCRIPTION
+            "This parameter indicates the egress committed information rate
+             of the port."        
+        ::= { zxDslQosTrafficProfileEntry 5 }
+        
+    zxDslQosTrafficProfileEgressCbs  OBJECT-TYPE 
+        SYNTAX       INTEGER(0..16384)
+        UNITS        "kbytes"
+        MAX-ACCESS   read-create 
+        STATUS       current 
+        DESCRIPTION
+            "This parameter indicates the depth of this token bucket to
+             tolerant the egress certain burst."        
+        ::= { zxDslQosTrafficProfileEntry 6 }
+    
+    zxDslQosTrafficProfileEgressEbs  OBJECT-TYPE 
+        SYNTAX       INTEGER(0..16384)
+        UNITS        "kbytes"
+        MAX-ACCESS   read-create 
+        STATUS       current 
+        DESCRIPTION
+            "This parameter indicates the extra token to permit the forwarding
+             engine to finish the packet when the egress CBS is exhausted."        
+        ::= { zxDslQosTrafficProfileEntry 7 }      
+        
+    zxDslQosTrafficProfileRowStatus  OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "This object is used to create a new row or delete an existing
+             row in this table."
+        ::= { zxDslQosTrafficProfileEntry  50 }
+        
+    zxDslQosTrafficIfCfgTable  OBJECT-TYPE
+        SYNTAX      SEQUENCE  OF  ZxDslQosTrafficIfCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION 
+            "This table includes traffic configuration of interface."
+        ::=  { zxDslQosTraffic  3 }
+  
+    zxDslQosTrafficIfCfgEntry  OBJECT-TYPE
+        SYNTAX      ZxDslQosTrafficIfCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION 
+            "An entry in zxDslQosTrafficIfCfgTable."
+        INDEX   
+            {  
+                zxDslQosTrafficRack,
+                zxDslQosTrafficShelf,
+                zxDslQosTrafficSlot,
+                zxDslQosTrafficPort,
+                zxDslQosTrafficVCircuitType,
+                zxDslQosTrafficLogicalId
+            }   
+        ::=  { zxDslQosTrafficIfCfgTable 1 }
+    
+    ZxDslQosTrafficIfCfgEntry  ::=  
+        SEQUENCE {
+            zxDslQosTrafficRack             Integer32,
+            zxDslQosTrafficShelf            Integer32, 
+            zxDslQosTrafficSlot             Integer32,
+            zxDslQosTrafficPort             Integer32,
+            zxDslQosTrafficVCircuitType     INTEGER,
+            zxDslQosTrafficLogicalId        OBJECT IDENTIFIER,
+            zxDslQosTrafficProfile          DisplayString,       
+            zxDslQosTrafficIfCfgRowStatus   RowStatus
+        }
+        
+    zxDslQosTrafficRack  OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Rack number of the port."
+        ::= { zxDslQosTrafficIfCfgEntry 1 }
+        
+    zxDslQosTrafficShelf  OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Shelf number of the port."
+        ::= { zxDslQosTrafficIfCfgEntry 2 }
+        
+    zxDslQosTrafficSlot  OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Slot number of the port."
+        ::= { zxDslQosTrafficIfCfgEntry 3 }
+        
+    zxDslQosTrafficPort  OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The port number."
+        ::= { zxDslQosTrafficIfCfgEntry 4 }
+        
+    zxDslQosTrafficVCircuitType  OBJECT-TYPE
+        SYNTAX      INTEGER 
+        {    
+            physicalPort(1),
+            bridgePort(2),
+            vlan(3)
+        }
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Virtual circuit type."
+        ::= { zxDslQosTrafficIfCfgEntry 5 }
+        
+    zxDslQosTrafficLogicalId  OBJECT-TYPE 
+        SYNTAX      OBJECT IDENTIFIER
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION   
+            "Logical id of this port. This object is filled by different value
+             according to zxDslQosTrafficVCircuitType:
+             physicalPort(1) - filled by 0;
+             bridgePort(2)   - filled by bridge port number;
+             vlan(3)         - filled by svlanId.cvlanId;
+            "
+        ::=  {  zxDslQosTrafficIfCfgEntry  6  }
+        
+    zxDslQosTrafficProfile  OBJECT-TYPE
+        SYNTAX      DisplayString(1..32)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The traffic profile."
+        ::= { zxDslQosTrafficIfCfgEntry 7 } 
+    
+    zxDslQosTrafficIfCfgRowStatus  OBJECT-TYPE 
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION   
+            "This object is used to create a new row or delete an existing
+             row in this table."
+        ::=  { zxDslQosTrafficIfCfgEntry  20 }
+        
+-- ---------------------------------------------------------------------------
+--  14.zxDslQosCompatibility
+-- ---------------------------------------------------------------------------        
+  
+   zxDslQosCompatible  OBJECT-TYPE 
+      SYNTAX      OCTET STRING (SIZE (4))
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION   
+          "The compatibility of DSLAM. Every bit denotes the compatibility of 
+           some function. If the value of the bit is 1, the related function
+           has compatible problem. The related function of the first bit is the
+           naming rules of string.
+                       
+           bit 1: value 1 means support zxDslQosPolicyActionTrafficClass in
+                  zxDslQosPolicyConfigTable.
+          "
+      ::=  {  zxDslQosCompatibility  1  }
+END

@@ -1,0 +1,909 @@
+
+-- File Name : ZTE-DSL-PORTLOCATION-MIB.mi2
+-- Date      : Mon Oct 17 11:35:29 GMT+08:00 2005
+-- Author    : AdventNet Agent Toolkit C Edition - MibEditor 6
+
+
+
+ZTE-DSL-PORTLOCATION-MIB    DEFINITIONS ::= BEGIN
+    IMPORTS
+        TEXTUAL-CONVENTION, DisplayString,RowStatus
+            FROM SNMPv2-TC
+        MODULE-IDENTITY, OBJECT-TYPE, enterprises, Integer32
+            FROM SNMPv2-SMI
+    dot1qVlanIndex                      
+      FROM Q-BRIDGE-MIB;
+
+    zxDslPortLocationMib    MODULE-IDENTITY
+        LAST-UPDATED    "200509301500Z"
+        ORGANIZATION    "ZTE Corporation"
+        CONTACT-INFO    "ma ke
+                  Mail: zte@zte.com.cn
+                  Tel : 021-68896477"
+        DESCRIPTION        "This MIB defines zte dsl port location function modules' managed objects."
+        ::=  {  zxDsl  6  }
+
+    zte OBJECT IDENTIFIER       ::= { enterprises 3902 }
+    zxDsl OBJECT IDENTIFIER     ::= { zte 1004 }
+    enterprises    OBJECT IDENTIFIER                      ::=  {  private  1  }
+      zxDslPortLocationObjects    OBJECT IDENTIFIER        ::=  {  zxDslPortLocationMib  1  }
+
+
+    
+-- TEXTUAL-CONVENTIONS --
+    PortList ::= TEXTUAL-CONVENTION 
+        STATUS            current
+        DESCRIPTION
+            "Each octet within this value specifies a set of eight
+        ports, with the first octet specifying ports 1 through
+        8, the second octet specifying ports 9 through 16, etc.
+        Within each octet, the most significant bit represents
+        the lowest numbered port, and the least significant bit
+        represents the highest numbered port.  Thus, each port
+        of the bridge is represented by a single bit within the
+        value of this object.  If that bit has a value of '1'
+        then that port is included in the set of ports; the port
+        is not included if its bit has a value of '0'."
+        SYNTAX             OCTET STRING
+
+
+
+--------------------------------------------------------------------------------
+-- 1.Port-Locating Port Table
+--------------------------------------------------------------------------------
+
+    zxDslPortLocationIfaceTable    OBJECT-TYPE
+        SYNTAX        SEQUENCE  OF  ZxDslPortLocationIfaceEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION    "A table of switch interfaces and associated port location properties. "
+        ::=  { zxDslPortLocationObjects  1 }
+
+    zxDslPortLocationIfaceEntry    OBJECT-TYPE
+        SYNTAX        ZxDslPortLocationIfaceEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION  
+            "Table entry for switch interface port-location information."
+        INDEX        {  zxDslPortLocationIfacePort  }
+        ::=  { zxDslPortLocationIfaceTable 1 }
+
+    ZxDslPortLocationIfaceEntry  ::=  SEQUENCE {
+        zxDslPortLocationIfacePort                    Integer32,
+        zxDslPortLocationIfacePPPoeEnable             INTEGER,
+        zxDslPortLocationIfaceDHCPEnable              INTEGER,
+        zxDslPortLocationIfaceRemoteId                DisplayString,
+        zxDslPortLocationIfaceRemoteIdEnable          INTEGER,
+        zxDslPortLocationIfaceDhcpSubOption           INTEGER,
+        zxDslPortLocationIfacePppoePlusTrust          INTEGER,
+        zxDslPortLocationIfacePppoePlusPolicy         INTEGER,
+        zxDslPortLocationIfaceDhcpOption82Trust       INTEGER,
+        zxDslPortLocationIfaceDhcpOption82Policy      INTEGER,
+        zxDslPortLocationIfaceLoopCharEnable          INTEGER,
+        zxDslPortLocationIfaceDhcpv6Enable            INTEGER,
+        zxDslPortLocationIfaceDhcpv6OptionTrust       INTEGER,
+        zxDslPortDhcpSyntaxPrfName                    DisplayString,   
+        zxDslPortActualDhcpAccessInfo                 DisplayString,
+        zxDslPortPppoeSyntaxPrfName                   DisplayString,
+        zxDslPortActualPppoeAccessInfo                DisplayString
+        }
+
+    zxDslPortLocationIfacePort    OBJECT-TYPE    
+        SYNTAX            Integer32
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION       "An index that uniquely identifies a port."
+        ::=  {  zxDslPortLocationIfaceEntry  1  }
+
+
+    zxDslPortLocationIfacePPPoeEnable    OBJECT-TYPE    
+        SYNTAX            INTEGER  { enable ( 1 ) , disable ( 2 ) } 
+        MAX-ACCESS        read-write
+        STATUS            current
+        DESCRIPTION       "config the status of the PPPoE-plus function"
+        ::=  {  zxDslPortLocationIfaceEntry  2  }
+
+
+    zxDslPortLocationIfaceDHCPEnable    OBJECT-TYPE    
+        SYNTAX            INTEGER  { enable ( 1 ) , disable ( 2 ) } 
+        MAX-ACCESS        read-write
+        STATUS            current
+        DESCRIPTION       "config the status of the DHCP option82 function"
+        ::=  {  zxDslPortLocationIfaceEntry  3  }
+
+
+    zxDslPortLocationIfaceRemoteId    OBJECT-TYPE    
+        SYNTAX            DisplayString  ( SIZE ( 0 .. 63  ) ) 
+        MAX-ACCESS        read-write
+        STATUS            current
+        DESCRIPTION       "config the remoteID"
+        ::=  {  zxDslPortLocationIfaceEntry  4  }
+
+
+    zxDslPortLocationIfaceRemoteIdEnable    OBJECT-TYPE    
+        SYNTAX            INTEGER  { enable ( 1 ) , disable ( 2 ) } 
+        MAX-ACCESS        read-write
+        STATUS            current
+        DESCRIPTION       "config the status of the RemoteID"
+        ::=  {  zxDslPortLocationIfaceEntry  5  }
+
+    zxDslPortLocationIfaceDhcpSubOption    OBJECT-TYPE    
+        SYNTAX            INTEGER  
+           {   
+               chinaTelecom ( 1 ) , 
+               cisco ( 2 ) , 
+               juniper ( 3 ) , 
+               tr101 ( 4 ),
+               chinaNetcom(5),
+               ti(6),
+               hcmc1(7),
+               hcmc2(8),
+               turkTelekom(9),
+               chinaTelecomDslam(10),
+               syntaxProfile(11)                    
+           } 
+        MAX-ACCESS        read-write
+        STATUS            current
+        DESCRIPTION       "config  DHCP sub-option"
+        ::=  {  zxDslPortLocationIfaceEntry  6  }
+
+    zxDslPortLocationIfacePppoePlusTrust OBJECT-TYPE 
+        SYNTAX            INTEGER 
+            {   
+                true(1),
+                false(2)
+            }
+        MAX-ACCESS        read-write 
+        STATUS            current 
+        DESCRIPTION       "Port locating PPPoE plus trust flag."
+        DEFVAL            { false }
+        ::= {  zxDslPortLocationIfaceEntry  7  }
+    
+    zxDslPortLocationIfacePppoePlusPolicy OBJECT-TYPE 
+        SYNTAX            INTEGER 
+            {
+                keep(1), 
+                replace(2), 
+                discard(3), 
+                add(4)
+            }
+        MAX-ACCESS        read-write 
+        STATUS            current 
+        DESCRIPTION       
+            "Port locating PPPoE plus trust policy.
+             when port = trust, policy can be set keep or replace, 
+             when port = untrust, policy can be set discard or add."
+        DEFVAL            { add }
+        ::= { zxDslPortLocationIfaceEntry  8 }
+    
+    zxDslPortLocationIfaceDhcpOption82Trust OBJECT-TYPE 
+        SYNTAX            INTEGER 
+            { 
+                true(1),
+                false(2)
+            }
+        MAX-ACCESS        read-write 
+        STATUS            current 
+        DESCRIPTION       "Port locating DHCP option82 trust flag."
+        DEFVAL            { false }
+        ::= {  zxDslPortLocationIfaceEntry  9  }
+    
+    zxDslPortLocationIfaceDhcpOption82Policy OBJECT-TYPE 
+        SYNTAX            INTEGER 
+            {
+                keep(1), 
+                replace(2), 
+                discard(3), 
+                add(4)
+            }
+        MAX-ACCESS        read-write 
+        STATUS            current 
+        DESCRIPTION       
+            "Port locating DHCP option82 trust policy.
+             when port = trust, policy can be set keep or replace, 
+             when port = untrust, policy can be set discard or add"
+        DEFVAL            { add }
+        ::= { zxDslPortLocationIfaceEntry  10 }
+    
+    zxDslPortLocationIfaceLoopCharEnable OBJECT-TYPE 
+        SYNTAX            INTEGER
+            { 
+                enable(1),
+                disable(2)
+            }
+        MAX-ACCESS        read-write
+        STATUS            current
+        DESCRIPTION       "Access Loop Characteristics enable switch."
+        DEFVAL            { disable }
+        ::= { zxDslPortLocationIfaceEntry 11 }
+        
+    zxDslPortLocationIfaceDhcpv6Enable    OBJECT-TYPE    
+        SYNTAX            INTEGER  
+            { 
+                enable(1), 
+                disable(2) 
+            }
+        MAX-ACCESS        read-write
+        STATUS            current
+        DESCRIPTION            
+            "config the status of the DHCPv6 function."
+        DEFVAL             { disable }
+        ::=  {  zxDslPortLocationIfaceEntry  12  }
+          
+    zxDslPortLocationIfaceDhcpv6OptionTrust OBJECT-TYPE 
+        SYNTAX            INTEGER   
+            { 
+                true(1), 
+                false(2) 
+            }       
+        MAX-ACCESS        read-write 
+        STATUS            current 
+        DESCRIPTION       "Port locating DHCPv6 option trust flag."
+        DEFVAL            { false }
+        ::= {  zxDslPortLocationIfaceEntry  13  }    
+      
+    zxDslPortDhcpSyntaxPrfName OBJECT-TYPE 
+        SYNTAX            DisplayString  ( SIZE ( 0 .. 32  ) )      
+        MAX-ACCESS        read-write 
+        STATUS            current 
+        DESCRIPTION       "The DHCP circuit ID syntax profile name."
+        ::= {  zxDslPortLocationIfaceEntry  14  }    
+    
+    zxDslPortActualDhcpAccessInfo OBJECT-TYPE 
+        SYNTAX            DisplayString  ( SIZE ( 0 .. 256  ) )    
+        MAX-ACCESS        read-only 
+        STATUS            current 
+        DESCRIPTION       "The actual DHCP circuit ID of current line."
+        ::= {  zxDslPortLocationIfaceEntry  15  }
+      
+    zxDslPortPppoeSyntaxPrfName OBJECT-TYPE 
+        SYNTAX            DisplayString  ( SIZE ( 0 .. 32  ) )      
+        MAX-ACCESS        read-write 
+        STATUS            current 
+        DESCRIPTION       "The PPPoE circuit ID syntax profile name."
+        ::= {  zxDslPortLocationIfaceEntry  16  }    
+    
+    zxDslPortActualPppoeAccessInfo OBJECT-TYPE 
+        SYNTAX            DisplayString  ( SIZE ( 0 .. 256  ) )    
+        MAX-ACCESS        read-only 
+        STATUS            current 
+        DESCRIPTION       "The actual PPPoE circuit ID of current line."
+        ::= {  zxDslPortLocationIfaceEntry  17  }  
+
+--------------------------------------------------------------------------------
+-- 2.Port-Locating Vlan Table
+--------------------------------------------------------------------------------
+
+    zxDslPortLocationVlanTable    OBJECT-TYPE
+        SYNTAX        SEQUENCE  OF  ZxDslPortLocationVlanEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION    "A table of vlan associated port location properties. "
+        ::=  { zxDslPortLocationObjects 14 }
+
+    zxDslPortLocationVlanEntry    OBJECT-TYPE
+        SYNTAX        ZxDslPortLocationVlanEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION    "Table entry for vlan port-location information."
+        INDEX        {  zxDslPortLocationVlan  }
+        ::=  { zxDslPortLocationVlanTable 1 }
+
+    ZxDslPortLocationVlanEntry  ::=  SEQUENCE {
+        zxDslPortLocationVlan            Integer32,
+        zxDslPortLocationVlanPPPoeEnable INTEGER,
+        zxDslPortLocationVlanDhcpEnable  INTEGER,
+        zxDslPortLocationVlanLoopCharEnable INTEGER
+        }
+
+
+    zxDslPortLocationVlan OBJECT-TYPE    
+        SYNTAX            Integer32
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION        "Vlan id."
+        ::=  {  zxDslPortLocationVlanEntry  1  }
+
+
+    zxDslPortLocationVlanPPPoeEnable    OBJECT-TYPE    
+        SYNTAX            INTEGER  { enable ( 1 ) , disable ( 2 ) } 
+        MAX-ACCESS        read-write
+        STATUS            current
+        DESCRIPTION        "config the status of the PPPoE-plus function"
+        ::=  {  zxDslPortLocationVlanEntry  2  }
+
+
+    zxDslPortLocationVlanDhcpEnable    OBJECT-TYPE    
+        SYNTAX            INTEGER  { enable ( 1 ) , disable ( 2 ) } 
+        MAX-ACCESS        read-write
+        STATUS            current
+        DESCRIPTION        "config the status of the DHCP option82 function"
+        ::=  {  zxDslPortLocationVlanEntry  3  }
+
+
+    zxDslPortLocationVlanLoopCharEnable    OBJECT-TYPE    
+        SYNTAX            INTEGER  { enable ( 1 ) , disable ( 2 ) } 
+        MAX-ACCESS        read-write
+        STATUS            current
+        DESCRIPTION        "config the status of the access loop characteristics function."
+        ::=  {  zxDslPortLocationVlanEntry  4  }
+
+--------------------------------------------------------------------------------
+-- 3.Port-Locating Slot Table
+--------------------------------------------------------------------------------
+
+    zxDslPortLocationSlotTable    OBJECT-TYPE
+        SYNTAX        SEQUENCE  OF  ZxDslPortLocationSlotEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION    "A table of switch slots and associated port location properties. "
+        ::=  { zxDslPortLocationObjects  2 }
+
+    zxDslPortLocationSlotEntry    OBJECT-TYPE
+        SYNTAX        ZxDslPortLocationSlotEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION    "Table entry for switch slot port-location information."
+        INDEX        {  zxDslPortLocationSlotCard  }
+        ::=  { zxDslPortLocationSlotTable 1 }
+
+    ZxDslPortLocationSlotEntry  ::=  SEQUENCE {
+        zxDslPortLocationSlotCard  Integer32,
+        zxDslPortLocationSlotRemovePppoeTagEnable  INTEGER,
+        zxDslPortLocationSlotRemoveDhcpTagEnable  INTEGER
+        }
+
+
+    zxDslPortLocationSlotCard    OBJECT-TYPE    
+        SYNTAX            Integer32  ( 1 .. 15  ) 
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION        "An index that uniquely identifies a slot"
+        ::=  {  zxDslPortLocationSlotEntry  1  }
+
+
+    zxDslPortLocationSlotRemovePppoeTagEnable    OBJECT-TYPE    
+        SYNTAX            INTEGER  { enable ( 1 ) , disable ( 2 ) } 
+        MAX-ACCESS        read-write
+        STATUS            current
+        DESCRIPTION        "config remove PPPoE-plus tag of a slot"
+        ::=  {  zxDslPortLocationSlotEntry  2  }
+
+
+    zxDslPortLocationSlotRemoveDhcpTagEnable    OBJECT-TYPE    
+        SYNTAX            INTEGER  { enable ( 1 ) , disable ( 2 ) } 
+        MAX-ACCESS        read-write
+        STATUS            current
+        DESCRIPTION        "config remove DHCP option82 tag of a slot"
+        ::=  {  zxDslPortLocationSlotEntry  3  }
+
+
+--------------------------------------------------------------------------------
+-- 4.Port-Locating Global Table
+--------------------------------------------------------------------------------
+
+    zxDslPortLocationPppoeEnable    OBJECT-TYPE    
+        SYNTAX            INTEGER  { enable ( 1 ) , disable ( 2 ) } 
+        MAX-ACCESS        read-write
+        STATUS            current
+        DESCRIPTION        "global pppoe-plus status."
+        ::=  {  zxDslPortLocationObjects  3  }
+
+    zxDslPortLocationDhcpEnable    OBJECT-TYPE    
+        SYNTAX            INTEGER  { enable ( 1 ) , disable ( 2 ) } 
+        MAX-ACCESS        read-write
+        STATUS            current
+        DESCRIPTION        "global dhcp option82 status."
+        ::=  {  zxDslPortLocationObjects  4  }
+
+    zxDslPortLocationVbasEnable    OBJECT-TYPE    
+        SYNTAX            INTEGER  { enable ( 1 ) , disable ( 2 ) } 
+        MAX-ACCESS        read-write
+        STATUS            current
+        DESCRIPTION        "global vbas status."
+        ::=  {  zxDslPortLocationObjects  5  }
+
+    zxDslPortLocationVbasPortlistEnable    OBJECT-TYPE    
+        SYNTAX            PortList
+        MAX-ACCESS        read-write
+        STATUS            current
+        DESCRIPTION        "the vbas status of portlist."
+        ::=  {  zxDslPortLocationObjects  6  }
+
+    zxDslPortLocationVbasMaxVlanNum    OBJECT-TYPE    
+        SYNTAX            Integer32
+        MAX-ACCESS        read-only
+        STATUS            current
+        DESCRIPTION        "The maximum allowed vlan number."
+        ::=  {  zxDslPortLocationObjects  7  }
+
+    zxDslPortLocationVbasCurrentVlanNum    OBJECT-TYPE    
+        SYNTAX            Integer32
+        MAX-ACCESS        read-only
+        STATUS            current
+        DESCRIPTION        "current number of vlans which enable vbas function"
+        ::=  {  zxDslPortLocationObjects  8  }
+
+    zxDslPortLocationVbasMaxPortNum    OBJECT-TYPE    
+        SYNTAX            Integer32
+        MAX-ACCESS        read-only
+        STATUS            current
+        DESCRIPTION        "The maximum allowed port number."
+        ::=  {  zxDslPortLocationObjects  9  }
+
+    zxDslPortLocationVbasCurrentPortNum    OBJECT-TYPE    
+        SYNTAX            Integer32
+        MAX-ACCESS        read-only
+        STATUS            current
+        DESCRIPTION        "current number of ports which enable vbas"
+        ::=  {  zxDslPortLocationObjects  10  }
+
+       zxDslPortLocationCircuitIdSyntaxEnable    OBJECT-TYPE
+               SYNTAX              INTEGER
+           {   
+                enable(1),
+                disable(2)
+              }
+               MAX-ACCESS          read-write
+               STATUS              current
+               DESCRIPTION         "Port locating Circuit ID Syntax enable switch."
+               DEFVAL { disable }
+               ::= { zxDslPortLocationObjects  16 }
+
+
+       zxDslPortLocationAccessLoopEncapsulationEnable    OBJECT-TYPE
+               SYNTAX              INTEGER
+           {   
+                enable(1),
+                disable(2)
+              }
+               MAX-ACCESS          read-write
+               STATUS              current
+               DESCRIPTION         "Port locating Access Loop Encapsulation enable switch."
+               DEFVAL { disable }
+               ::= { zxDslPortLocationObjects  17 }
+
+
+
+
+
+
+--------------------------------------------------------------------------------
+-- 5.Port-Locating Vbase Table
+--------------------------------------------------------------------------------
+    zxDslPortLocationVbasVlanTable    OBJECT-TYPE
+        SYNTAX        SEQUENCE  OF  ZxDslPortLocationVbasVlanEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION    "A table contains vlan status information of vbas function"
+        ::=  { zxDslPortLocationObjects  11 }
+
+    zxDslPortLocationVbasVlanEntry    OBJECT-TYPE
+        SYNTAX        ZxDslPortLocationVbasVlanEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION    "An entry contains vlan status information of vbas function"
+        INDEX        {  zxDslPortLocationVbasVlanIndex  }
+        ::=  { zxDslPortLocationVbasVlanTable 1 }
+
+    ZxDslPortLocationVbasVlanEntry  ::=  SEQUENCE {
+        zxDslPortLocationVbasVlanIndex  Integer32,
+        zxDslPortLocationVbasVlanRowStatus  Integer32
+        }
+
+
+
+    zxDslPortLocationVbasVlanIndex    OBJECT-TYPE    
+        SYNTAX            Integer32
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION        "the index of a vlan."
+        ::=  {  zxDslPortLocationVbasVlanEntry  1  }
+
+
+    zxDslPortLocationVbasVlanRowStatus    OBJECT-TYPE    
+        SYNTAX            Integer32
+        MAX-ACCESS        read-write
+        STATUS            current
+        DESCRIPTION        "the rowstatus of this instance."
+        ::=  {  zxDslPortLocationVbasVlanEntry  2  }
+
+
+
+    zxDslPortLocationAccessNodeIdentifier   OBJECT-TYPE
+               SYNTAX     INTEGER{
+                           inbandMac(1),
+                           hostname(2)
+                           } 
+            MAX-ACCESS read-write
+            STATUS current
+        DESCRIPTION        
+            "the identifier of the device,it could be mac address or hostname."
+        ::= { zxDslPortLocationObjects 12}
+
+
+
+
+
+------------------------------------------------------------------------------
+-- 6.zxDslPortLocationCircuitIdSyntaxTable
+------------------------------------------------------------------------------
+    zxDslPortLocationCircuitIdSyntaxTable OBJECT-TYPE 
+         SYNTAX      SEQUENCE OF ZxDslPortLocationCircuitIdSyntaxEntry 
+         MAX-ACCESS  not-accessible 
+         STATUS      current 
+         DESCRIPTION 
+             "Port locating Circuit ID Syntax entry. "
+         ::= { zxDslPortLocationObjects 15 }
+              
+    zxDslPortLocationCircuitIdSyntaxEntry OBJECT-TYPE 
+        SYNTAX      ZxDslPortLocationCircuitIdSyntaxEntry
+        MAX-ACCESS  not-accessible 
+        STATUS      current 
+        DESCRIPTION 
+            "Port locating Circuit ID Syntax entry. "
+        INDEX { zxDslPortLocationCircuitIdSyntaxIndex, zxDslPortLocationCircuitIdComponentIndex } 
+        ::= { zxDslPortLocationCircuitIdSyntaxTable 1 }              
+    
+    ZxDslPortLocationCircuitIdSyntaxEntry ::= SEQUENCE {
+        zxDslPortLocationCircuitIdSyntaxIndex        Integer32,
+        zxDslPortLocationCircuitIdComponentIndex     Integer32,
+        zxDslPortLocationCircuitIdComponentType      INTEGER, 
+        zxDslPortLocationCircuitIdComponentId        Integer32,
+        zxDslPortLocationCircuitIdComponentWidth     Integer32,
+        zxDslPortLocationCircuitIdComponentRowStatus RowStatus
+        }
+
+    zxDslPortLocationCircuitIdSyntaxIndex     OBJECT-TYPE
+        SYNTAX         Integer32
+        MAX-ACCESS     not-accessible
+        STATUS      current
+        DESCRIPTION
+        "A first key that identifies the Circuit ID Syntax."   
+        
+        REFERENCE   "TR-141 Section 6.16"
+        ::= { zxDslPortLocationCircuitIdSyntaxEntry 1 }
+        
+    zxDslPortLocationCircuitIdComponentIndex     OBJECT-TYPE
+        SYNTAX         Integer32
+        MAX-ACCESS     not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A second key that identifies a component in the Circuit ID Syntax."    
+        
+        REFERENCE   "TR-141 Section 6.16"
+        ::= { zxDslPortLocationCircuitIdSyntaxEntry 2 }
+        
+        
+    zxDslPortLocationCircuitIdComponentType OBJECT-TYPE 
+        SYNTAX      INTEGER 
+              {   
+                standard(1),
+                propvar(2),
+                propstr(3)
+              }
+        MAX-ACCESS  read-create 
+        STATUS      current 
+        DESCRIPTION 
+        "An attribute that identifies the type of this component. The following types are possible:
+            Standard - A TR-101 based variable(1: access nod id, 2: chassis, 3: rack, 4: frame, 5: slot, 6: sub-slot, 7: port, 8: vpi, 9: vci, 10: q-vid, 11: ethernet-priority)
+            PropVar - A proprietary variable(1: onu id)
+            PropStr - A delimiter or constant string(1: #, 2: -)"                        
+        
+        REFERENCE   "TR-141 Section 6.16"                        
+        DEFVAL { standard }          
+        ::= { zxDslPortLocationCircuitIdSyntaxEntry 3 }
+        
+    zxDslPortLocationCircuitIdComponentId OBJECT-TYPE 
+        SYNTAX         Integer32
+        MAX-ACCESS  read-create
+        STATUS      current 
+        DESCRIPTION 
+        "A unique and content sensitive identifier for the specific definition of this component. The following identifiers are expected:
+            A row number in table 2 of TR-101 (R-126).
+            An index into a proprietary managed entity that specifies possible proprietary variables.
+            An index into a proprietary managed entity that specifies possible delimiters and constant character strings."
+        
+        REFERENCE   "TR-141 Section 6.16"
+        ::= { zxDslPortLocationCircuitIdSyntaxEntry 4 }
+    
+    zxDslPortLocationCircuitIdComponentWidth OBJECT-TYPE 
+        SYNTAX         Integer32
+        MAX-ACCESS  read-create 
+        STATUS      current
+        DESCRIPTION
+        "The width of the port locating Circuit ID Syntax component."
+        ::= { zxDslPortLocationCircuitIdSyntaxEntry 5 }
+
+    zxDslPortLocationCircuitIdComponentRowStatus  OBJECT-TYPE 
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION 
+        "The row status of this entry."
+        ::= { zxDslPortLocationCircuitIdSyntaxEntry 6 }
+
+
+
+
+------------------------------------------------------------------------------
+-- 2.NE identification
+------------------------------------------------------------------------------    
+     
+    zxDslamIdentification OBJECT IDENTIFIER      ::= { zxDslPortLocationObjects 13 }
+
+
+    zxDslamNodeId OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            " Node ID for dslam.It will be used in locatiing information,such as
+            PPPoE,DHCP."
+        ::= { zxDslamIdentification 1 }
+
+    zxDslamIdChassis OBJECT-TYPE
+        SYNTAX      Integer32(0..99)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            " Chassis ID for dslam.It will be used in locatiing information,such as
+            PPPoE,DHCP."
+        ::= { zxDslamIdentification 2 }
+
+
+    zxDslamIdRack OBJECT-TYPE
+        SYNTAX      Integer32(0..63)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            " Rack ID for dslam.It will be used in locatiing information,such as
+            PPPoE,DHCP."
+        ::= { zxDslamIdentification 3 }
+
+
+    zxDslamIdShelf OBJECT-TYPE
+        SYNTAX      Integer32(0..31)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            " Shelf ID for dslam.It will be used in locatiing information,such as
+            PPPoE,DHCP."
+        ::= { zxDslamIdentification 4 }
+
+
+
+--------------------------------------------------------------------------------
+-- 7.Port-Locating Global Parameters
+--------------------------------------------------------------------------------
+        
+    zxDslPortLocationGlobalObjects     OBJECT IDENTIFIER  ::= { zxDslPortLocationObjects 30 }  
+    
+    zxDslDhcpv6RelayEnable OBJECT-TYPE
+          SYNTAX      INTEGER  { enable ( 1 ) , disable ( 2 ) } 
+          MAX-ACCESS  read-write
+          STATUS      current
+          DESCRIPTION
+              "config the status of the DHCPv6 Relay"         
+          DEFVAL      { disable }
+          ::= { zxDslPortLocationGlobalObjects 1 }
+          
+     zxDslDhcpv6RelayVlansEnable OBJECT-TYPE
+        SYNTAX      BITS 
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The status of DHCPv6 Relay based VLAN.     
+                    
+             Each one of the 4094 bits represents the status of 
+             corresponding VLAN, bit 0 represents VLAN 1, bit 1 
+             represents VLAN 2... and bit 4093 represents VLAN 4094.
+             
+             A value of 1 indicates that the DHCPv6 Relay is enabled."
+          ::= { zxDslPortLocationGlobalObjects 2 }
+          
+     zxDslRsEnable OBJECT-TYPE
+         SYNTAX      INTEGER
+             {
+                 enable(1),
+                 disable(2)
+             } 
+         MAX-ACCESS  read-write
+         STATUS      current
+         DESCRIPTION
+             "Config the status of the RS(route solicitation)."         
+         DEFVAL      { disable }
+         ::= { zxDslPortLocationGlobalObjects 3 }
+          
+     zxDslRsVlansEnable OBJECT-TYPE
+         SYNTAX      BITS 
+         MAX-ACCESS  read-write
+         STATUS      current
+         DESCRIPTION
+             "The status of RS(route solicitation) based VLAN.     
+                     
+              Each one of the 4094 bits represents the status of 
+              corresponding VLAN, bit 0 represents VLAN 1, bit 1 
+              represents VLAN 2... and bit 4093 represents VLAN 4094.
+             
+              A value of 1 indicates that the route solicitation is enabled."
+         ::= { zxDslPortLocationGlobalObjects 4 }
+
+--------------------------------------------------------------------------------
+-- 8.Port-Locating Circuit ID Syntax
+--------------------------------------------------------------------------------
+        
+    zxDslPortLocationCircuitIdSyntaxProfile     OBJECT IDENTIFIER  ::= { zxDslPortLocationObjects 31 }  
+    
+    zxDslPortLocationCircuitIdSyntaxPrfTable OBJECT-TYPE 
+         SYNTAX      SEQUENCE OF ZxDslPortLocationCircuitIdSyntaxPrfEntry 
+         MAX-ACCESS  not-accessible 
+         STATUS      current 
+         DESCRIPTION 
+             "Port locating Circuit ID Syntax Profile table. "
+         ::= { zxDslPortLocationCircuitIdSyntaxProfile 1 }
+              
+    zxDslPortLocationCircuitIdSyntaxPrfEntry OBJECT-TYPE 
+        SYNTAX      ZxDslPortLocationCircuitIdSyntaxPrfEntry
+        MAX-ACCESS  not-accessible 
+        STATUS      current 
+        DESCRIPTION 
+            "Port locating Circuit ID Syntax Profile entry. "
+        INDEX { zxDslPortLocationCircuitIdSyntaxPrfName } 
+        ::= { zxDslPortLocationCircuitIdSyntaxPrfTable 1 }              
+    
+    ZxDslPortLocationCircuitIdSyntaxPrfEntry ::= SEQUENCE {
+        zxDslPortLocationCircuitIdSyntaxPrfName      DisplayString,
+        zxDslPortLocationCircuitIdSyntaxValue        DisplayString,
+        zxDslPortLocationCircuitIdSyntaxRowStatus RowStatus
+        }
+
+    zxDslPortLocationCircuitIdSyntaxPrfName     OBJECT-TYPE
+        SYNTAX      DisplayString (SIZE(1..32))
+        MAX-ACCESS     not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The profile name of circuit id syntax."   
+        ::= { zxDslPortLocationCircuitIdSyntaxPrfEntry 1 }        
+    
+    zxDslPortLocationCircuitIdSyntaxValue     OBJECT-TYPE
+        SYNTAX      DisplayString (SIZE(1..256))
+        MAX-ACCESS     read-create
+        STATUS      current
+        DESCRIPTION
+            "The circuit id syntax value.
+            
+             The syntax value is composed of display string and some standard
+             items with specified width.
+             
+             All the standard items are as following.             
+             hostname    --   Device Hostname 
+             inbandmac   --   Inband MAC
+             primaryip   --   Primary IP Address
+             secondaryip --   Secondary IP Address
+             iftype      --   IfType, such as atm, eth, trk
+             iftech      --   IfTech, such as LN, EP, GP
+             chassis     --   The Chassis No
+             rack        --   The Rack No
+             frame       --   The Shelf No
+             slot        --   The Slot No
+             subslot     --   The Sub Slot No
+             port        --   The Port No
+             vpi         --   VPI
+             vci         --   VCI
+             vid         --   VLAN ID
+             priority    --   The Ethernet Priority
+             
+             The standard items is composed of '[', item name and ']', such as
+             [vpi], [hostname]. And the width of the item could be specified, 
+             such as [vci,2] means the vci should be composed of two character.                     
+            
+             For example:             
+             syntax: [hostname] [iftype] [slot]/[port]:[vpi,3].[vci,2]
+             actual circuit id: zte9806 atm 3/0:100.33                
+            "   
+        ::= { zxDslPortLocationCircuitIdSyntaxPrfEntry 2 }    
+                 
+    zxDslPortLocationCircuitIdSyntaxRowStatus  OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "This object is used to create a new row or to modify or
+           delete an existing row in this table."
+        ::= { zxDslPortLocationCircuitIdSyntaxPrfEntry 3 }
+        
+--------------------------------------------------------------------------------
+-- 9.RS Port-Locating Port Table
+--------------------------------------------------------------------------------
+
+    zxDslRsPortLocationIfaceTable    OBJECT-TYPE
+        SYNTAX        SEQUENCE  OF  ZxDslRsPortLocationIfaceEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION   
+            "RS(route solicitation) port location table of switch interfaces."
+        ::=  { zxDslPortLocationObjects  18 }
+
+    zxDslRsPortLocationIfaceEntry    OBJECT-TYPE
+        SYNTAX        ZxDslRsPortLocationIfaceEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION  
+            "RS(route solicitation) port location table entry for switch
+             interface."
+        INDEX        {  zxDslRsPortLocationIfacePort  }
+        ::=  { zxDslRsPortLocationIfaceTable 1 }
+
+    ZxDslRsPortLocationIfaceEntry  ::=  SEQUENCE {
+        zxDslRsPortLocationIfacePort                  Integer32,
+        zxDslRsPortLocationIfEnable                   INTEGER,
+        zxDslRsPortLocationIfSubOption                INTEGER,        
+        zxDslRsPortSyntaxPrfName                      DisplayString,   
+        zxDslRsPortActualAccessInfo                   DisplayString
+        }
+        
+    zxDslRsPortLocationIfacePort    OBJECT-TYPE    
+        SYNTAX       Integer32
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION  
+            "An index that uniquely identifies a port."
+        ::=  {  zxDslRsPortLocationIfaceEntry  1  }
+        
+    zxDslRsPortLocationIfEnable OBJECT-TYPE 
+        SYNTAX       INTEGER  
+            { 
+                enable(1) , 
+                disable(2) 
+            } 
+        MAX-ACCESS   read-write 
+        STATUS       current 
+        DESCRIPTION         
+            "Config the status of the RS port-location function."
+        DEFVAL       {  disable  }
+        ::= {  zxDslRsPortLocationIfaceEntry  2  }
+        
+    zxDslRsPortLocationIfSubOption    OBJECT-TYPE    
+        SYNTAX       INTEGER  
+            {   
+                chinaTelecom(1), 
+                cisco(2), 
+                juniper(3), 
+                tr101(4),
+                chinaNetcom(5),
+                ti(6),
+                hcmc1(7),
+                hcmc2(8),
+                turkTelekom(9),
+                chinaTelecomDslam(10),
+                syntaxProfile(11)                    
+            }
+        MAX-ACCESS   read-write
+        STATUS       current
+        DESCRIPTION  
+            "Config RS port-location sub-option.
+             
+             When zxDslRsPortLocationIfSubOption is configured as
+             syntaxProfile(11), zxDslRsPortSyntaxPrfName could be configured.
+             "
+        DEFVAL       {  chinaTelecom  }
+        ::= {  zxDslRsPortLocationIfaceEntry  3  }
+
+    zxDslRsPortSyntaxPrfName OBJECT-TYPE 
+        SYNTAX       DisplayString  ( SIZE ( 0 .. 32  ) )      
+        MAX-ACCESS   read-write 
+        STATUS       current 
+        DESCRIPTION  
+            "The RS circuit ID syntax profile name."
+        ::= {  zxDslRsPortLocationIfaceEntry  4  }    
+    
+    zxDslRsPortActualAccessInfo OBJECT-TYPE 
+        SYNTAX       DisplayString  ( SIZE ( 0 .. 256  ) )    
+        MAX-ACCESS   read-only 
+        STATUS       current 
+        DESCRIPTION  
+            "The actual RS circuit ID of current line."
+        ::= {  zxDslRsPortLocationIfaceEntry  5  }  
+
+END

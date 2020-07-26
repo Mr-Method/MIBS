@@ -1,0 +1,2431 @@
+-- All the MIBs needed for ZTE DSLAM in correct sequence
+-- By XieYan, 2004/05/08
+-- Include the following MIBs:
+--    SNMPv2-SMI
+--    RFC1573a, IANAifType-MIB
+--    SNMP-FRAMEWORK-MIB
+--    RFC1493
+--    RFC2233
+--    RFC2665
+--    RFC2674p
+--    RMON2
+--    RFC2674q
+--    wrsMasterMib
+--    etherBoardCommMib
+--    pvcManagerMib
+--    etherPortManagerMib
+--    qosManagerMib
+--    vlanMultManagerMib
+--    meteringManagerMib
+--    acManagerMib
+
+
+
+--------------------------------------------------------------------------
+--
+-- wrsMasterMib
+--
+--------------------------------------------------------------------------
+WRS-MASTER-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, enterprises              FROM SNMPv2-SMI;
+
+    zte MODULE-IDENTITY
+        LAST-UPDATED    "0008290000Z"  -- August 29, 2000
+        ORGANIZATION    "Wind River Systems, Inc."
+        CONTACT-INFO    "Wind River Systems, Inc.
+                         E-mail: support@windriver.com"
+
+        DESCRIPTION     "WRS Master MIB OID defines and documentation."
+
+        REVISION        "0008290000Z"  -- August 29, 2000
+        DESCRIPTION     "Initial MIB creation."
+
+        ::= { enterprises 3902 }
+    
+-- 9000 mib define  
+-- zte Products
+    zxEdsl	        OBJECT IDENTIFIER ::= { zte 1008 }
+    zxEdslOwn		OBJECT IDENTIFIER ::= { zxEdsl  1 }
+    zxEdslLR1	        OBJECT IDENTIFIER ::= { zxEdslOwn 1 }
+    tms             	OBJECT IDENTIFIER ::= { zxEdslLR1 1 }
+    oemProd         OBJECT IDENTIFIER ::= { tms 4 }     -- OEM Product MIBs
+
+
+-- ZXA1- Products
+	zxDsl	  	OBJECT IDENTIFIER ::= { zte 1004   }
+	zxDslam 	OBJECT IDENTIFIER ::= { zxDsl 1    }
+	zxLan	  	OBJECT IDENTIFIER ::= { zxDslam 10 }
+  	zxIma   	OBJECT IDENTIFIER ::= { zxDslam 11 }
+  	zxWand  	OBJECT IDENTIFIER ::= { zxDslam 12 }
+	zxEtherBoard   	OBJECT IDENTIFIER ::= { zxDslam 13 }
+-- TMS Major MIB Categories
+    	idb             OBJECT IDENTIFIER ::= { zxWand 1 }     -- IDB MIBs
+    	oemSwapi        OBJECT IDENTIFIER ::= { zxWand 2 }     -- OEM swAPI MIBs
+    	wangOemProd     OBJECT IDENTIFIER ::= { zxWand 3 }     -- OEM Product MIBs
+    	ixpGeneric      OBJECT IDENTIFIER ::= { zxWand 4 }     -- IXP Generic MIBs
+    	wangGeneric     OBJECT IDENTIFIER ::= { zxWand 5 }     -- IXP Generic MIBs
+
+-- TMS IDB Internal Module MIBs
+    	rmonMib         OBJECT IDENTIFIER ::= { idb 1 }
+    	garpMib         OBJECT IDENTIFIER ::= { idb 2 }       
+    	stpMib          OBJECT IDENTIFIER ::= { idb 3 }         
+        
+ 	etherBoardCommMib	OBJECT IDENTIFIER  ::= { zxEtherBoard 1 }	
+ 	pvcManagerMib  		OBJECT IDENTIFIER  ::= { zxEtherBoard 2 }
+ 	etherIfaceManager       OBJECT IDENTIFIER  ::= { zxEtherBoard 3 }
+ 	qosManagerMib  		OBJECT IDENTIFIER  ::= { zxEtherBoard 4 }
+ 	acManagerMib    	OBJECT IDENTIFIER  ::= { zxEtherBoard 5 }
+ 	trunkingManagerMib    	OBJECT IDENTIFIER  ::= { zxEtherBoard 6 }
+ 	vlanMultManagerMib    	OBJECT IDENTIFIER  ::= { zxEtherBoard 7 } 	 	
+ 	meteringManagerMib      OBJECT IDENTIFIER  ::= { zxEtherBoard 8 }  
+ 	etherMulticastMib       OBJECT IDENTIFIER  ::= { zxEtherBoard 9 }  
+ 	filterManagerMib    	OBJECT IDENTIFIER  ::= { zxEtherBoard 10}     
+ 	filterModeMib      	OBJECT IDENTIFIER  ::= { zxEtherBoard 11}  		 
+ 	
+END
+
+------------------------------------------------------------------------------
+--
+--  File         : etherBoardCommMib.mib
+--  Description  : ZTE COMMON MIB  
+--
+------------------------------------------------------------------------------
+ETHERBOARD-COMM-MIB DEFINITIONS ::= BEGIN
+
+   IMPORTS
+	MODULE-IDENTITY, OBJECT-TYPE,
+	enterprises					FROM SNMPv2-SMI
+	MODULE-COMPLIANCE, OBJECT-GROUP			FROM SNMPv2-CONF		
+	MacAddress                           		FROM SNMPv2-TC
+	zxEtherBoard                          		FROM WRS-MASTER-MIB
+	PortList, dot1qStaticMulticastEntry		FROM Q-BRIDGE-MIB;      
+	
+	
+    etherBoardCommMib    OBJECT IDENTIFIER ::= { zxEtherBoard 1 }
+
+    boardCleanFlash OBJECT-TYPE
+        SYNTAX INTEGER {
+               noop(1),            -- no operation
+               clean(2),           -- clean the data in flash
+               cleanInProgress(3)  -- read-only: flash clean in progress
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "When set to 'clean(2)', the data in flash are cleaned . This
+             operations may be slow . Consequently, all or many updates 
+             should be made before cleaning the flash.  Note that the SNMP
+             set to 'clean(2)' returns immediately to the caller.  Gets on
+             this object then return  'cleanInProgress(3)' until the clean
+             operation completes, at which time 'noop(1)' is returned.  
+             Consequently, a get operation always returns 'noop(1)' or 
+             'cleanInProgress(3)' depending on the current state.
+            
+             The agent returns 'badValue' for SNMPv1 or 'inconsistentValue'
+             for SNMPv2c/v3 for a set to 'clean(2)' while the current get
+             state is 'cleanInProgress(3)'.
+             
+             Attempts to set this object to 'cleanInProgress(3)' returns
+             'badValue' for SNMPv1 or 'wrongValue' for SNMPv2c/v3."
+        ::= { etherBoardCommMib 1 }
+
+    boardReset OBJECT-TYPE
+        SYNTAX INTEGER {
+               noop(1),           -- no operation
+               reset(2),          -- reset unit
+               resetToDefaults(3) -- reset to factory defaults/reset unit
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Physically performs a hardware reset of the unit. 
+             Use with care.  A 'reset(2)' resets the unit, a
+             'resetToDefaults(3)' resets the NVM configuration
+             to factory defaults and then resets the unit, and 'noop(1)'
+             does nothing.  A value of 'noop(1)' is always returned for a
+             GET operation."
+        ::= { etherBoardCommMib 2 }
+
+    boardVersionNumber OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..4))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Get this MIB Major version number.  This number should 
+             match the Major version given in the documentation header
+             at the beginning text of this MIB.  Note that the '.c' file
+             corresponding to this MIB has to be manually edited to
+             change the version number if this file is modified and
+             the version number is therefore changed."
+        ::= { etherBoardCommMib 3 }
+
+
+    boardSaveFlash OBJECT-TYPE
+        SYNTAX INTEGER {
+               noop(1),           -- no operation
+               save(2),           -- save all configuration parameters to NVM
+               saveInProgress(3)  -- read-only: NVM save in progress
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "When set to 'save(2)', all nonvolatile configuration
+             parameters are saved to NVM (Nonvolatile Memory).  NVM save
+             operations may be slow (e.g., erasing/writing Flash device).
+             Consequently, all or many updates should be made before
+             saving to NVM.  Note that the SNMP set to 'save(2)' returns
+             immediately to the caller.  Gets on this object then return
+             'saveInProgress(3)' until the save operation completes, at
+             which time 'noop(1)' is returned.  Consequently, a get
+             operation always returns 'noop(1)' or 'saveInProgress(3)'
+             depending on the current state.
+             
+             The agent returns 'badValue' for SNMPv1 or 'inconsistentValue'
+             for SNMPv2c/v3 for a set to 'Save(2)' while the current get
+             state is 'saveInProgress(3)'.
+             
+             Attempts to set this object to 'saveInProgress(3)' returns
+             'badValue' for SNMPv1 or 'wrongValue' for SNMPv2c/v3."
+        ::= { etherBoardCommMib 4 }
+
+    boardSpanOnOff OBJECT-TYPE
+        SYNTAX INTEGER {
+               enable(1),
+               disable(2)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { enable }
+             Enable/Disable Spanning Tree for the bridge.
+             When 'disable(2)', all ports of the device are placed in the
+             forwarding mode, regardless of current Spanning Tree state.
+             When 'enable(1)', the normal STP state transitions take place."
+        ::= { etherBoardCommMib 5 }
+
+    boardLACPOnOff OBJECT-TYPE
+        SYNTAX INTEGER {
+               enable(1),
+               disable(2)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { disable }
+             Enable/Disable LACP operation for the TMS agent.
+             When 'disable(2)', no LACP's are transmitted by the Application.
+             When enabled, the Application sends LACP requests during
+             system startup."
+        ::= { etherBoardCommMib 6 }
+
+       boardBroadcasdOnOff OBJECT-TYPE
+               SYNTAX INTEGER {
+               enable(1),
+               disable(2)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { disable }
+             disable/enable forward broadcast pkt to ARM  "
+        ::= { etherBoardCommMib 7 }
+      
+       boardMulticastOnOff OBJECT-TYPE
+               SYNTAX INTEGER {
+               enable(1),
+               disable(2)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { disable }
+             disable/enable forward multicast  pkt to ARM  "
+        ::= { etherBoardCommMib 8 }        
+        
+
+    boardBoardID  OBJECT-TYPE
+        SYNTAX INTEGER 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Board standing in the dislam"
+        ::= { etherBoardCommMib 9 }
+       
+   boardCommonIPMACAddr OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { '000000000000'H }
+             The base (i.e., first) MAC address used by the TMS agent for its
+             in-band ports."
+        ::= { etherBoardCommMib 10 }
+
+
+    boardIgmpSnoopOnOff  OBJECT-TYPE
+        SYNTAX INTEGER {
+               enable(1),
+               disable(2)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { disable }
+             Enable/Disable IGMP Snooping operation for the TMS agent.
+             Setting this object to enable(1) enables IGMP Snooping.  Setting
+             it to disable(2) disables IGMP Snooping.
+             
+             Note that IGMP Snooping can function with or without GVRP and
+             GMRP enabled."
+        ::= { etherBoardCommMib 11}
+
+    boardIgmpSnoopAlertsOnOff  OBJECT-TYPE
+        SYNTAX INTEGER {
+               enable(1),
+               disable(2)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { disable }
+             Setting this object to enable(1) enables the IP Router Alert
+             Option (as defined in RFC2113) for transmitted IGMP packets.
+             Setting it to disable(2) disables this option."
+        ::= { etherBoardCommMib 12 }
+
+    boardIgmpSnoopAging  OBJECT-TYPE
+        SYNTAX INTEGER (30..3600)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { 300 }
+             The timeout period in seconds for aging out Multicast Groups
+             dynamically learned with IGMP Snooping.  Note that aging operates
+             on a per interface per VLAN per multicast group basis."
+        ::= { etherBoardCommMib 13 }
+
+    boardIgmpSnoopTable OBJECT-TYPE
+        SYNTAX           SEQUENCE OF BoardIgmpSnoopEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table, which provides IGMP Snooping information, augments
+             the 'dot1qStaticMulticastTable' in the Q-MIB (RFC2674)."
+        ::= { etherBoardCommMib 14 }
+
+    boardIgmpSnoopEntry OBJECT-TYPE
+        SYNTAX 	BoardIgmpSnoopEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Displays by VLAN, Multicast Group, and Multicast receive port
+             the set of ports enabled to forward Multicast Group traffic as
+             determined by the IGMP Snooping task."
+        AUGMENTS { dot1qStaticMulticastEntry }
+        ::= { boardIgmpSnoopTable 1 }
+
+    BoardIgmpSnoopEntry ::= SEQUENCE {
+        igmpSnoopEgressPorts   PortList
+    }
+
+    boardIgmpSnoopEgressPorts  OBJECT-TYPE
+        SYNTAX PortList
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This read-only object displays the set of ports enabled to
+             forward specific Multicast Group traffic as determined by the
+             IGMP Snooping task.
+            
+             It should be noted that the IGMP Snooping task generates a pseudo-
+             static (i.e., not saved in NVM) port list similar to the RFC2674
+             Q-MIB 'dot1qStaticMulticastStaticEgressPorts' object. Consequently,
+             a port will not be a member of 'tmsCommonIgmpSnoopEgressPorts' if
+             it is a member of 'dot1qStaticMulticastForbiddenEgressPorts'."
+        ::= { boardIgmpSnoopEntry 1 }
+         
+    boardBoradcastToAtmPortStatus  OBJECT-TYPE
+        SYNTAX INTEGER {
+               enable(1),
+               disable(2)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            " "
+           ::= { etherBoardCommMib 15 }
+    
+        boardStatisticStatus  OBJECT-TYPE
+        SYNTAX INTEGER {
+               enable(1),
+               disable(2)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "enable or disable the port statistics information  "
+           ::= { etherBoardCommMib 16 }
+    
+    
+    boardFloodToAtmPortStatus OBJECT-TYPE
+               SYNTAX INTEGER {
+               enable(1),
+               disable(2)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { disable }
+             disable/enable forward flood unicast pkt to ARM  "
+        ::= { etherBoardCommMib 17 }
+        
+       
+    boardMuliticastToAtmPortStatus OBJECT-TYPE
+               SYNTAX INTEGER {
+               enable(1),
+               disable(2)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { disable }
+             disable/enable forward multciast pkt to ARM  "
+        ::= { etherBoardCommMib 18 }
+                    
+
+     boardMACToPortTable OBJECT-TYPE
+        SYNTAX           SEQUENCE OF BoardMACToPortEntry
+        MAX-ACCESS       not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table, which provides port information,the index :macaddress 
+             and vlanid"
+        ::= { etherBoardCommMib 19 }
+
+      boardMACToPortEntry OBJECT-TYPE
+        SYNTAX 	BoardMACToPortEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            ""
+        INDEX  { MAC ,VID }
+        ::= { boardMACToPortTable 1 }
+
+      BoardMACToPortEntry ::= SEQUENCE {
+        MAC            
+        	MacAddress,        
+        VID            
+        	INTEGER,
+
+        boardMACToPort  
+
+        	INTEGER     
+      }
+
+    MAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      " the mac address of port "
+    REFERENCE
+        ""
+    ::= { boardMACToPortEntry 1 }
+  
+   
+   VID OBJECT-TYPE
+   SYNTAX      INTEGER
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION
+      "the vlan id of the  port "
+   REFERENCE
+        ""
+    ::= { boardMACToPortEntry 2 }
+   
+    wangMACToPort  OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+        DESCRIPTION
+            "the port id according to mac and vlan id"
+        ::= { boardMACToPortEntry 3 }
+
+
+    boardMibErrorCode  OBJECT-TYPE
+        SYNTAX INTEGER {
+               no_error(0),
+               multicast_exceed(1),
+               vlan_surport_multicast_exceed(2)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { 0 }"
+        ::= { etherBoardCommMib 20 }
+        
+     boardDslamMacaddress OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { '000000000000'H }
+             The base (i.e., first) MAC address used by the TMS agent for its
+             in-band ports."
+        ::= { etherBoardCommMib 21 }    
+  
+     boardVbasUserCardType OBJECT-TYPE
+        SYNTAX INTEGER {
+           atuca (12),
+           atuga (32)
+          }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            ""
+        ::= { etherBoardCommMib 22 }  
+        
+     boardVbaseOrVmacFlag OBJECT-TYPE
+        SYNTAX INTEGER {
+           normal (0),
+           vmacMode (1),
+           vbasMode (2)
+          }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            ""
+        ::= { etherBoardCommMib 23 }  
+        
+     boardDslamCorpName OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..20))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            " "
+        ::= { etherBoardCommMib 24 }
+        
+     boardDslamCorpId OBJECT-TYPE
+        SYNTAX INTEGER(0..63)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            ""
+        ::= { etherBoardCommMib 25 }  
+        
+    boardDslamDeviceName OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..20))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            ""
+        ::= { etherBoardCommMib 26 }
+        
+    boardDslamDeviceId OBJECT-TYPE
+        SYNTAX INTEGER (0..255)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            ""
+        ::= { etherBoardCommMib 27 }  
+   
+     
+    boardPvcDestIpAddress   OBJECT-TYPE
+    	SYNTAX      IpAddress
+    	MAX-ACCESS  read-write
+    	STATUS      current
+    	DESCRIPTION
+        	"get destation ip address from nms"
+    	::= { etherBoardCommMib 28}    
+        
+   boardPvcDestPort  OBJECT-TYPE
+    	SYNTAX INTEGER
+    	MAX-ACCESS read-only
+    	STATUS current
+        DESCRIPTION
+            " get destation port num by wangPvcDestIpAddress"
+        ::= { etherBoardCommMib 29 }
+
+   boardIxpBroadCastDegree  OBJECT-TYPE
+    	SYNTAX INTEGER
+    	MAX-ACCESS read-write
+    	STATUS current
+        DESCRIPTION
+           " forbit broadcast or not,four degrees:
+             0--0k;
+             1--128k;
+             2--512k;
+             3--1024k;
+             4--no limit;
+            "
+        ::= { etherBoardCommMib 30 }        
+
+-- END of wang-COMM-MIB                
+
+
+
+------------------------------------------------------------------------------------
+-- LANG
+------------------------------------------------------------------------------------
+
+
+	zxEtherBoardCurrentOperatedBoard 	OBJECT-TYPE
+		SYNTAX 		INTEGER
+		MAX-ACCESS 	read-write
+		STATUS      current
+		DESCRIPTION
+			"Current Operated Ether Board. "
+	    ::= { etherBoardCommMib 31 }
+
+	zxEtherBoardExNatMAC 	OBJECT-TYPE
+		SYNTAX 		MacAddress
+		MAX-ACCESS 	read-create
+		STATUS      current
+		DESCRIPTION
+			"NAT MacAddress on this EtherBoard."
+	    ::= { etherBoardCommMib 32 }
+
+	zxEtherBoardExIpAddr 	OBJECT-TYPE
+		SYNTAX 		IpAddress
+		MAX-ACCESS 	read-create
+		STATUS      current
+		DESCRIPTION
+			"IpAddress on this EtherBoard."
+	    ::= { etherBoardCommMib 33 }
+
+	zxEtherBoardExIpMask 	OBJECT-TYPE
+		SYNTAX 		IpAddress
+		MAX-ACCESS 	read-create
+		STATUS      current
+		DESCRIPTION
+			"IpMask  for zxEtherBoardExIpAddr."
+	    ::= { etherBoardCommMib 34 }
+
+    zxEtherBoardExNatBoard 	OBJECT-TYPE
+		SYNTAX 		INTEGER
+		MAX-ACCESS 	read-write
+		STATUS      current
+		DESCRIPTION
+			"Nat Ether Board. "
+	    ::= { etherBoardCommMib 35 }
+	    
+	zxEtherBoardIPTVBoard 	OBJECT-TYPE
+			SYNTAX 		INTEGER
+			MAX-ACCESS 	read-write
+			STATUS      current
+			DESCRIPTION
+				"Current IPTV Board. "
+		    ::= { etherBoardCommMib 36 }	    
+	    
+--   zxEtherBoardExTable OBJECT-TYPE
+--    	SYNTAX SEQUENCE OF ZxEtherBoardExEntry
+--    	MAX-ACCESS not-accessible
+--    	STATUS current
+--    	DESCRIPTION
+--		    "dslam EtherBoard Extended table,it is located at core card and managed 
+--		by main snmp agent."
+--	::= { etherBoardCommMib 32 }
+--
+--	zxEtherBoardExEntry OBJECT-TYPE
+--		SYNTAX ZxEtherBoardExEntry
+--		MAX-ACCESS not-accessible
+--		STATUS current
+--		DESCRIPTION
+--			"A list of  entries of dslam EtherBoard Extended information."
+--		INDEX { zxEtherBoardIndex}
+--	::= { zxEtherBoardExTable 1 }
+--
+--	ZxEtherBoardExEntry ::=
+--		SEQUENCE {
+--		    zxEtherBoardIndex           INTEGER,
+--            zxEtherBoardExNatMAC		MacAddress,
+--            zxEtherBoardExIpAddr		IpAddress,
+--            zxEtherBoardExIpMask		IpAddress,
+--            zxEtherBoardExRowStatus     RowStatus
+--           	}
+--
+--	zxEtherBoardIndex 	OBJECT-TYPE
+--		SYNTAX 		INTEGER
+--		MAX-ACCESS 	not-accessible
+--		STATUS      current
+--		DESCRIPTION
+--			"Board Number,equals to dslam's cardIndex."
+--	    ::= { zxEtherBoardExEntry 1 }
+--
+--	zxEtherBoardExNatMAC 	OBJECT-TYPE
+--		SYNTAX 		MacAddress
+--		MAX-ACCESS 	read-create
+--		STATUS      current
+--		DESCRIPTION
+--			"NAT MacAddress on this EtherBoard."
+--	    ::= { zxEtherBoardExEntry 2 }
+--
+--	zxEtherBoardExIpAddr 	OBJECT-TYPE
+--		SYNTAX 		IpAddress
+--		MAX-ACCESS 	read-create
+--		STATUS      current
+--		DESCRIPTION
+--			"IpAddress on this EtherBoard."
+--	    ::= { zxEtherBoardExEntry 3 }
+--
+--	zxEtherBoardExIpMask 	OBJECT-TYPE
+--		SYNTAX 		IpAddress
+--		MAX-ACCESS 	read-create
+--		STATUS      current
+--		DESCRIPTION
+--			"IpMask  for zxEtherBoardExIpAddr."
+--	    ::= { zxEtherBoardExEntry 4 }
+--
+--	zxEtherBoardExRowStatus 	OBJECT-TYPE
+--		SYNTAX 		RowStatus
+--		MAX-ACCESS 	read-create
+--		STATUS      current
+--		DESCRIPTION
+--			"table row administrative status."
+--	    ::= { zxEtherBoardExEntry 5 }
+--
+
+END
+
+
+----------------------------------------------------------------------------
+--
+--
+--
+-----------------------------------------------------------------------------
+------------------------------------------------------------------------------
+--
+--  File         : pvcManagerMib.mib
+--  Description  : ZTE ADSL PVC MANAGER MIB  
+--
+------------------------------------------------------------------------------
+PVC-MANAGER-MIB DEFINITIONS ::= BEGIN
+
+	IMPORTS
+    		MODULE-IDENTITY, OBJECT-TYPE,
+    		Counter32, Counter64, Unsigned32, TimeTicKs,
+			  Integer32, enterprises ,IpAddress   		FROM SNMPv2-SMI
+       		RowStatus, TruthValue, TEXTUAL-CONVENTION, MacAddress	FROM SNMPv2-TC       											
+		MODULE-COMPLIANCE, OBJECT-GROUP				FROM SNMPv2-CONF
+		pvcManagerMib						FROM WRS-MASTER-MIB
+	        dot1dBridge, dot1dBasePortEntry, dot1dBasePort		FROM BRIDGE-MIB;
+
+
+currManagePortNum  OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "all ports in the system at present"
+    REFERENCE
+        ""
+    ::= { pvcManagerMib 1 }
+
+
+pvcManagerTable   OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PvcManagerEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        " "
+    ::= { pvcManagerMib 2 }
+
+pvcManagerEntry OBJECT-TYPE
+    SYNTAX      PvcManagerEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        ""
+    INDEX   {VPI ,VCI}
+    ::= { pvcManagerTable 1 }
+
+PvcManagerEntry ::=
+    SEQUENCE {
+        VPI
+             INTEGER,
+        VCI
+             INTEGER,
+        wanPort
+             INTEGER,      
+              
+        wanPvcMacNumSupport
+             INTEGER,
+             
+        wanPvcPortForwBroad
+             INTEGER,
+             
+        wanPvcPortPriority
+             INTEGER ,  
+              
+        wanPvcRowStatus 
+             RowStatus,
+             
+        wanPvcVlanId
+             INTEGER ,
+             
+        wanPvcPortVmacSwitch 
+           INTEGER ,
+                
+        wanPvcBindIpAddress 
+            IpAddress,
+            
+        wanPortMultSwitch
+               INTEGER,
+                             
+        wanPortUseProfilId    
+               INTEGER,    
+                            
+        wanPortPermitMultGrpNum
+       		INTEGER  ,
+       		
+       	wanPortAuthIpSwitch  
+       		INTEGER  ,    
+       		
+       	wanPortAuthMacSwitch  
+       		INTEGER ,
+       	
+       	wanPortBroadDegree 
+                INTEGER ,
+                
+		wanPortCreditFlag 
+                INTEGER ,
+        wanPvcPortForwFlood
+             INTEGER                
+    }
+
+VPI OBJECT-TYPE
+  SYNTAX      INTEGER
+  MAX-ACCESS  not-accessible
+  STATUS      current
+  DESCRIPTION
+      " the vpi index of wang pvc port "
+  REFERENCE
+        ""
+    ::= { pvcManagerEntry 1 }
+
+VCI OBJECT-TYPE
+    SYNTAX      INTEGER 
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+ 				 " the vci index of wang pvc port "
+    REFERENCE
+        ""
+    ::= { pvcManagerEntry 2 }
+    
+wanPort OBJECT-TYPE
+  SYNTAX      INTEGER
+  MAX-ACCESS  read-only
+  STATUS      current
+  DESCRIPTION
+      " according vpi and vpi ,to get the port id "
+  REFERENCE
+        ""
+    ::= { pvcManagerEntry 3 }
+
+wanPvcMacNumSupport OBJECT-TYPE
+  SYNTAX      INTEGER
+  MAX-ACCESS  read-write
+  STATUS      current
+  DESCRIPTION
+      "the learning macaddresses of every pvc port"
+  REFERENCE
+        ""
+    ::= { pvcManagerEntry 4}
+
+wanPvcPortForwBroad OBJECT-TYPE
+ SYNTAX INTEGER {
+               enable(1),           
+               disable(2)
+             }
+            
+  MAX-ACCESS  read-write
+  STATUS      current
+  DESCRIPTION
+      " disable/enable the port receive broad packet"
+  REFERENCE
+        ""
+    ::= { pvcManagerEntry 5}
+
+wanPvcPortPriority OBJECT-TYPE
+  SYNTAX      INTEGER(0..7)
+  MAX-ACCESS  read-write
+  STATUS      current
+  DESCRIPTION
+      "the prority of every pvc port"
+  REFERENCE
+        ""
+    ::= { pvcManagerEntry 6}
+
+wanPvcRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "the create port command object"
+    ::= { pvcManagerEntry 7 }
+   
+wanPvcVlanId OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        ""
+    ::= { pvcManagerEntry 8 } 
+    
+wanPvcPortVmacSwitch OBJECT-TYPE
+    SYNTAX      INTEGER{
+       enable (1),
+       disable (2)
+     }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "enable/disable pvc port working in vmac mode "
+    ::= { pvcManagerEntry 9 } 
+
+ wanPvcBindIpAddress   OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        " "
+    ::= { pvcManagerEntry 10} 
+    
+wanPortMultSwitch  OBJECT-TYPE
+  SYNTAX      INTEGER{
+  		enable(1),
+  		disable(2)
+  		}
+  MAX-ACCESS  read-write
+  STATUS      current
+  DESCRIPTION
+      "port multicast swtich"
+  REFERENCE
+        ""
+    ::= { pvcManagerEntry 11}
+ 
+ wanPortUseProfilId  OBJECT-TYPE
+  SYNTAX      INTEGER(1..256)
+  MAX-ACCESS  read-write
+  STATUS      current
+  DESCRIPTION
+      "port using profile index "
+  REFERENCE
+        ""
+    ::= { pvcManagerEntry 12}
+
+ wanPortPermitMultGrpNum  OBJECT-TYPE
+  SYNTAX      INTEGER(0..16)
+  MAX-ACCESS  read-write
+  STATUS      current
+  DESCRIPTION
+      "port permit multicast num "
+  REFERENCE
+        ""
+    ::= { pvcManagerEntry 13}
+ 
+ wanPortAuthIpSwitch   OBJECT-TYPE
+  SYNTAX      INTEGER{
+               enable(1),           
+               disable(2)
+             }
+  MAX-ACCESS  read-write
+  STATUS      current
+  DESCRIPTION
+      ""
+  REFERENCE
+        ""
+    ::= { pvcManagerEntry 14}
+  
+  
+  wanPortAuthMacSwitch   OBJECT-TYPE
+  SYNTAX      INTEGER{
+               enable(1),           
+               disable(2)
+             }
+  MAX-ACCESS  read-write
+  STATUS      current
+  DESCRIPTION
+      ""
+  REFERENCE
+        ""
+    ::= { pvcManagerEntry 15}
+    
+  wanPortBroadDegree   OBJECT-TYPE
+  SYNTAX      INTEGER(0..4)
+  MAX-ACCESS  read-write
+  STATUS      current
+  DESCRIPTION
+    " forbit broadcast or not
+     0--0k;
+     1--16k;
+     2--32k;
+     3--64k;
+     4--no limit;
+    "
+  REFERENCE
+        ""
+    ::= { pvcManagerEntry 16}
+
+
+wanPortCreditFlag OBJECT-TYPE
+  SYNTAX      INTEGER{
+               enable(1),           
+               disable(2)
+             }
+  MAX-ACCESS  read-write
+  STATUS      current
+  DESCRIPTION
+      ""
+  REFERENCE
+        ""
+    ::= { pvcManagerEntry 17}
+ 
+ wanPvcPortForwFlood  OBJECT-TYPE
+ SYNTAX INTEGER {
+               enable(1),           
+               disable(2)
+             }
+            
+  MAX-ACCESS  read-write
+  STATUS      current
+  DESCRIPTION
+      " disable/enable the port receive broad packet"
+  REFERENCE
+        ""
+    ::= { pvcManagerEntry 18}
+    
+ wanPvcPortBroadcastClass  OBJECT-TYPE
+      SYNTAX      INTEGER(1..4)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        ""
+    REFERENCE
+        ""
+    ::= { pvcManagerMib 3 }  
+    
+ 
+END
+
+
+
+
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+--
+--  File         :etherPort-manager-mib.mib
+--
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+    ETHERPORT-MANAGER-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE,
+        Integer32, Counter64                    FROM SNMPv2-SMI
+        
+        DisplayString, TruthValue               FROM SNMPv2-TC
+        
+        MODULE-COMPLIANCE, OBJECT-GROUP         FROM SNMPv2-CONF
+        
+        PortList				FROM Q-BRIDGE-MIB
+        
+        zxEtherBoard                            FROM WRS-MASTER-MIB;       
+       
+        etherIfaceManager     			OBJECT IDENTIFIER ::= { zxEtherBoard 3 }
+
+
+    etherIfaceManagerTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF EtherIfaceManagerEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A table of switch interfaces and associated properties."
+        ::= { etherIfaceManager  1 }
+
+    etherIfaceManagerEntry OBJECT-TYPE
+        SYNTAX EtherIfaceManagerEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Table entry for switch interface control and status information."
+        INDEX { etherIfaceUnit, etherIfacePort }
+        ::= { etherIfaceManagerTable 1 }
+
+    EtherIfaceManagerEntry ::= SEQUENCE {
+        etherIfaceUnit                Integer32,
+        etherIfacePort                Integer32,
+        etherIfaceLLWHPort            Integer32,
+        etherIfaceIndex               Integer32,
+        etherIfaceName                DisplayString,
+        etherIfaceEnable              TruthValue,
+        etherIfaceLink                INTEGER,
+        etherIfacePriority            INTEGER,
+        etherIfaceBroadCast           INTEGER ,
+        etherIfaceCreditFlag          INTEGER ,
+        etherIfaceMultSwitch 	      INTEGER,
+        etherIfaceUseProfilId         INTEGER, 
+        etherIfacePermitMultGrpNum    INTEGER  ,
+        etherIfaceAuthIpSwitch        INTEGER  ,
+        etherIfaceAuthMacSwitch       INTEGER  ,
+        etherIfaceMirrorSwich         INTEGER  ,
+        etherIfaceMirrorMode          INTEGER  ,
+        etherIfaceMirrorPortList      PortList ,
+        etherIfacelinkScan            INTEGER  ,     
+        etherIfaceDuplex	      INTEGER  ,
+        etherIfaceSpeed               INTEGER  ,
+        etherIfaceAutoStatus 	      INTEGER  ,
+        
+        etherIfaceMulticastDegree       Integer32,
+        etherIfaceUnUnicastDegree       Integer32,
+        etherIfaceFloodUnUnicastFlag  	INTEGER  ,
+        etherIfaceFloodUnMulticastFlag  INTEGER  ,
+        etherIfaceFloodBroadcastFlag  	INTEGER  
+    }
+
+    etherIfaceUnit  OBJECT-TYPE
+        SYNTAX Integer32 (1..12)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An index that uniquely identifies a unit in the TMS galnet
+             stack.  If an invalid value is used for the index, a SNMP
+             'noSuchName' error (SNMPv1) or 'noSuchInstance' exception
+             (SNMPv2/v3) is returned.  For implementations that do not support
+             stacking, the same response is returned for any unit index other
+             than 1."
+        ::= { etherIfaceManagerEntry 1 }
+
+    etherIfacePort OBJECT-TYPE
+        SYNTAX Integer32 (1..8)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An index that uniquely identifies a TMS Application 'logical port'
+             (i.e., IEEE 802.3ad Aggregator) within the oemArchIfaceUnit."
+        ::= { etherIfaceManagerEntry 2 }
+
+    etherIfaceLLWHPort OBJECT-TYPE
+        SYNTAX Integer32 (8193..8296)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "A value that uniquely identifies a TMS Application 'logical port'
+             (i.e., IEEE 802.3ad Aggregator) in the TMS galnet stack.  This is
+             a 'Layered Linear With Holes' (LLWH) port number that may may have
+             holes for missing ports or units.  For this MIB, 26 port numbers
+             are reserved for each unit in the stack.  For example, LLHW port
+             8193 is unit 1, port 1 and LLHW 8228 is unit 2, port 10."
+        ::= { etherIfaceManagerEntry 3 }
+
+    etherIfaceIndex OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The ifIndex of this TMS Application 'logical port' (i.e., IEEE
+             802.3ad Aggregator).  Note that an ifIndex value of 34603009 
+             (0x02100001) represents the Aggregator layer, unit 1, slot 0
+             (base unit ports), port 1."
+        ::= { etherIfaceManagerEntry 4 }
+
+    etherIfaceName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..16))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE:
+             The textual name of this interface, e.g., 'John'."
+        ::= { etherIfaceManagerEntry 5 }
+
+    etherIfaceEnable OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { true:all }
+             This object is true(1) when this interface is enabled and
+             false(1) when it is disabled.  For this product, this is the
+             ONLY way to enable or disable this interface.  Note that
+             'ifAdminStatus' in RFC1213 and RFC2233 and 'dot1dStpPortEnable'
+             in RFC1493 are each implemented as 'read-only'."
+        ::= { etherIfaceManagerEntry 6 }
+
+    etherIfaceLink OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { true:all }
+             This object is true(1) when Spanning Tree operation is enabled
+             for this interface and false(2) when it is disabled."
+        ::= { etherIfaceManagerEntry 7 }
+
+     etherIfacePriority OBJECT-TYPE
+        SYNTAX INTEGER (0..7)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            " "
+        ::= { etherIfaceManagerEntry 8 } 
+        
+     etherIfaceBroadCast    OBJECT-TYPE
+     SYNTAX INTEGER(0..4)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            " forbit broadcast or not
+             0--0k;
+             1--128k;
+             2--512k;
+             3--1024k;
+             4--no limit;
+            "
+        ::= { etherIfaceManagerEntry 9 }       
+            
+      etherIfaceCreditFlag  OBJECT-TYPE
+       SYNTAX INTEGER{
+               assure(1),           
+               unassured(2)
+        	}
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+              " port assure switch"
+        ::= { etherIfaceManagerEntry 10 } 
+         
+      etherIfaceMultSwitch 	  OBJECT-TYPE
+	  SYNTAX      INTEGER{
+	  		enable(1),
+	  		disable(2)
+	  		}
+	  MAX-ACCESS  read-write
+	  STATUS      current
+	  DESCRIPTION
+	      "port multicast swtich"
+	  REFERENCE
+	        ""
+	    ::= { etherIfaceManagerEntry 11}
+    
+      etherIfaceUseProfilId   OBJECT-TYPE
+	  SYNTAX      INTEGER(1..256)
+	  MAX-ACCESS  read-write
+	  STATUS      current
+	  DESCRIPTION
+	      "port using profile index "
+	  REFERENCE
+	        ""
+	    ::= { etherIfaceManagerEntry 12}
+           
+      etherIfacePermitMultGrpNum    OBJECT-TYPE
+	  SYNTAX      INTEGER(0..16)
+	  MAX-ACCESS  read-write
+	  STATUS      current
+	  DESCRIPTION
+	      "port permit multicast num "
+	  REFERENCE
+	        ""
+    ::= { etherIfaceManagerEntry 13}
+    
+      etherIfaceAuthIpSwitch  OBJECT-TYPE
+	  SYNTAX      INTEGER{
+	               enable(1),           
+	               disable(2)
+	             }
+	  MAX-ACCESS  read-write
+	  STATUS      current
+	  DESCRIPTION
+	      ""
+	  REFERENCE
+        ""
+    ::= { etherIfaceManagerEntry 14}  
+    
+      etherIfaceAuthMacSwitch    OBJECT-TYPE
+	  SYNTAX      INTEGER{
+	               enable(1),           
+	               disable(2)
+	             }
+	  MAX-ACCESS  read-write
+	  STATUS      current
+	  DESCRIPTION
+	      ""
+	  REFERENCE
+        ""
+    ::= { etherIfaceManagerEntry 15}     
+    
+    etherIfaceMirrorSwich  OBJECT-TYPE
+	  SYNTAX      INTEGER
+	  MAX-ACCESS  read-write
+	  STATUS      current
+	  DESCRIPTION
+	      ""
+	  REFERENCE
+              "1:enable;
+               2:disable"
+    ::= { etherIfaceManagerEntry 16}   
+    
+    etherIfaceMirrorMode OBJECT-TYPE
+	  SYNTAX      INTEGER(0..1)
+	  MAX-ACCESS  read-write
+	  STATUS      current
+	  DESCRIPTION
+	      ""
+	  REFERENCE
+              "1:ingress;
+               2:engress
+               "
+    ::= { etherIfaceManagerEntry 17}   
+    
+    etherIfaceMirrorPortList  OBJECT-TYPE
+	  SYNTAX      PortList
+	  MAX-ACCESS  read-write
+	  STATUS      current
+	  DESCRIPTION
+	      ""
+	  REFERENCE
+              ""
+    ::= { etherIfaceManagerEntry 18}   
+    
+    etherIfacelinkScan OBJECT-TYPE
+	  SYNTAX      INTEGER(1..3)
+	  MAX-ACCESS  read-write
+	  STATUS      current
+	  DESCRIPTION
+	      ""
+	  REFERENCE
+              ""
+    ::= { etherIfaceManagerEntry 19}  
+    
+    etherIfaceDuplex OBJECT-TYPE
+        SYNTAX INTEGER {
+             autonegotiate(1),
+             half(2),
+             full(3),
+             illegal(99)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { autonegotiate:all }
+            The desired speed and duplex for this interface. If the selected
+            control is not possible on the interface, a value of illegal(99)
+            is returned.  If the port type does NOT support the default
+            of autonegotiate(1), then the application initializes the
+            port to a valid value (e.g., 1000full(6)).  Note that not all
+            controls are possible for all interfaces.  For example, only
+            full-1000(6) is available for Gigabit Ethernet interfaces."
+        ::= { etherIfaceManagerEntry 20 }    
+    
+    etherIfaceSpeed     OBJECT-TYPE
+        SYNTAX INTEGER
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { autonegotiate:all }
+            The desired speed and duplex for this interface. If the selected
+            control is not possible on the interface, a value of illegal(99)
+            is returned.  If the port type does NOT support the default
+            of autonegotiate(1), then the application initializes the
+            port to a valid value (e.g., 1000full(6)).  Note that not all
+            controls are possible for all interfaces.  For example, only
+            full-1000(6) is available for Gigabit Ethernet interfaces.
+            for:autonegotiate(1)/10(2)/100(3)/illegal(4)"
+        ::= { etherIfaceManagerEntry 21}        
+        
+   etherIfaceAutoStatus      OBJECT-TYPE
+   SYNTAX INTEGER{
+               enable(1),           
+               disable(2)
+             }
+            
+  MAX-ACCESS  read-write
+  STATUS      current
+  DESCRIPTION
+      " disable/enable the port receive broad packet"
+  REFERENCE
+        ""
+    ::= { etherIfaceManagerEntry 22}       
+    
+ etherIfaceMulticastDegree   OBJECT-TYPE
+   SYNTAX Integer32(0..1480000)
+            
+  MAX-ACCESS  read-write
+  STATUS      current
+  DESCRIPTION
+      ""
+  REFERENCE
+        ""
+    ::= { etherIfaceManagerEntry 23}       
+    
+
+ etherIfaceUnUnicastDegree   OBJECT-TYPE
+  SYNTAX Integer32(0..1480000)          
+  MAX-ACCESS  read-write
+  STATUS      current
+  DESCRIPTION
+      ""
+  REFERENCE
+        ""
+    ::= { etherIfaceManagerEntry 24}    
+
+
+ etherIfaceFloodUnUnicastFlag   OBJECT-TYPE
+   SYNTAX INTEGER{
+               enable(1),           
+               disable(2)
+             }
+            
+  MAX-ACCESS  read-write
+  STATUS      current
+  DESCRIPTION
+      ""
+  REFERENCE
+        ""
+    ::= { etherIfaceManagerEntry 25}       
+    
+
+ etherIfaceFloodUnMulticastFlag   OBJECT-TYPE
+   SYNTAX INTEGER{
+               enable(1),           
+               disable(2)
+             }
+            
+  MAX-ACCESS  read-write
+  STATUS      current
+  DESCRIPTION
+      ""
+  REFERENCE
+        ""
+    ::= { etherIfaceManagerEntry 26}      
+    
+etherIfaceFloodBroadcastFlag      OBJECT-TYPE
+   SYNTAX INTEGER{
+               enable(1),           
+               disable(2)
+             }
+            
+  MAX-ACCESS  read-write
+  STATUS      current
+  DESCRIPTION
+      ""
+  REFERENCE
+        ""
+    ::= { etherIfaceManagerEntry 27}      
+         
+               
+------------------------------------------------------------------------------
+--  Chip Interface Section  
+------------------------------------------------------------------------------
+--
+    etherChipStub OBJECT-TYPE
+        SYNTAX INTEGER {  
+            noop(1),
+            chip-value2(2),
+            chip-value3(3)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This object is a place holder for the OEM Chip interface." 
+        ::= { etherIfaceManager 2 }
+
+END
+
+
+
+------------------------------------------------------------------------------
+--
+--  File         : qosManagerMib.mib
+--  Description  : ZTE ADSL QOS MANAGER MIB  
+--
+------------------------------------------------------------------------------
+QOS-MANAGER-MIB DEFINITIONS ::= BEGIN
+
+	IMPORTS
+    		MODULE-IDENTITY, OBJECT-TYPE, Integer32, enterprises FROM SNMPv2-SMI
+        	MODULE-COMPLIANCE, OBJECT-GROUP			FROM SNMPv2-CONF
+		qosManagerMib  				        FROM WRS-MASTER-MIB ;
+		
+
+  dispathMode  OBJECT-TYPE
+  SYNTAX      INTEGER{
+               WRR(1),           
+               WFQ(2)
+        	}
+  MAX-ACCESS  read-write
+  STATUS      current
+  DESCRIPTION
+      "qos arithmetic "
+  REFERENCE
+        ""
+    ::= { qosManagerMib 1 }
+
+ qosQueueTable   OBJECT-TYPE
+    SYNTAX      SEQUENCE OF QosQueueEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        " qos queue manager table "
+    ::= { qosManagerMib 2 }
+
+qosQueueEntry OBJECT-TYPE
+    SYNTAX      QosQueueEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        ""
+    INDEX   {packetTagId}
+    ::= { qosQueueTable 1 }
+
+ QosQueueEntry ::=
+    SEQUENCE {
+        packetTagId
+             INTEGER,
+        dispathQueueId
+               INTEGER     
+    }
+
+ packetTagId OBJECT-TYPE
+  SYNTAX      INTEGER
+  MAX-ACCESS  not-accessible
+  STATUS      current
+  DESCRIPTION
+      " the tag flag for unicast "
+  REFERENCE
+        ""
+    ::= { qosQueueEntry 1 }
+
+ dispathQueueId  OBJECT-TYPE
+  SYNTAX      INTEGER(1..4)
+  MAX-ACCESS  read-write
+  STATUS      current
+  DESCRIPTION
+      ""
+  REFERENCE
+        ""
+    ::= { qosQueueEntry 2}
+       
+ingressQosWeightTable   OBJECT-TYPE
+    SYNTAX      SEQUENCE OF IngressQosWeightEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        " "
+    ::= { qosManagerMib 3 }
+
+ingressQosWeightEntry OBJECT-TYPE
+    SYNTAX      IngressQosWeightEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        ""
+    INDEX   {ingressDisQueueId}
+    ::= { ingressQosWeightTable 1 }
+
+IngressQosWeightEntry ::=
+    SEQUENCE {
+        ingressDisQueueId
+                 INTEGER,
+        ingressQueWeightDegree
+                INTEGER     
+    }
+
+ingressDisQueueId  OBJECT-TYPE
+  SYNTAX      INTEGER
+  MAX-ACCESS  not-accessible
+  STATUS      current
+  DESCRIPTION
+      "QueueId "
+  REFERENCE
+        ""
+    ::= { ingressQosWeightEntry 1 }
+
+ingressQueWeightDegree  OBJECT-TYPE
+  SYNTAX      INTEGER(1..255)
+  MAX-ACCESS  read-write
+  STATUS      current
+  DESCRIPTION
+      ""
+  REFERENCE
+        ""
+    ::= { ingressQosWeightEntry 2}       
+
+engressQosWeightTable   OBJECT-TYPE
+    SYNTAX      SEQUENCE OF EngressQosWeightEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        " "
+    ::= { qosManagerMib 4 }
+
+engressQosWeightEntry OBJECT-TYPE
+    SYNTAX      EngressQosWeightEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        ""
+    INDEX   {engressDisQueueId}
+    ::= { engressQosWeightTable 1 }
+
+EngressQosWeightEntry ::=
+    SEQUENCE {
+        engressDisQueueId
+                 INTEGER,
+        engressQueWeightDegree
+                INTEGER     
+    }
+
+engressDisQueueId  OBJECT-TYPE
+  SYNTAX      INTEGER
+  MAX-ACCESS  not-accessible
+  STATUS      current
+  DESCRIPTION
+      " "
+  REFERENCE
+        ""
+    ::= { engressQosWeightEntry 1 }
+
+engressQueWeightDegree  OBJECT-TYPE
+  SYNTAX      INTEGER(1..8)
+  MAX-ACCESS  read-write
+  STATUS      current
+  DESCRIPTION
+      ""
+  REFERENCE
+        ""
+    ::= { engressQosWeightEntry 2}  
+       
+END
+------------------------------------------------------------------------------
+--
+--  File         : vlanMultManagerMib.mi2
+--  Description  : ZTE VLAN SURRPOR MULTICAST NUMBER MIB  
+--
+------------------------------------------------------------------------------
+
+VLANMULT-MANAGER-MIB DEFINITIONS ::= BEGIN
+
+	IMPORTS
+		MODULE-IDENTITY, OBJECT-TYPE,
+		enterprises					FROM SNMPv2-SMI
+		MODULE-COMPLIANCE, OBJECT-GROUP			FROM SNMPv2-CONF
+		zxEtherBoard   					FROM WRS-MASTER-MIB;
+	
+	vlanMultManagerMib    OBJECT IDENTIFIER ::= { zxEtherBoard 7 }
+	   
+        vlanSurportMultNum  OBJECT-TYPE
+        SYNTAX INTEGER 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            " at present the vlan numbers of surporting multicast "
+           ::= { vlanMultManagerMib 1 }
+                  
+       pvcSurMultTable   OBJECT-TYPE
+       SYNTAX      SEQUENCE OF PvcSurMultEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION
+        " the vlan of surporting multicast table  "
+            ::= { vlanMultManagerMib 2 }
+
+       pvcSurMultEntry OBJECT-TYPE
+       SYNTAX      PvcSurMultEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION
+        "the vlan of surporting multicast entry"
+       INDEX   {vlanId}
+       ::= { pvcSurMultTable 1 }
+
+       PvcSurMultEntry ::=
+         SEQUENCE {
+            vlanId
+                INTEGER,              
+            vlanSurMultFlag 
+                RowStatus
+           }
+
+       vlanId OBJECT-TYPE
+         SYNTAX      INTEGER
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+            " the vlan id of surporting multicast  "
+         REFERENCE
+              ""
+        ::= { pvcSurMultEntry 1 }
+
+       vlanSurMultFlag OBJECT-TYPE
+          SYNTAX      RowStatus
+          MAX-ACCESS  read-write
+          STATUS      current
+          DESCRIPTION
+             "the set the flag of surporting multicast  "
+    ::= { pvcSurMultEntry 2 }        
+
+END
+------------------------------------------------------------------------------
+--
+--  File         : meteringManagerMib.mi2
+--  Description  : ZTE Metering manager MIB  
+--
+------------------------------------------------------------------------------
+
+METERING-MANAGER-MIB DEFINITIONS ::= BEGIN
+
+	IMPORTS
+		MODULE-IDENTITY, OBJECT-TYPE,
+		enterprises					FROM SNMPv2-SMI
+		MODULE-COMPLIANCE, OBJECT-GROUP			FROM SNMPv2-CONF
+		PortList					FROM Q-BRIDGE-MIB
+		meteringManagerMib				FROM WRS-MASTER-MIB;
+	
+                    
+       meteringTable   OBJECT-TYPE
+       SYNTAX      SEQUENCE OF MeteringEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION
+        " wang metering manger table   "
+            ::= { meteringManagerMib 1 }
+
+       meteringEntry OBJECT-TYPE
+       SYNTAX      MeteringEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION
+        "metering entry"
+       INDEX   {meteringId}
+       ::= { meteringManagerMib 1 }
+
+       MeteringEntry ::=
+         SEQUENCE {
+            meteringId
+                	INTEGER,
+            meteringName
+                	OCTET STRING,              
+            meteringBurst
+                	INTEGER,
+            meteringRating
+                	INTEGER,
+            meteringBitmap
+                        PortList,              
+            meteringStatus
+                	RowStatus
+           }
+
+       meteringId    OBJECT-TYPE
+          SYNTAX      INTEGER
+          MAX-ACCESS  not-accessible
+          STATUS      current
+          DESCRIPTION
+             "the metering index "
+         ::= { meteringEntry 1 }  
+         
+       meteringName  OBJECT-TYPE
+         SYNTAX      OCTET STRING (SIZE (0..32))
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+            " the metering name as index "
+         REFERENCE
+              ""
+        ::= { meteringEntry 2 }
+
+       meteringBurst OBJECT-TYPE
+          SYNTAX      INTEGER
+          MAX-ACCESS  read-write
+          STATUS      current
+          DESCRIPTION
+             "the metering burst "
+         ::= { meteringEntry 3 }  
+          
+       meteringRating OBJECT-TYPE
+          SYNTAX      INTEGER
+          MAX-ACCESS  read-write
+          STATUS      current
+          DESCRIPTION
+             "the metering rating "
+    	::= { meteringEntry 4 }   
+
+       meteringBitmap OBJECT-TYPE
+          SYNTAX      PortList
+          MAX-ACCESS  read-write
+          STATUS      current
+          DESCRIPTION
+             "the metering rating "
+    	::= { meteringEntry 5 }   
+    	
+       meteringStatus OBJECT-TYPE
+          SYNTAX      RowStatus
+          MAX-ACCESS  read-create
+          STATUS      current
+          DESCRIPTION
+             "the metering manager status "
+      ::= { meteringEntry 6 }       
+    
+END
+
+
+
+
+TRUNKING-MANAGER-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE,
+        Integer32                               FROM SNMPv2-SMI  
+        PortList				FROM Q-BRIDGE-MIB 
+        trunkingManagerMib                      FROM WRS-MASTER-MIB ;                
+
+        
+
+    trunkingMangerTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF TrunkingManagerEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+          "A table containing per port control and status
+           information for port configuration in the device."
+        ::= { trunkingManagerMib 1 }
+
+    trunkingManagerEntry OBJECT-TYPE
+        SYNTAX      TrunkingManagerEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+        "Information controlling Aggregator configuration for a port
+        on the device.  This is indexed by dot1dBasePort."
+ 	INDEX   {trunkingId}
+         ::= { trunkingMangerTable 1 }
+
+    TrunkingManagerEntry ::=
+        SEQUENCE {
+           trunkingId 	  	Integer32,
+           trunkingPsc    	Integer32,
+           trunkingPortBitMap 	PortList,
+           trunkingStatus     	RowStatus
+        }
+
+
+      trunkingId OBJECT-TYPE
+  	SYNTAX      Integer32
+  	MAX-ACCESS  not-accessible
+  	STATUS      current
+  	DESCRIPTION
+          " the trunking group id ,the range from 1 to 5"
+  	REFERENCE
+        ""
+    	::= { trunkingManagerEntry 1 }
+    
+      trunkingPsc OBJECT-TYPE
+  	SYNTAX INTEGER(1..6)  	
+  	MAX-ACCESS  read-write
+  	STATUS      current
+  	DESCRIPTION
+          " trunking
+                    srcmac(1),
+  	            destmac(2),
+  	            srcmac+destmac(3),
+  	            srcip(4),
+  	            destip(5),
+  	            srcip+destip(6)
+  	  "
+  	REFERENCE
+        ""
+    	::= { trunkingManagerEntry 2 }
+    	
+      trunkingPortBitMap  OBJECT-TYPE
+  	SYNTAX      PortList
+  	MAX-ACCESS  read-write
+  	STATUS      current
+  	DESCRIPTION
+          " trunking"
+  	REFERENCE
+        ""
+    	::= { trunkingManagerEntry 3 }
+    
+      trunkingStatus OBJECT-TYPE
+  	SYNTAX      RowStatus
+  	MAX-ACCESS  read-create
+  	STATUS      current
+  	DESCRIPTION
+          " trunking"
+  	REFERENCE
+        ""
+    	::= { trunkingManagerEntry 4 }
+    
+END
+
+
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+--
+--  File         : oemZxMulticast.mib
+--  Description  : Sample TMS OEM Product Enterprise MIB for 
+--                 Multicast service of ZXDSL9210 v3.1.1
+--  Version      : 0.00   
+--  Date         : Aug 9, 2004     
+--
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+--  Sample ZTE Multicast MIB
+--
+--  NOTES:
+--   1. This is a SMIv2 MIB.
+--
+--   2. The following groups are supported in this MIB:
+--      -
+--
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+
+    OEMZXMULTICAST DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+        Integer32, Counter64,TimeTicks,Counter32,
+        IpAddress                            FROM SNMPv2-SMI
+        
+        DisplayString, TruthValue, RowStatus,              
+        MacAddress, DateAndTime			FROM SNMPv2-TC
+       SnmpAdminString                   FROM SNMP-FRAMEWORK-MIB
+               
+        MODULE-COMPLIANCE, OBJECT-GROUP         FROM SNMPv2-CONF
+        oemProd                                 FROM WRS-MASTER-MIB       
+        PortList                                 FROM Q-BRIDGE-MIB;     
+--      Note:
+--         RowStatus: active(1),notInService(2),notReady(3),createAndGo(4),
+--                    createAndWait(5),destroy(6)
+--
+--
+
+    oemZxMulticastMib MODULE-IDENTITY
+        LAST-UPDATED    "0408090000Z"  -- Aug 9, 2004
+        ORGANIZATION    "ZTE."
+        CONTACT-INFO    "ZTE."
+
+        DESCRIPTION     "Description of Multicast Service of  ZXDSL9210 v3.1.1. "
+
+        REVISION        "0408090000Z"  -- Aug 9, 2004
+        DESCRIPTION     "Initial MIB creation."
+
+        ::= { oemProd 10 }
+
+
+    oemZxMulticastIGMP        OBJECT IDENTIFIER ::= { oemZxMulticastMib 1 }
+    oemZxMulticastMVR         OBJECT IDENTIFIER ::= { oemZxMulticastMib 2 }
+    oemZxMulticastCAC         OBJECT IDENTIFIER ::= { oemZxMulticastMib 3 }
+    oemZxMulticastPRW         OBJECT IDENTIFIER ::= { oemZxMulticastMib 4 }
+    oemZxMulticastCDR         OBJECT IDENTIFIER ::= { oemZxMulticastMib 5 }
+    
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+    
+
+
+    
+    oemZxIgmpEnabled  OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { false )
+             Setting this object to true(1) enables IGMP .  Setting
+             it to false(2) disables IGMP.
+             
+             Note that IGMP can function with or without GVRP and
+             GMRP enabled."
+        ::= { oemZxMulticastIGMP 1 }
+        
+     oemZxIgmpAging  OBJECT-TYPE
+        SYNTAX Integer32 (30..3600)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { 300 )
+             The timeout period in seconds for aging out Multicast Groups
+             dynamically learned with IGMP.  Note that aging operates
+             on a per interface per VLAN per multicast group basis."
+        ::= { oemZxMulticastIGMP 2 }
+        
+     oemZxIgmpMode  OBJECT-TYPE
+        SYNTAX 	INTEGER(1..3)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "IGMP mode"
+        ::= { oemZxMulticastIGMP 3 }
+     
+     oemZxIgmpTable OBJECT-TYPE
+    	SYNTAX SEQUENCE OF oemZxIgmpEntry
+    	MAX-ACCESS not-accessible
+    	STATUS current
+    	DESCRIPTION
+		"A table that contains all IGMP informations."
+	::= { oemZxMulticastIGMP 4 }
+
+	oemZxIgmpEntry OBJECT-TYPE
+		SYNTAX oemZxIgmpEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"A list of  entries of all IGMP information."
+		INDEX { oemZxIgmpPortIndex}
+	::= { oemZxIgmpTable 1 }
+
+	oemZxIgmpEntry ::=
+		SEQUENCE {
+          		oemZxIgmpPortIndex	    	INTEGER,
+	  		oemZxIgmpFastLeave		INTEGER
+		}   
+     
+     oemZxIgmpPortIndex            OBJECT-TYPE
+          SYNTAX         INTEGER
+          MAX-ACCESS     not-accessible
+          STATUS         current
+          DESCRIPTION
+           "The port No. 1-728"
+          ::= { oemZxIgmpEntry 1}
+     
+     oemZxIgmpFastLeave  OBJECT-TYPE
+        SYNTAX 	INTEGER
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "the status of fast-leave property."
+        ::= { oemZxIgmpEntry 2 }
+        
+     oemZxIgmpRecognitionTime  OBJECT-TYPE
+        SYNTAX 	INTEGER
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Recognition Time"
+        ::= { oemZxMulticastIGMP 5 }
+        
+-----------------------------------------------------------------------------------------    
+    
+    
+    oemZxMVREnable OBJECT-TYPE
+        SYNTAX INTEGER{
+                        enable(1),
+                        disable(2)
+                        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Enable/disable MVR in this system."
+        ::= { oemZxMulticastMVR 1 }
+
+    oemZxMVRMaxResponseTime OBJECT-TYPE
+        SYNTAX INTEGER
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Max response time ."
+        ::= { oemZxMulticastMVR 2 }
+       
+    oemZxMVRTable OBJECT-TYPE
+    	SYNTAX SEQUENCE OF oemZxMVREntry
+    	MAX-ACCESS not-accessible
+    	STATUS current
+    	DESCRIPTION
+		"A table that contains all ZXDSL informations in this stack system.
+		It is allowed to get in master module."
+	::= { oemZxMulticastMVR 3 }
+
+	oemZxMVREntry OBJECT-TYPE
+		SYNTAX oemZxMVREntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"A list of  entries of all ZXDSL information."
+		INDEX { oemZxMVRMvlan, oemZxMVRIpaddress}
+	::= { oemZxMVRTable 1 }
+
+	oemZxMVREntry ::=
+		SEQUENCE {
+		oemZxMVRMvlan		INTEGER,
+		oemZxMVRIpaddress   	IpAddress,
+            	oemZxMVRSrcPorts	PortList,
+		oemZxMVRRecvPorts   	PortList,
+           	oemZxMVRResev1		INTEGER,
+           	oemZxDynamicRecvPorts	DisplayString,
+           	oemZxStaticRecvPorts	DisplayString,
+           	oemZxMVRRowStatus	INTEGER,
+           	oemZxMVRMaxGroup	INTEGER
+		}
+
+	oemZxMVRMvlan OBJECT-TYPE
+		SYNTAX INTEGER(1..4095)
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"vlan."
+	::= { oemZxMVREntry 1 }
+
+	oemZxMVRIpaddress OBJECT-TYPE
+		SYNTAX IpAddress
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"multicast ip address . it can be 0.0.0.0 when setting "
+	::= { oemZxMVREntry 2 }
+
+	oemZxMVRSrcPorts OBJECT-TYPE
+		SYNTAX PortList
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION
+			"the ports that send multicast"
+	::= { oemZxMVREntry 3 }
+
+	oemZxMVRRecvPorts OBJECT-TYPE
+		SYNTAX PortList
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION
+			"the ports that receive multicast"
+	::= { oemZxMVREntry 4 }
+
+	oemZxMVRResev1 OBJECT-TYPE
+		SYNTAX INTEGER
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"Interface ."
+	::= { oemZxMVREntry 5 }
+
+	oemZxDynamicRecvPorts OBJECT-TYPE
+		SYNTAX DisplayString
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION
+			"Interface ."
+	::= { oemZxMVREntry 6 }
+
+	oemZxStaticRecvPorts OBJECT-TYPE
+		SYNTAX DisplayString (SIZE (0..4))
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION
+			"Interface ."
+	::= { oemZxMVREntry 7 }
+	
+	oemZxMVRRowStatus OBJECT-TYPE
+		SYNTAX INTEGER
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION
+			"Interface ."
+	::= { oemZxMVREntry 8 }
+
+	oemZxMVRMaxGroup OBJECT-TYPE
+		SYNTAX INTEGER(1..128)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION
+			""
+	::= { oemZxMVREntry 9 }
+
+------------------------------------------------------------------------------------
+
+oemZxACGpIpTable OBJECT-TYPE
+    	SYNTAX SEQUENCE OF oemZxACGpIpEntry
+    	MAX-ACCESS not-accessible
+    	STATUS current
+    	DESCRIPTION
+		"CAC Address Table info"
+	::= { oemZxMulticastCAC 1 }
+
+	oemZxACGpIpEntry OBJECT-TYPE
+		SYNTAX oemZxACGpIpEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"A list of  entries of all Multicast address information."
+		INDEX { oemZxGpIp}
+	::= { oemZxACGpIpTable 1 }
+
+	oemZxACGpIpEntry ::=
+		SEQUENCE {
+		oemZxGpIp			IpAddress,
+		oemZxMaxPrwCount   		Counter,
+            	oemZxMaxPrwInter		Counter,
+		oemZxPrwResumeInter   		INTEGER,
+           	oemZxACRowStatus		INTEGER
+           	}
+
+	oemZxGpIp 	OBJECT-TYPE
+		SYNTAX 		IpAddress
+		MAX-ACCESS 	not-accessible
+		STATUS current
+		DESCRIPTION
+			"Group IP."
+	::= { oemZxACGpIpEntry 1 }
+
+	oemZxMaxPrwCount OBJECT-TYPE
+		SYNTAX 		Counter
+		MAX-ACCESS 	read-write
+		STATUS current
+		DESCRIPTION
+			"The max preview count of the multicast group."
+	::= { oemZxACGpIpEntry 2 }
+
+	oemZxMaxPrwInter OBJECT-TYPE
+		SYNTAX 		Counter
+		MAX-ACCESS 	read-write
+		STATUS current
+		DESCRIPTION
+			"The max preview time."
+	::= { oemZxACGpIpEntry 3 }
+
+	oemZxPrwResumeInter OBJECT-TYPE
+		SYNTAX 		INTEGER
+		MAX-ACCESS 	read-write
+		STATUS current
+		DESCRIPTION
+			"The interval of two continuous previews."
+	::= { oemZxACGpIpEntry 4 }
+
+	oemZxACRowStatus OBJECT-TYPE
+		SYNTAX 		INTEGER
+		MAX-ACCESS 	read-write
+		STATUS current
+		DESCRIPTION
+			"Row Status of AC Table."
+	::= { oemZxACGpIpEntry 5 }
+
+--------------------------------------------------------------------------------------
+oemZxACProfileTable OBJECT-TYPE
+    	SYNTAX SEQUENCE OF oemZxACProfileEntry
+    	MAX-ACCESS not-accessible
+    	STATUS current
+    	DESCRIPTION
+		"CAC Profile Table info"
+	::= { oemZxMulticastCAC 2 }
+
+	oemZxACProfileEntry OBJECT-TYPE
+		SYNTAX oemZxACProfileEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"A list of  entries of all Multicast profile information."
+		INDEX { oemZxProfileIndex,oemZxGpIp}
+	::= { oemZxACProfileTable 1 }
+
+	oemZxACProfileEntry ::=
+		SEQUENCE {
+		oemZxProfileIndex		INTEGER,
+		oemZxGpIp			IpAddress,
+		oemZxGpRight   			INTEGER,
+           	oemZxProfileItemRowStatus	INTEGER
+           	}
+
+	oemZxProfileIndex 	OBJECT-TYPE
+		SYNTAX 		INTEGER
+		MAX-ACCESS 	not-accessible
+		STATUS current
+		DESCRIPTION
+			"Profile Index."
+	::= { oemZxACProfileEntry 1 }
+
+	oemZxGpIp OBJECT-TYPE
+		SYNTAX 		IpAddress
+		MAX-ACCESS 	not-accessible
+		STATUS current
+		DESCRIPTION
+			"Group IP."
+	::= { oemZxACProfileEntry 2 }
+
+	oemZxGpRight OBJECT-TYPE
+		SYNTAX 		INTEGER
+		MAX-ACCESS 	read-write
+		STATUS current
+		DESCRIPTION
+			"The Group Right for multicast."
+	::= { oemZxACProfileEntry 3 }
+
+	oemZxProfileRowStatus OBJECT-TYPE
+		SYNTAX 		INTEGER
+		MAX-ACCESS 	read-write
+		STATUS current
+		DESCRIPTION
+			"Row Status of Profile Table."
+	::= { oemZxACProfileEntry 4 }
+
+---------------------------------------------------------------------------------------
+oemZxACPortGpTable OBJECT-TYPE
+    	SYNTAX SEQUENCE OF oemZxACPortGpEntry
+    	MAX-ACCESS not-accessible
+    	STATUS current
+    	DESCRIPTION
+		"CAC Port Multicast info"
+	::= { oemZxMulticastCAC 3 }
+
+	oemZxACPortGpEntry OBJECT-TYPE
+		SYNTAX oemZxACPortGpEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"A list of  entries of all port multicast information."
+		INDEX { oemZxport,oemZxGpIp}
+	::= { oemZxACPortGpTable 1 }
+
+	oemZxACPortGpEntry ::=
+		SEQUENCE {
+		oemZxport			INTEGER,
+		oemZxGpIp   			IpAddress,
+            	oemZxRight			INTEGER,
+		oemZxportTableItemRowStatus   	INTEGER
+           	}
+
+	oemZxport 	OBJECT-TYPE
+		SYNTAX 		INTEGER
+		MAX-ACCESS 	not-accessible
+		STATUS current
+		DESCRIPTION
+			"port number."
+	::= { oemZxACPortGpEntry 1 }
+
+	oemZxGpIp OBJECT-TYPE
+		SYNTAX 		IpAddress
+		MAX-ACCESS 	not-accessible
+		STATUS current
+		DESCRIPTION
+			"Group IP."
+	::= { oemZxACPortGpEntry 2 }
+
+	oemZxRight OBJECT-TYPE
+		SYNTAX 		OCTET STRING
+		MAX-ACCESS 	read-write
+		STATUS current
+		DESCRIPTION
+			"The Group Right for multicast."
+	::= { oemZxACPortGpEntry 3 }
+
+	oemZxportTableItemRowStatus OBJECT-TYPE
+		SYNTAX 		INTEGER
+		MAX-ACCESS 	read-write
+		STATUS current
+		DESCRIPTION
+			"The RowStatus of port item."
+	::= { oemZxACPortGpEntry 4 }
+
+---------------------------------------------------------------------------
+oemZxACPortInfoTable OBJECT-TYPE
+    	SYNTAX SEQUENCE OF oemZxACPortInfoEntry
+    	MAX-ACCESS not-accessible
+    	STATUS current
+    	DESCRIPTION
+		"CAC Address Table info"
+	::= { oemZxMulticastCAC 4 }
+
+	oemZxACPortInfoEntry OBJECT-TYPE
+		SYNTAX oemZxACPortInfoEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"A list of  entries of all Multicast port information."
+		INDEX { oemZxPort}
+	::= { oemZxACPortInfoTable 1 }
+
+	oemZxACPortInfoEntry ::=
+		SEQUENCE {
+		oemZxPort		INTEGER,
+		profileIndex		INTEGER,
+		oemZxPortGpTotalInfo 	OCTET STRING
+           	}
+
+	oemZxPort 	OBJECT-TYPE
+		SYNTAX 		INTEGER
+		MAX-ACCESS 	not-accessible
+		STATUS current
+		DESCRIPTION
+			"Port Number."
+	::= { oemZxACPortInfoEntry 1 }
+
+	profileIndex OBJECT-TYPE
+		SYNTAX 		INTEGER
+		MAX-ACCESS 	read-write
+		STATUS current
+		DESCRIPTION
+			"The port multicast information."
+	::= { oemZxACPortInfoEntry 2 }
+	
+	oemZxPortGpTotalInfo OBJECT-TYPE
+		SYNTAX 		OCTET STRING
+		MAX-ACCESS 	read-write
+		STATUS current
+		DESCRIPTION
+			"The port multicast information."
+	::= { oemZxACPortInfoEntry 3 }
+
+oemZxACPrwSwitch OBJECT-TYPE
+        SYNTAX 		INTEGER
+        MAX-ACCESS 	read-write
+        STATUS current
+        DESCRIPTION
+            "the switch used by both CAC and PRW module, '1'-enable."
+        ::= { oemZxMulticastCAC 5 }
+
+------------------------------------------------------------------------------
+
+	oemZxPRWManageReset OBJECT-TYPE
+        SYNTAX 		OCTET STRING
+        MAX-ACCESS 	read-write
+        STATUS current
+        DESCRIPTION
+            "used to manage reset in PRW module,when '1',need to reset."
+        ::= { oemZxMulticastPRW 1 }
+
+	oemZxPRWResetPeriod	OBJECT-TYPE
+	SYNTAX 		OCTET STRING
+	MAX-ACCESS 	read-write
+        STATUS current
+        DESCRIPTION
+            "specify the fix time of reseting the preview management structure."
+        ::= { oemZxMulticastPRW 2 }
+        
+------------------------------------------------------------------------------------
+
+	oemZxCDRMaxSize OBJECT-TYPE
+        SYNTAX 		Unsigned32
+        MAX-ACCESS 	read-write
+        STATUS current
+        DESCRIPTION
+            "The max size of CDR."
+        ::= { oemZxMulticastCDR 1 }
+	
+	oemZxCDRServerIP OBJECT-TYPE
+        SYNTAX 		IpAddress
+        MAX-ACCESS 	read-write
+        STATUS current
+        DESCRIPTION
+            "The IP of SMS server."
+        ::= { oemZxMulticastCDR 2 }
+        
+        oemZxCDRMaxSendInterval	OBJECT-TYPE
+        SYNTAX		Unsigned32
+        MAX-ACCESS	read-write	
+        STATUS	current
+        DESCRIPTION
+        	"The Max Send Interval of CDR Record."
+        ::= { oemZxMulticastCDR 3 }
+        
+        oemZxCDREnable OBJECT-TYPE
+        SYNTAX 		TruthValue
+        MAX-ACCESS 	read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { false )
+             Setting this object to true(1) enables CDR .  Setting
+             it to false(2) disables CDR."
+        ::= { oemZxMulticastCDR 4 }
+        
+
+   END

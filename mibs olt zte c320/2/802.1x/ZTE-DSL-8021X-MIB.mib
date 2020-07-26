@@ -1,0 +1,65 @@
+
+-- File Name : ZTE-DSL-8021X-MIB.mi2
+-- Date      : Fri Oct 28 09:15:51 GMT+08:00 2005
+-- Author    : AdventNet Agent Toolkit C Edition - MibEditor 6
+
+
+
+ZTE-DSL-8021X-MIB	DEFINITIONS ::= BEGIN
+	IMPORTS
+	        zxDsl
+			FROM ZTE-DSL-MIB
+		enterprises, MODULE-IDENTITY
+			FROM SNMPv2-SMI
+		ifIndex
+			FROM RFC1213-MIB;	
+		
+	zxDsl8021xMib	MODULE-IDENTITY
+	        LAST-UPDATED	"200404151500Z"
+		ORGANIZATION	"ZTE Corporation"
+		CONTACT-INFO	"ZTE."
+		DESCRIPTION		"This MIB defines Description of zte ACL Service managed objects."
+		::=  {  zxDsl  20  }
+		
+	zxDsl8021xObjects	OBJECT IDENTIFIER
+		::=  {  zxDsl8021xMib  1  }
+
+	zxDsl8021xTrapObjects	OBJECT IDENTIFIER
+		::=  {  zxDsl8021xMib  2  }
+		
+	zxDsl8021xPortTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF ZxDsl8021xPortEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            ""
+        ::= { zxDsl8021xObjects 2 }
+
+    zxDsl8021xPortEntry OBJECT-TYPE
+        SYNTAX ZxDsl8021xPortEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            ""
+      INDEX { ifIndex }
+        ::= { zxDsl8021xPortTable 1 }
+
+    ZxDsl8021xPortEntry ::= SEQUENCE {
+        zxDsl8021xPortEnable              INTEGER
+    }
+    
+    zxDsl8021xPortEnable OBJECT-TYPE
+        SYNTAX INTEGER
+             { 
+               enabled  ( 1 ) , 
+               disabled ( 2 ) 
+             } 
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+           "Enable/disable 802.1x on this interface. "
+        REFERENCE
+        "9.6.1, Port number"
+        ::= { zxDsl8021xPortEntry 1 }
+    
+END

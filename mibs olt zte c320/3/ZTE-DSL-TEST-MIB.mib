@@ -1,0 +1,150 @@
+-- File Name : ZTE-DSL-TEST-MIB.mi2
+-- Date      : 2011.4.29
+-- Author    : majian - DSL Test function
+
+--
+-- Zte Dsl TEST Mib 
+-- 
+-- 
+
+ZTE-DSL-TEST-MIB    DEFINITIONS ::= BEGIN
+    IMPORTS
+        MODULE-COMPLIANCE, OBJECT-GROUP
+            FROM SNMPv2-CONF
+        ifIndex 
+            FROM IF-MIB
+        MODULE-IDENTITY, OBJECT-TYPE, enterprises, Integer32, IpAddress, 
+        Unsigned32, Counter64
+            FROM SNMPv2-SMI;
+
+
+    dod    OBJECT IDENTIFIER
+        ::=  {  org  6  }
+
+    internet    OBJECT IDENTIFIER
+        ::=  {  dod  1  }
+
+    private    OBJECT IDENTIFIER
+        ::=  {  internet  4  }
+
+    enterprises    OBJECT IDENTIFIER
+        ::=  {  private  1  }
+
+    zte    OBJECT IDENTIFIER
+        ::=  {  enterprises  3902  }
+
+    zxDsl    OBJECT IDENTIFIER
+        ::=  {  zte  1004  }
+        
+    zxDslTestMib   OBJECT IDENTIFIER
+        ::=  {  zxDsl  888  }
+    
+    zxDslTestObjects    OBJECT IDENTIFIER
+        ::=  {  zxDslTestMib  1  }
+
+    zxDslTestTrapObjects    OBJECT IDENTIFIER
+        ::=  {  zxDslTestMib  2  }      
+            
+    zxDslGemPortMapObjects    OBJECT IDENTIFIER
+        ::=  {  zxDslTestObjects  1  }    
+        
+    zxDslGemPortMapGlobalObjects  OBJECT IDENTIFIER  
+        ::= {zxDslGemPortMapObjects 1}        
+    
+    zxDslGemPortMapEnable    OBJECT-TYPE    
+        SYNTAX  INTEGER
+        { 
+            enable ( 1 ) ,  
+            disable( 2 ) 
+        } 
+        MAX-ACCESS     read-write
+        STATUS         current
+        DESCRIPTION        
+            "If enabled,the S-Tag will be used to distinguish different user 
+            port."         
+        ::=  {  zxDslGemPortMapGlobalObjects  1  }        
+            
+    zxDslIfGemPortMapTable    OBJECT-TYPE
+        SYNTAX        SEQUENCE  OF  ZxDslIfGemPortMapEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION    "The listing of gemport map table."
+        ::=  { zxDslGemPortMapObjects  2 }
+
+    zxDslIfGemPortMapEntry    OBJECT-TYPE
+        SYNTAX        ZxDslIfGemPortMapEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION   "An entry (conceptual row) representing a gemport
+                       mapping table."
+        INDEX        {  ifIndex }
+        ::=  { zxDslIfGemPortMapTable 1 }
+
+    ZxDslIfGemPortMapEntry  ::=  SEQUENCE {
+        zxDslIfGemPortMapMode        INTEGER,
+        zxDslIfGemPortCvlan          Integer32,
+        zxDslIfGemPortCos            Integer32        
+        }        
+    
+    zxDslIfGemPortMapMode    OBJECT-TYPE    
+        SYNTAX          INTEGER
+            {
+                tag(1),
+                untag(2),                
+                disable(3)                
+            }
+        MAX-ACCESS      read-write
+        STATUS          current 
+        DESCRIPTION     "If tag or untag,the S-Tag will be added to distinguish 
+                         user port."
+        DEFVAL          { disable }     
+        ::=  {  zxDslIfGemPortMapEntry  1  }         
+              
+    zxDslIfGemPortCvlan   OBJECT-TYPE
+        SYNTAX          Integer32(0..4094)
+        MAX-ACCESS      read-write
+        STATUS          current
+        DESCRIPTION     "C-Tag,vaild when zxDslGemPortMapMode is untag."
+        DEFVAL          { 0 }     
+        ::=  {  zxDslIfGemPortMapEntry  2  }        
+        
+    zxDslIfGemPortCos     OBJECT-TYPE
+        SYNTAX          Integer32(0..7)
+        MAX-ACCESS      read-write
+        STATUS          current
+        DESCRIPTION     "C-CoS,vaild when zxDslGemPortMapMode is untag."
+        DEFVAL          { 0 }     
+        ::=  {  zxDslIfGemPortMapEntry  3  }         
+                       
+    zxDslIgmpGemPortMapTable    OBJECT-TYPE
+        SYNTAX        SEQUENCE  OF  ZxDslIgmpGemPortMapEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION    "The listing of igmp gemport map table."
+        ::=  { zxDslGemPortMapObjects  3 }
+
+    zxDslIgmpGemPortMapEntry    OBJECT-TYPE
+        SYNTAX        ZxDslIgmpGemPortMapEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION   "An entry (conceptual row) representing a igmp gemport
+                       mapping table."
+        INDEX        {  ifIndex }
+        ::=  { zxDslIgmpGemPortMapTable 1 }
+
+    ZxDslIgmpGemPortMapEntry  ::=  SEQUENCE {
+        zxDslIgmpGemportMapEnable  INTEGER        
+        }            
+                               
+    zxDslIgmpGemportMapEnable     OBJECT-TYPE
+        SYNTAX        INTEGER
+            {
+                enable(1),                
+                disable(2)                
+            }
+        MAX-ACCESS    read-write
+        STATUS        current
+        DESCRIPTION   "The S-Tag will be added to distinguish user port."
+        DEFVAL        { enable }      
+        ::=  {  zxDslIgmpGemPortMapEntry  1  }                                                             
+END

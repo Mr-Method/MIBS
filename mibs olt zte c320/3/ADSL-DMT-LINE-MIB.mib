@@ -1,0 +1,464 @@
+--
+-- TR-024 ADSL-DMT-LINE-MIB
+-- Important: Pls read TR-024 that is dsl-forum doc before using this mib. 
+-- 
+
+ADSL-DMT-LINE-MIB DEFINITIONS ::= BEGIN
+    IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE FROM SNMPv2-SMI
+        MODULE-COMPLIANCE, OBJECT-GROUP FROM SNMPv2-CONF
+        ifIndex FROM IF-MIB
+        adslLCSMib, adslLineConfProfileName FROM ADSL-LINE-MIB ;
+
+
+-- DMT LCS MIB OBJECTS
+adslDMTMib MODULE-IDENTITY
+        LAST-UPDATED "9906221200Z"
+        ORGANIZATION "ADSL Forum"
+        CONTACT-INFO
+            "
+             Kevin Godfrey
+             Motorola Inc.
+             Colvilles Road, East Kilbride,
+             Glasgow, United Kingdom.
+             Tel: +44 1355 565597
+             Fax: +44 1355 261790
+             E-mail: ttz864@email.sps.mot.com
+
+             Gregory Bathrick
+             AG Communication Systems
+             2500 W Utopia Rd.
+             Phoenix, AZ 85027 USA
+             Tel: +1 602-582-7679
+             Fax: +1 602-582-7697
+             E-mail: bathricg@agcs.com
+
+             Chuck Storry
+             Newbridge Networks
+             600 March Rd.
+             Kanata, On, Canada K2K 2E6
+             Tel: +1 613-591-3600
+             Fax: +1 613-599-3634
+             E-mail: cstorry@newbridge.com
+            "
+        DESCRIPTION
+            "Naming Conventions:
+             Atuc -- (ATUC) modem at near (Central) end of line
+             Atur -- (ATUR) modem at Remote end of line
+             LCS -- Line Code Specific"
+::= {adslLCSMib 1}
+
+
+
+adslDMTMibObjects OBJECT IDENTIFIER ::= { adslDMTMib 1 }
+
+--DMT LINE TABLE
+adslLineDMTTable  OBJECT-TYPE
+        SYNTAX      SEQUENCE OF AdslLineDMTEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "DMT interface physical layer actuals information
+             table."
+        ::= {adslDMTMibObjects 1}
+
+
+adslLineDMTEntry  OBJECT-TYPE
+        SYNTAX      AdslLineDMTEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "DMT physical layer line actuals information entry"
+        INDEX    { ifIndex }
+        ::= {adslLineDMTTable 1}
+
+
+AdslLineDMTEntry ::=
+        SEQUENCE {
+        adslLineDMTEOC                    INTEGER
+        }
+
+        
+        adslLineDMTEOC  OBJECT-TYPE
+            SYNTAX      INTEGER {
+                unknown (1),
+                    -- eoc mode is unknown yet
+                transaction (2),
+                    -- eoc only operates in original transaction mode
+                streaming (3)
+                    -- eoc supports autonomous data streaming mode and
+                    -- original transaction mode
+                }
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "Reports whether the eoc can support autonomous data 
+                 streaming mode or only transaction mode. After 
+                 initialization, unknown is reported until 
+                 the capability of both ATUs has been 
+                 determined. Streaming support is only reported if both
+                 ATU's support this capability."
+            ::= { adslLineDMTEntry 1 }
+
+
+-- ATU-C PHYSICAL TABLE
+adslAtucDMTPhysTable  OBJECT-TYPE
+        SYNTAX      SEQUENCE OF AdslAtucDMTPhysEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "DMT interface physical layer actuals information
+             table for the central office."
+        ::= {adslDMTMibObjects 2}
+
+
+adslAtucDMTPhysEntry  OBJECT-TYPE
+        SYNTAX      AdslAtucDMTPhysEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "DMT physical layer actuals information entry"
+        INDEX    { ifIndex }
+        ::= {adslAtucDMTPhysTable 1}
+
+AdslAtucDMTPhysEntry ::=
+        SEQUENCE {
+        adslAtucDMTState                  INTEGER,
+        adslAtucDMTBinBits                OCTET STRING,
+        adslAtucDMTBinSNR                 OCTET STRING,
+        adslAtucDMTBinAtn                 OCTET STRING
+        }
+
+
+adslAtucDMTState  OBJECT-TYPE
+        SYNTAX      INTEGER {
+            other (1),       -- Unknown or other state
+            powerup (2),     -- DMT transceiver not yet configured
+            configure (3),   -- DMT transceiver being configured
+            idle (4),        -- transceiver is initialized but idle
+            quiet (5),       -- awaiting activation request from ATU-R
+            tone (6),        -- requesting ATU-R to be silent
+            activating (7),  -- activation in progress
+            training (8),    -- transceiver training in progress
+            analyzing (9),   -- channel analysis in progress
+            exchange (10),   -- exchanging final operating parameters
+            steadystate (11),   -- normal operating mode
+            notresponding (12)  -- DMT transceiver not responding
+            }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Reports current state of the ATU-C DMT transceiver.
+             The current state can change dynamically. The SNMP
+             agent reports the state after querying the ATU-C
+             state machine."
+        ::= { adslAtucDMTPhysEntry 1 }
+
+
+adslAtucDMTBinBits OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE (64))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Each octet contains the number of bits per bin
+             for the bin indexed by this element of the 
+             string. The 0th element contains the number of 
+             bits for bin 0 through to the 31st element 
+             which contains the number of bits for bin 31.
+             The range of expected values is from 0 to 15
+             bits per bin."
+        ::= { adslAtucDMTPhysEntry 2 }
+
+adslAtucDMTBinSNR OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE (64))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Each octet contains the SNR per bin
+             for the bin indexed by this element of the 
+             string. Each octet is coded as an unsigned
+             integer, ranging from 0 to 127, corresponding
+             to a 0 to 63.5 dB SNR (0.5 dB steps)."
+        ::= { adslAtucDMTPhysEntry 3 }
+
+adslAtucDMTBinAtn OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE (64))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Each octet contains the attenuation per bin
+             for the bin indexed by this element of the
+             string. Each octet is coded as an unsigned
+             integer, ranging from 0 to 255, corresponding
+             to a 0 to 127.5 dB Attenuation (0.5 dB
+             steps)."
+        ::= { adslAtucDMTPhysEntry 4 }
+
+
+-- ATU-R PHYSICAL TABLE
+adslAturDMTPhysTable  OBJECT-TYPE
+        SYNTAX      SEQUENCE OF AdslAturDMTPhysEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "DMT interface physical layer actuals information
+             table for the remote unit."
+        ::= {adslDMTMibObjects 3}
+
+
+adslAturDMTPhysEntry  OBJECT-TYPE
+        SYNTAX      AdslAturDMTPhysEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "DMT physical layer actuals information entry"
+        INDEX    { ifIndex }
+        ::= {adslAturDMTPhysTable 1}
+
+
+AdslAturDMTPhysEntry ::=
+        SEQUENCE {
+        adslAturDMTState                  INTEGER,
+        adslAturDMTBinBits                OCTET STRING,
+        adslAturDMTBinSNR                 OCTET STRING,
+        adslAturDMTBinAtn                 OCTET STRING
+        }
+
+
+adslAturDMTState  OBJECT-TYPE
+        SYNTAX      INTEGER {
+            other (1),       -- Unknown or other state
+            activating (2),  -- activation in progress
+            training (3),    -- transceiver training in progress
+            analyzing (4),   -- channel analysis in progress
+            exchange (5),    -- exchanging final operating parameters
+            steadystate (6)  -- normal operating mode
+            }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Reports current state of the ATU-R DMT transceiver.
+             The current state can change dynamically. ATU-R state is
+             reported by the SNMP agent at the ATU-C which infers the
+             state depending on the ATU-C state. When the inference
+             cannot be made, unknown state is returned."
+        ::= { adslAturDMTPhysEntry 1 }
+
+
+adslAturDMTBinBits OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE (512))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Each octet contains the number of bits per bin
+             for the bin indexed by this element of the 
+             string. The 0th element contains the number of 
+             bits for bin 0 through to the 255th element 
+             which contains the number of bits for bin
+             255. The range of expected values is from 0 to
+             15 bits per bin "
+        ::= { adslAturDMTPhysEntry 2 }
+
+adslAturDMTBinSNR OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE (512))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Each octet contains the SNR per bin
+             for the bin indexed by this element of the 
+             string. Each octet is coded as an unsigned
+             integer, ranging from 0 to 127, corresponding
+             to a 0 to 63.5 dB SNR (0.5 dB steps)."
+        ::= { adslAturDMTPhysEntry 3 }
+
+adslAturDMTBinAtn OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE (512))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Each octet contains the attenuation per bin
+             for the bin indexed by this element of the
+             string. Each octet is coded as an unsigned
+             integer, ranging from 0 to 255, corresponding
+             to a 0 to 127.5 dB Attenuation (0.5 dB
+             steps)."
+        ::= { adslAturDMTPhysEntry 4 }
+
+
+-- CHANNEL TABLES
+adslAtucDMTChanTable OBJECT IDENTIFIER ::= {adslDMTMibObjects 4}
+adslAturDMTChanTable OBJECT IDENTIFIER ::= {adslDMTMibObjects 5}
+
+
+-- PERFORMANCE DATA TABLES
+adslAtucDMTPerfDataTable OBJECT IDENTIFIER ::= {adslDMTMibObjects 6}
+adslAturDMTPerfDataTable OBJECT IDENTIFIER ::= {adslDMTMibObjects 7}
+
+
+-- INTERVAL TABLES
+adslAtucDMTIntervalTable OBJECT IDENTIFIER ::= {adslDMTMibObjects 8}
+adslAturDMTIntervalTable OBJECT IDENTIFIER ::= {adslDMTMibObjects 9}
+
+
+-- CHANNEL PERFORMANCE DATA TABLES
+adslAtucDMTChanPerfDataTable OBJECT IDENTIFIER ::= {adslDMTMibObjects 10}
+adslAturDMTChanPerfDataTable OBJECT IDENTIFIER ::= {adslDMTMibObjects 11}
+
+
+-- CHANNEL INTERVAL TABLES
+adslAtucDMTChanIntervalTable OBJECT IDENTIFIER ::= {adslDMTMibObjects 12}
+adslAturDMTChanIntervalTable OBJECT IDENTIFIER ::= {adslDMTMibObjects 13}
+
+
+-- CONFIGURATION FOR ATU-C/ATU-R DMT INTERFACES
+adslLineDMTConfProfileTable  OBJECT-TYPE
+        SYNTAX      SEQUENCE OF AdslLineDMTConfProfileEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "This table contains the target DMT specific configuration 
+             parameters for the physical layer before initialization."
+        ::= {adslDMTMibObjects 14}
+
+
+adslLineDMTConfProfileEntry  OBJECT-TYPE
+        SYNTAX      AdslLineDMTConfProfileEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "DMT interface config information entry"
+        INDEX    { adslLineConfProfileName }
+        ::= {adslLineDMTConfProfileTable 1}
+
+
+AdslLineDMTConfProfileEntry  ::=
+        SEQUENCE {
+        adslAtucDMTConfFreqBins           OCTET STRING,
+        adslAturDMTConfFreqBins           OCTET STRING,
+        adslLineDMTConfEOC                INTEGER
+        }
+
+-- Configuration profiles define the starting point for line
+-- initialization. After initialization is complete, the
+-- parameters may have changed due to the negotiation and rate
+-- options process. Check the adslAtucDMTPhysTable and
+-- adslLineDMTTable for the final settings.
+
+
+        adslAtucDMTConfFreqBins   OBJECT-TYPE
+            SYNTAX      OCTET STRING (SIZE(8))
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "A string of 32 bits to enable/disable the incoming DMT
+                 frequency bins that the ATU-C receiver monitors. Each
+                 bit controls one bin with the first bit of the first 
+                 octet controlling sub-carrier zero (lowest frequency 
+                 bin). A bit set to 1 disables reception of the specified
+                 sub-carrier frequency bin and a 0 enables reception."
+            DEFVAL      { '00000000'H }
+            ::= { adslLineDMTConfProfileEntry 1 }
+
+
+        adslAturDMTConfFreqBins   OBJECT-TYPE
+            SYNTAX      OCTET STRING (SIZE(64))
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "A string of 256 bits to enable/disable the incoming DMT
+                 frequency bins that the ATU-R receiver should monitor
+                 after the next activation. The mechanism to pass
+                 adslAturDMTConfFreqBins to the ATU-R is vendor specific.
+                 Each bit controls one bin with the first bit of the
+                 first octet controlling sub-carrier zero (lowest 
+                 frequency bin). A bit set to 1 disables reception of the 
+                 specified sub-carrier frequency bin and a 0 enables 
+                 reception."
+            DEFVAL      { '0000000000000000000000000000000000000000000000000000000000000000'H }
+            ::= { adslLineDMTConfProfileEntry 2 }
+
+
+        adslLineDMTConfEOC   OBJECT-TYPE
+            SYNTAX      INTEGER {
+                byte (1),
+                    -- eoc operates in byte transaction mode
+                streaming (2)
+                    -- eoc allows autonomous data streaming mode in
+                    -- addition to byte transaction mode
+                }
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "Defines the embedded operations channel mode for the DMT
+                 ADSL line."
+            DEFVAL      { byte }   -- default to byte transaction mode
+            ::= { adslLineDMTConfProfileEntry 3 }
+
+
+
+-- ALARM CONFIGURATION FOR BOTH ATU-C/ATU-R DMT INTERFACES
+adslLineDMTAlarmConfProfileTable OBJECT IDENTIFIER ::= {adslDMTMibObjects 15}
+
+adslDMTTraps OBJECT IDENTIFIER ::= { adslDMTMib 2 }
+-- place holder
+
+adslDMTConformance OBJECT IDENTIFIER ::= { adslDMTMib 3 }
+ 
+adslDMTGroups OBJECT IDENTIFIER      ::= { adslDMTConformance 1 }
+adslDMTCompliances OBJECT IDENTIFIER ::= { adslDMTConformance 2 }
+
+    -- compliance statements
+ 
+    adslLineMibCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "The compliance statement for SNMP entities
+         which have ADSL DMT interfaces."
+ 
+    MODULE  -- this module
+        MANDATORY-GROUPS { adslDMTGroup }
+
+        GROUP       adslDMTBinGroup
+        DESCRIPTION
+            "This group is optional. It is implemented when
+             per bin status information is available."
+
+        ::= { adslDMTCompliances 1 }
+
+
+    -- units of conformance
+
+    adslDMTGroup    OBJECT-GROUP
+        OBJECTS {
+            adslLineDMTEOC,
+            adslAtucDMTState,
+            adslAturDMTState, 
+            adslAtucDMTConfFreqBins,
+            adslAturDMTConfFreqBins,
+            adslLineDMTConfEOC
+            }
+        STATUS     current
+        DESCRIPTION
+            "A collection of objects providing management 
+            information about an DMT ADSL Line."
+        ::= { adslDMTGroups 1 }
+
+    adslDMTBinGroup OBJECT-GROUP
+        OBJECTS {
+            adslAtucDMTBinBits,
+            adslAtucDMTBinSNR,
+            adslAtucDMTBinAtn,
+            adslAturDMTBinBits,
+            adslAturDMTBinSNR,
+            adslAturDMTBinAtn
+            }
+        STATUS    current
+        DESCRIPTION
+            "A collection of objects providing per bin
+             information about a DMT ADSL Line."
+        ::= { adslDMTGroups 2 }
+
+
+END
+
+

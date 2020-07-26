@@ -1,0 +1,1085 @@
+            
+        
+CPE-DSL-MIB DEFINITIONS ::= BEGIN
+ 
+		IMPORTS
+			atmVclVpi, atmVclVci			
+				FROM ATM-MIB			
+			ifIndex			
+				FROM RFC1213-MIB			
+			enterprises, IpAddress, Integer32, Unsigned32, OBJECT-TYPE, 
+			   MODULE-IDENTITY,  NOTIFICATION-TYPE			
+				FROM SNMPv2-SMI
+			DisplayString, RowStatus, DateAndTime,TEXTUAL-CONVENTION			
+                FROM SNMPv2-TC
+            ppp FROM PPP-SEC-MIB
+            zxcpeConifgInfoTable FROM ZTE-DSL-CPE-MIB;
+	
+		cpeDSL MODULE-IDENTITY 
+			LAST-UPDATED "200406301800Z"
+			ORGANIZATION "China Telecom "
+			CONTACT-INFO 
+				"109 Zhongshan Ave,Tianhe District,Guangzhou,P.R.C,
+				China Telecom-Guangzhou Research and Development Center,
+				Guo Maowen  "
+			DESCRIPTION "DSL CPE MIB."
+			::= { enterprises 16972	 }  
+
+		EnableAdmin ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION "Enable operation switch "
+			SYNTAX INTEGER
+				{
+				enable(1),
+				disable(2)
+				}
+			
+		PvcIfIndexRange ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION "ifIndex range of PVC AAL5"
+			SYNTAX Integer32 (150000..159999)
+			
+		PppIfIndexRange ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION "ifIndex range of PPP ."
+			SYNTAX Integer32 (210000..219999)
+			
+		EthernetIfIndexRange ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION 
+				"
+				ifIndex range of Ethernet interface."
+			SYNTAX Integer32 (10000..19999)
+
+		UsbIfIndexRange ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION 
+				"ifIndex range of usb interface."
+			SYNTAX Integer32 (20000..29999)
+
+		Ieee8022Dot1xIfIndexRange ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION "ifIndex range of 802.1X interface."
+			SYNTAX Integer32 (30000..39999)
+
+		AdslIfIndexRange ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION "ifIndex range of ADSL interface."
+			SYNTAX Integer32 (40000..49999)
+
+		ModemIfIndexRange ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION "ifIndex range of Modem interface."
+			SYNTAX Integer32 (50000..59999)
+
+		Rs232IfIndexRange ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION "ifIndex range of RS232 interface."
+			SYNTAX Integer32 (60000..69999)
+
+		BridgeIfIndexRange ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION "ifIndex range of bridge interface."
+			SYNTAX Integer32 (110000..119999)
+
+		AdslInterLeaveIfIndexRange ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION "ifIndex range of ADSL interleave mode interface."
+			SYNTAX Integer32 (120000..129999)
+
+		AdslFastIfIndexRange ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION "ifIndex range of ADSL fast mode interface."
+			SYNTAX Integer32 (130000..139999)
+
+		AdslAtmIfIndexRange ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION "ifIndex range of ATM interface."
+			SYNTAX Integer32 (140000..149999)
+
+
+		cpeSysInfo OBJECT IDENTIFIER ::= { cpeDSL 1 }
+
+		cpeSysInfoUptime OBJECT-TYPE
+			SYNTAX Integer32
+			UNITS "Seconds"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"It is the working time since CPE rebooted. "
+			::= { cpeSysInfo 1 }
+		
+		cpeSysInfoConfigId OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION ""
+			::= { cpeSysInfo 2 }
+		
+		cpeSysInfoChipSet OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (0..128))
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION "Chipset version information. "
+			::= { cpeSysInfo 3 }
+		
+		cpeSysInfoProductId OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (0..16))
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION "CPE product module	"
+			::= { cpeSysInfo 4 }
+		
+		cpeSysInfoVendorId OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (0..16))
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION "the name of CPE vendor."
+			::= { cpeSysInfo 5 }
+		
+		cpeSysInfoSystemVersion OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (0..32))
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION "CPE's system version"
+			::= { cpeSysInfo 6 }
+		
+		cpeSysInfoWorkMode  OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				bridge(1),
+				router(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION "CPE's work mode. "
+			::= { cpeSysInfo 7 }
+
+		cpeSysInfoMibVersion OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..8))
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION "MIB's version "
+			::= { cpeSysInfo 8 }
+		
+		cpeSysInfoSerialNumber OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..32))
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION "CPE's physical number "
+			::= { cpeSysInfo 9 }
+
+		cpeSysInfoManufacturerOui  OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..3))
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION "the OUI£¨Organizationally Unique Identifier £©of IEEE standard organization provided ¡£"
+			::= { cpeSysInfo 10 }
+		
+		cpeConfig OBJECT IDENTIFIER ::= { cpeDSL 2 }
+		
+		cpeSystem OBJECT IDENTIFIER ::= { cpeConfig 1 }
+		
+		cpeSystemReboot OBJECT-TYPE
+			SYNTAX INTEGER { reboot(1) }
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION "Rebooting CPE's operation"
+			::= { cpeSystem 1 }
+		
+		cpeSystemSave OBJECT-TYPE
+			SYNTAX INTEGER { save(1) }
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION "saving the CPE's configuration to NVRAM "
+			::= { cpeSystem 2 }
+		
+		cpeSystemRestore OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				restoreToNull(1),
+				restoreToDefault(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Restore CPE's configuration£º
+				restoreToNull(1),  £ºclear all of the configuration
+				restoreToDefault(2)£ºrestore to default configuration "
+			::= { cpeSystem 3 }
+		
+		cpeSystemTrapEnable OBJECT-TYPE
+			SYNTAX EnableAdmin
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"				
+				trap notification switch, if set to ¡®Disable'£¬
+				CPE will not send trap notification untill it is set to ¡®enable'¡£
+				"
+			DEFVAL { enable }
+			::= { cpeSystem 4 }
+		
+		cpeBootTrapResponse OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				noResponse(1),
+				ResponseCfgReady(2),
+                 ResponseReCfg(3)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				It is the boottrap response identity¡£
+				Every time,CPE is cold started £¬it is set to noResponse¡£"
+			DEFVAL { noResponse }
+			::= { cpeSystem 5 }
+		
+		cpeReservedString OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..255))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				It is the reserved string "
+			::= { cpeSystem 6 }
+		
+		cpeConfigAdslLine OBJECT IDENTIFIER ::= { cpeConfig 2 }
+		
+		cpeConfigAdslLineTrellis OBJECT-TYPE
+			SYNTAX EnableAdmin
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION "trellis encoding configuration. "
+			DEFVAL { enable }
+			::= { cpeConfigAdslLine 1 }
+		
+		cpeConfigAdslLineHandshake OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				autosenseGdmtFirst(1),   
+				autosenseT1413First(2),  
+				gdmtOrLite(3),  
+				t1413(4),  
+				gdmt(5),  
+				glite(6),  
+				autosense(7), 
+				autosenseADSL2PlusFirst(8)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				link handshake negotiation mode configuration 	    
+				"
+			DEFVAL { autosense }
+			::= { cpeConfigAdslLine 2 }
+
+		cpeConfigAdslLineBitSwapping OBJECT-TYPE
+			SYNTAX EnableAdmin
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				BITSWAP encoding configuration 
+				"
+			DEFVAL { enable }
+			::= { cpeConfigAdslLine 3 }
+		
+		cpePvcTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF CpePvcEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				PVC VCL configuration table
+				It is RFC2515 ATM-MIB atmVclTable's extended table
+				"
+			::= { cpeConfig 3 }
+		
+		cpePvcEntry OBJECT-TYPE
+			SYNTAX CpePvcEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				PVC VCL configuration entry
+				"
+			INDEX { ifIndex, atmVclVpi, atmVclVci }
+			::= { cpePvcTable 1 }
+		
+		CpePvcEntry ::=
+			SEQUENCE { 
+				cpePvcId 
+					Integer32,
+				cpePvcIfIndex 
+					PvcIfIndexRange,
+				cpePvcUpperEncapsulation
+					INTEGER,
+				cpePvcAdminStatus
+					INTEGER,
+				cpePvcOperStatus
+					INTEGER,
+				cpePvcBridgeMode
+					EnableAdmin,
+				cpePvcMacLearnMode
+					EnableAdmin,
+				cpePvcIgmpMode
+					EnableAdmin,
+				cpePvcDhcpClientMode 
+					EnableAdmin,
+				cpePvcNatMode
+					EnableAdmin
+			 }
+
+          	cpePvcId OBJECT-TYPE
+	     		SYNTAX Integer32
+	     		MAX-ACCESS read-only
+	     		STATUS current
+	     		DESCRIPTION
+		     	"
+		 	PVC number£¬It is used for  identify PVC in CPE"
+	     		::= { cpePvcEntry 1 }
+
+		cpePvcIfIndex OBJECT-TYPE
+			SYNTAX PvcIfIndexRange
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				this parameter is used for bonding upper layer service's index
+				"
+			::= { cpePvcEntry 3 }
+		
+		cpePvcUpperEncapsulation OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				pppoA(1),
+				pppoE(2),
+				router1483(3),
+				pureBridge1483(4),
+				bridge1483PlusIp(5),
+				ilmi(7),
+				other(255) 
+				}
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"
+				PVC service encapsulation type
+				"
+			DEFVAL { other }  
+			::= { cpePvcEntry 4 }
+
+		cpePvcAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				up(1),
+				down(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				PVC active and deactive operation
+				"
+			::= { cpePvcEntry 5 }
+		
+		cpePvcOperStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				up(1),
+				down(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				PVC active and deactive status"
+			::= { cpePvcEntry 6 }
+
+		cpePvcBridgeMode OBJECT-TYPE
+			SYNTAX EnableAdmin
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				bridge mode configuration£¬
+				only when cpePvcUpperEncapsulation is set to ¡®bridge1483'£¬this configuration 
+                 is available
+				"
+			DEFVAL { disable }
+			::= { cpePvcEntry 7 }
+		
+		cpePvcMacLearnMode OBJECT-TYPE
+			SYNTAX EnableAdmin
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				MAC address learn mode configuration"
+			DEFVAL { disable }
+			::= { cpePvcEntry 8 }
+		
+		cpePvcIgmpMode OBJECT-TYPE
+			SYNTAX EnableAdmin
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				if IGMP traffic and internet traffic service is beared by different PVC£¬It  can  
+                 be configured by this parameter"
+			DEFVAL { enable }
+			::= { cpePvcEntry 9 }
+
+	         cpePvcDhcpClientMode  OBJECT-TYPE
+			SYNTAX EnableAdmin
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				DHCP client mode configuration"
+			DEFVAL { disable }
+			::= { cpePvcEntry 10 }
+
+
+		cpePvcNatMode OBJECT-TYPE
+			SYNTAX EnableAdmin
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				NAT mode configuration"
+			DEFVAL { disable }
+			::= { cpePvcEntry 11 }
+
+		cpePppTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF CpePppEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				PPP configuration table,it is pppSecuritySecretsTable's extended table¡£
+				pppSecuritySecretsLink is set to 0£¬ 
+				cpePppIfIndex £½ pppSecuritySecretsIdIndex£¬ 
+				"
+			::= { cpeConfig 4 }
+		
+		cpePppEntry OBJECT-TYPE
+			SYNTAX CpePppEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				PPP configuration entry"
+			INDEX { cpePppIfIndex }
+			::= { cpePppTable 1 }
+		
+		CpePppEntry ::=
+			SEQUENCE { 
+				cpePppIfIndex
+					PppIfIndexRange,
+				cpePppPvcIfIndex
+					PvcIfIndexRange,
+				cpePppoEServiceName
+					DisplayString,
+				cpePppDisconnectTimeout
+					INTEGER,
+				cpePppMSS
+					INTEGER,
+				cpePppRowStatus
+					RowStatus,
+				cpePppAdminStatus
+					INTEGER,
+				cpePppOperStatus
+					INTEGER,
+				cpePppTestResult
+					INTEGER
+
+			 }
+
+		cpePppIfIndex OBJECT-TYPE
+			SYNTAX PppIfIndexRange
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"				
+				ppp's index "
+			::= { cpePppEntry 1 }
+		
+		cpePppPvcIfIndex OBJECT-TYPE
+			SYNTAX PvcIfIndexRange
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"
+				the lower layer logic interface index for ppp"
+			::= { cpePppEntry 2 }
+		
+		cpePppoEServiceName OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (0..31))
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"
+				PPPOE service name
+                 "
+			DEFVAL { "" }
+			::= { cpePppEntry 3 }
+		
+		cpePppDisconnectTimeout OBJECT-TYPE
+			SYNTAX INTEGER (0..32767)
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"
+				PPP negotiation procedure's timeout parameter
+ 				"
+			DEFVAL { 0 }
+			::= { cpePppEntry 4 }
+		
+		cpePppMSS OBJECT-TYPE
+			SYNTAX INTEGER (0..32767)
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"
+				max PPP packet length"
+			DEFVAL { 1432 }
+			::= { cpePppEntry 5 }
+		
+		cpePppRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"PPP table's row status"
+			::= { cpePppEntry 6 }
+
+
+		cpePppAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				up(1),
+				down(2),
+				test(3),
+				cancel(4)			
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Ppp link operation:
+				up(1),  	activate operation
+				down(2), deactivate operation
+				test(3),   	PPP test
+				cancel(4)  	stop Ppp test 
+				"
+			::= { cpePppEntry 7}
+		
+		cpePppOperStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				up(1),
+				down(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				ppp link status
+				up(1):  active status
+				down(2):deactive status
+				"
+			::= { cpePppEntry 8}
+
+		cpePppTestResult OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+                    success(1),
+                    testing(2),
+                    authFail(3),
+                    failure(4)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				ppp test result£º
+				success(1),
+				authFail(2),
+				Failure(3) 
+				"
+			::= { cpePppEntry 9 }
+
+		
+
+		
+		cpeIpTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF CpeIpEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				IP address table"
+			::= { cpeConfig 5 }
+		
+		cpeIpEntry OBJECT-TYPE
+			SYNTAX CpeIpEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Interface's IP address entry"
+			INDEX { cpeIpIndex }
+			::= { cpeIpTable 1 }
+		
+		CpeIpEntry ::=
+			SEQUENCE { 
+				cpeIpIndex
+					INTEGER,
+				cpeIpLowerIfIndex
+					INTEGER,
+				cpeIPAddress
+					IpAddress,
+				cpeIpNetmask
+					IpAddress,
+				cpeIpGateway
+					IpAddress,
+				cpeIpRowStatus
+					RowStatus,
+        cpeIpDefaultRouteOnOff
+          EnableAdmin
+									
+			 }
+
+		cpeIpIndex OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				IP address table's index"
+			::= { cpeIpEntry 1 }
+		
+		cpeIpLowerIfIndex OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"lower layer's logic index"
+			::= { cpeIpEntry 2 }
+		
+		cpeIPAddress OBJECT-TYPE
+			SYNTAX IpAddress
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"
+				IP address"
+			::= { cpeIpEntry 3 }
+		
+		cpeIpNetmask OBJECT-TYPE
+			SYNTAX IpAddress
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"
+				IP address netmask"
+			::= { cpeIpEntry 4 }
+		
+		cpeIpGateway OBJECT-TYPE
+			SYNTAX IpAddress
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"
+				the default gateway address"
+			::= { cpeIpEntry 5 }
+		
+		cpeIpRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"
+				the row status of IP address table"
+			::= { cpeIpEntry 6 }
+		
+		
+		cpeIpDefaultRouteOnOff OBJECT-TYPE
+      SYNTAX EnableAdmin
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+          "This object describes whether the interface can be 
+           used as default route interface or not.
+      "
+      DEFVAL { enabled }
+      ::= { cpeIpEntry 7 }
+
+
+
+		cpeLanDhcp OBJECT IDENTIFIER ::= { cpeConfig 6 }
+		
+		cpeLanDhcpAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				noSupport(1),
+				dhcpServer(2),
+				dhcpRelay(3)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				dhcp mode configuration£º
+				noSupport(1), no support dhcp 
+				dhcpServer(2),support dhcp server 
+				dhcpRelay(3)£ºsupport dhcp relay
+				"
+			DEFVAL { noSupport }
+			::= { cpeLanDhcp 1 }
+	
+
+		cpeWanDns OBJECT IDENTIFIER ::= { cpeConfig 7}
+		cpeDnsPrimaryAddress OBJECT-TYPE
+			SYNTAX IpAddress
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the primary DNS IP address"
+			::= { cpeWanDns 1}
+		
+		cpeDnsSecondAddress OBJECT-TYPE
+			SYNTAX IpAddress
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the secondary DNS IP address"
+			::= { cpeWanDns 2}
+
+	
+		cpeSysLog OBJECT IDENTIFIER ::= { cpeDSL 3 }
+		
+		cpeSysLogBeginTime OBJECT-TYPE
+			SYNTAX DateAndTime
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				syslog requery's begin time
+				"
+			::= { cpeSysLog 1 }
+		
+		cpeSysLogEndTime OBJECT-TYPE
+			SYNTAX DateAndTime
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				syslog requery's end time 
+				"
+			::= { cpeSysLog 2 }
+		
+		cpeSysLogAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				start(1),   
+				clear(2)    
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+			"
+			 requery syslog operation 
+				start(1),  start requery syslog 
+				clear(2),  clear CPE's syslog record"
+			
+			::= { cpeSysLog 3 }
+		
+		cpeSysLogTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF CpeSysLogEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				syslog record's table"
+			::= { cpeSysLog 4 }
+		
+		cpeSysLogEntry OBJECT-TYPE
+			SYNTAX CpeSysLogEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				syslog record's entry "
+			INDEX { cpeSysLogIndex }
+			::= { cpeSysLogTable 1 }
+		
+		CpeSysLogEntry ::=
+			SEQUENCE { 
+				cpeSysLogIndex
+					Unsigned32,
+				cpeSysLogContent
+					DisplayString
+			 }
+
+		cpeSysLogIndex OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				the syslog record's index¡£"
+			::= { cpeSysLogEntry 1 }
+		
+		cpeSysLogContent OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				the syslog's detail description¡£"
+			::= { cpeSysLogEntry 2 }
+
+		cpeFtp OBJECT IDENTIFIER ::= { cpeDSL 4 }
+		
+		cpeFtpIP OBJECT-TYPE
+			SYNTAX IpAddress
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the FTP Server's IP address"
+			::= { cpeFtp 1 }
+		
+		cpeFtpUser OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (0..127))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the user name for FTP"
+			::= { cpeFtp 2 }
+		
+		cpeFtpPasswd OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (0..127))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the access password for FTP"
+			::= { cpeFtp 3 }
+		
+		cpeFtpFileName OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (4..255))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the file name for ftp download which is saved in FTP server.
+				"
+			::= { cpeFtp 4 }
+		
+
+		cpeFTPAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				stop(1),
+				upgrade(2),
+				ftpTest(3)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				FTP administration operation"
+			::= { cpeFtp 5 }
+		
+		cpeFtpOperStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				connectSuccess(2),
+				connectFailure(3),
+				downloading(4),
+				downloadSuccess(5),
+				downloadFailure(6),
+				saving(7),
+				saveFailure(8),
+				upgradeSuccess(9),
+				upgradeFailure(10)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				FTP administration status
+				"
+			::= { cpeFtp 6 }
+		
+		cpeFtpTotalSize OBJECT-TYPE
+			SYNTAX Integer32
+			UNITS "byte"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				the file's total size for download£¬unit is Kbyte "
+			::= { cpeFtp 8 }
+		
+		cpeFtpDoneSize OBJECT-TYPE
+			SYNTAX Integer32
+			UNITS "byte"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				the file's size which is already download£¬ unit is Kbyte"
+			::= { cpeFtp 9 }
+		
+		cpeFtpElapseTime OBJECT-TYPE
+			SYNTAX Integer32
+			UNITS "second"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				the elapse time for FTP download "
+			::= { cpeFtp 10 }
+		
+		cpeDiagnose OBJECT IDENTIFIER ::= { cpeDSL 5 }
+		
+		cpePing OBJECT IDENTIFIER ::= { cpeDiagnose 1 }
+		
+		cpePingAddr OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (4..255))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				 the destination IP address for ping test£¬either IP or Domain name"
+			DEFVAL { "http://www.chinatelecom.com.cn" }
+			::= { cpePing 1 }
+		
+		cpePingPkgSize OBJECT-TYPE
+			SYNTAX INTEGER (32..4096)
+			UNITS "byte"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the packet size for ping test "
+			DEFVAL { 32 }
+			::= { cpePing 2 }
+		
+		cpePingCount OBJECT-TYPE
+			SYNTAX INTEGER (0..32767)
+			UNITS "unit"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the count of sending packets for ping test"
+			DEFVAL { 4 }
+			::= { cpePing 3 }
+		
+		cpePingAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				stop(1),
+				start(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				ping test operation
+				stop(1), start ping test
+				start(2) stop ping test
+				"
+			::= { cpePing 4 }
+		
+
+		cpePingOperStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				pinging(2),
+				success(3),
+				failure(4)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				ping test operation status
+				"
+			::= { cpePing 5 }
+		
+		cpePingResult OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				 ping test result£º
+				  IP £½ 10.1.1.100
+				  Sent     = xx 
+				  Received = xx 
+				  Lost     = xx 
+				  Min      = xx ms 
+				  Max      = xx ms 
+				  Average  = xx ms
+				"
+			::= { cpePing 6 }
+		
+		cpeTrap OBJECT IDENTIFIER ::= { cpeDSL 6 }
+		
+		cpeTraps OBJECT IDENTIFIER ::= { cpeTrap 0 }
+
+		cpeBootTrap  NOTIFICATION-TYPE
+			OBJECTS { cpeSysInfoConfigId, cpeSysInfoFirmwareVersion , cpeSysInfoProductId, 
+				   cpeSysInfoVendorId, cpeSysInfoManufacturerOui, cpeSysInfoSystemVersion, 
+                    cpeSysInfoWorkMode, cpeSysInfoMibVersion  
+				 }
+			STATUS current
+			DESCRIPTION 
+				"
+				trap notification when CPE is cold started. CPE is needed to send all parameters  
+                in one trap packet.
+				"
+			::= { cpeTraps 1 }
+		
+		cpeFtpDone NOTIFICATION-TYPE
+			OBJECTS { cpeFTPAdminStatus, cpeFtpOperStatus }
+			STATUS current
+			DESCRIPTION 
+				"
+				trap notification when ftp download is finished "
+			::= { cpeTraps 2 }
+		
+		cpePingDone NOTIFICATION-TYPE
+			OBJECTS { cpePingOperStatus }
+			STATUS current
+			DESCRIPTION 
+				"
+				trap notification when PING test is finished 
+                 "
+			::= { cpeTraps 3 }
+
+		cpePppTestDone NOTIFICATION-TYPE
+			OBJECTS { cpePppTestResult }
+			STATUS current
+			DESCRIPTION 
+				"trap notification when PPP test is finished "
+			::= { cpeTraps 4}
+
+    
+    importPppMib OBJECT IDENTIFIER ::= { ppp 1000 }
+
+    END

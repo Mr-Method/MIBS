@@ -1,0 +1,36 @@
+ZTE-EXAMPLE-MIB DEFINITIONS ::= BEGIN
+IMPORTS 
+        MODULE-IDENTITY, OBJECT-TYPE,NOTIFICATION-TYPE,
+            IpAddress,TimeTicks,Counter32, Gauge32          FROM SNMPv2-SMI
+        RowStatus                                           FROM SNMPv2-TC
+        SnmpAdminString                                     FROM SNMP-FRAMEWORK-MIB
+        zxDsl                                               FROM ZTE-DSL-SYS-MIB;
+
+
+zxDslXXXXMib MODULE-IDENTITY
+    LAST-UPDATED "200404151500Z"
+    ORGANIZATION "ZTE Corporation"
+    CONTACT-INFO ""
+    DESCRIPTION  "This MIB defines zte dsl ..........        managed objects. "
+    ::= {zxDsl 7}
+
+
+zxDslXXXXObjects     OBJECT IDENTIFIER ::= {zxDslXXXXMib 1}
+zxDslXXXXTrapObjects OBJECT IDENTIFIER ::= {zxDslXXXXMib 2}
+
+--  Is support adsl2+
+
+    zxAdslIsSupportAdsl2Plus  OBJECT-TYPE
+        SYNTAX      INTEGER {
+            Support   (1),
+            noSupport (2)
+            }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "A flag is to indicate whether this device is support Adsl2Plus management."
+        ::= {zxDslXXXXObjects 11 }
+        
+
+
+END

@@ -1,0 +1,606 @@
+-- SUN2232 control MIB.
+--
+-- Author                   Date        Comment
+-- ==================================================================
+-- SUN2232 Monitoring         03/04/2017  
+--
+
+etherpower DEFINITIONS ::= BEGIN
+
+IMPORTS
+   enterprises, IpAddress, Gauge, TimeTicks     FROM RFC1155-SMI
+   DisplayString                                FROM RFC1213-MIB
+   OBJECT-TYPE                                  FROM RFC-1212
+   TRAP-TYPE                                    FROM RFC-1215;
+
+etherpower                     OBJECT IDENTIFIER ::=  { enterprises 38815 }
+
+product                     OBJECT IDENTIFIER ::=  { etherpower 1 }
+setup                       OBJECT IDENTIFIER ::=  { etherpower 2 }
+control                     OBJECT IDENTIFIER ::=  { etherpower 3 }
+deviceinfo                  OBJECT IDENTIFIER ::=  { etherpower 4 }
+
+sensors						OBJECT IDENTIFIER ::=  { setup 1 }
+digitals					OBJECT IDENTIFIER ::=  { setup 2 }
+outputs						OBJECT IDENTIFIER ::=  { setup 3 }
+analogs						OBJECT IDENTIFIER ::=  { setup 4 }
+
+sensor1						OBJECT IDENTIFIER ::=  { sensors 1 }
+sensor2						OBJECT IDENTIFIER ::=  { sensors 2 }
+
+diginput1					OBJECT IDENTIFIER ::=  { digitals 1 }
+diginput2					OBJECT IDENTIFIER ::=  { digitals 2 }
+
+output1						OBJECT IDENTIFIER ::=  { outputs 1 }
+output2						OBJECT IDENTIFIER ::=  { outputs 2 }
+
+aninput1					OBJECT IDENTIFIER ::=  { analogs 1 }
+aninput2					OBJECT IDENTIFIER ::=  { analogs 2 }
+
+--ON-OFF          ::=   INTEGER { on(1), off(0) }
+
+PositiveInteger ::= INTEGER (1..2147483647)	-- 0x7FFF FFFF
+
+
+name    OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Name of product. e.g. etherpower etc."
+   ::= { product 1 }
+   
+
+version    OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Version string. e.g. 1.0"
+   ::= { product 2 }
+
+deviceMACAddress OBJECT-TYPE
+	SYNTAX	OCTET STRING (SIZE(6))
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"Device MAC address."
+	::= { deviceinfo 1 }   
+	
+sens1ID OBJECT-TYPE
+	SYNTAX  OCTET STRING (SIZE(6))
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"Temperature sensor ID."
+	::= { sensor1 1 } 
+	
+sens1Name OBJECT-TYPE
+	SYNTAX  DisplayString (SIZE (0..18))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Temperature sensor Name."
+	::= { sensor1 2 } 
+	
+temp1Lower OBJECT-TYPE
+	SYNTAX  INTEGER ( -400..1250 )
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Temperature low range in integer (decimal x 10) format."
+	::= { sensor1 3 }  
+	
+temp1Upper OBJECT-TYPE
+	SYNTAX  INTEGER ( -400..1250 )
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Temperature upper range in integer (decimal x 10) format."
+	::= { sensor1 4 }  
+	
+temp1Hyst OBJECT-TYPE
+	SYNTAX  INTEGER ( 0..1250 )
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Temperature hysteresis in integer (decimal x 10) format."
+	::= { sensor1 5 } 
+	
+temp1Email OBJECT-TYPE
+	SYNTAX  INTEGER { no(0), yes(1) }
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Temperature email alarm alert."
+	::= { sensor1 6 } 
+	
+temp1Trap OBJECT-TYPE
+	SYNTAX  INTEGER { no(0), yes(1) }
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Temperature trap alarm alert."
+	::= { sensor1 7 } 
+
+humi1Lower OBJECT-TYPE
+	SYNTAX  INTEGER ( 0..1000 )
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Humidity low range in integer (decimal x 10) format."
+	::= { sensor1 8 } 
+	
+humi1Upper OBJECT-TYPE
+	SYNTAX  INTEGER ( 0..1000 )
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Humidity upper range in integer (decimal x 10) format."
+	::= { sensor1 9 } 
+	
+humi1Hyst OBJECT-TYPE
+	SYNTAX  INTEGER ( 0..1000 )
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Humidity hysteresis in integer (decimal x 10) format."
+	::= { sensor1 10 } 
+	
+humi1Email OBJECT-TYPE
+	SYNTAX  INTEGER { no(0), yes(1) }
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Humidity email alarm alert."
+	::= { sensor1 11 }
+	
+humi1Trap OBJECT-TYPE
+	SYNTAX  INTEGER { no(0), yes(1) }
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Humidity trap alarm alert."
+	::= { sensor1 12 } 	
+		
+sens2ID OBJECT-TYPE
+	SYNTAX  OCTET STRING (SIZE(6))
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"Temperature sensor ID."
+	::= { sensor2 1 } 
+		
+sens2Name OBJECT-TYPE
+	SYNTAX  DisplayString (SIZE (0..18))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Temperature sensor Name."
+	::= { sensor2 2 }
+	
+temp2Lower OBJECT-TYPE
+	SYNTAX  INTEGER ( -400..1250 )
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Temperature low range in integer (decimal x 10) format."
+	::= { sensor2 3 }  	
+	
+temp2Upper OBJECT-TYPE
+	SYNTAX  INTEGER ( -400..1250 )
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Temperature upper range in integer (decimal x 10) format."
+	::= { sensor2 4 }  
+	
+temp2Hyst OBJECT-TYPE
+	SYNTAX  INTEGER ( 0..1250 )
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Temperature hysteresis in integer (decimal x 10) format."
+	::= { sensor2 5 } 
+	
+temp2Email OBJECT-TYPE
+	SYNTAX  INTEGER { no(0), yes(1) }
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Temperature email alarm alert."
+	::= { sensor2 6 } 
+	
+temp2Trap OBJECT-TYPE
+	SYNTAX  INTEGER { no(0), yes(1) }
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Temperature trap alarm alert."
+	::= { sensor2 7 } 
+	
+humi2Lower OBJECT-TYPE
+	SYNTAX  INTEGER ( 0..1000 )
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Humidity low range in integer (decimal x 10) format."
+	::= { sensor2 8 } 
+	
+humi2Upper OBJECT-TYPE
+	SYNTAX  INTEGER ( 0..1000 )
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Humidity upper range in integer (decimal x 10) format."
+	::= { sensor2 9 } 
+	
+humi2Hyst OBJECT-TYPE
+	SYNTAX  INTEGER ( 0..1000 )
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Humidity hysteresis in integer (decimal x 10) format."
+	::= { sensor2 10 } 
+	
+humi2Email OBJECT-TYPE
+	SYNTAX  INTEGER { no(0), yes(1) }
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Humidity email alarm alert."
+	::= { sensor2 11 }
+	
+humi2Trap OBJECT-TYPE
+	SYNTAX  INTEGER { no(0), yes(1) }
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Humidity trap alarm alert."
+	::= { sensor2 12 } 		
+	
+tempUnit OBJECT-TYPE
+    SYNTAX INTEGER { celcius(0), fahrenheit(1) }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Temperature sensor unit."
+    ::= { sensors 3 }
+		
+input1Name OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..16))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Name of digital input 1."
+    ::= { diginput1 1 }
+	
+input1AlarmState OBJECT-TYPE
+    SYNTAX INTEGER { disabled(0), activeIfClosed(1) }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm state ot digital input 1."
+    ::= { diginput1 2 }
+	
+input1TrapEnable OBJECT-TYPE
+    SYNTAX INTEGER { no(0), yes(1) }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Enable trap from digital input 1."
+    ::= { diginput1 3}
+	
+input1MailEnable OBJECT-TYPE
+    SYNTAX INTEGER { no(0), yes(1) }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Enable mail from digital input 1."
+    ::= { diginput1 4}
+	
+input2Name OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..16))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Name of digital input 2."
+    ::= { diginput2 1 }
+	
+input2AlarmState OBJECT-TYPE
+    SYNTAX INTEGER { disabled(0), activeIfClosed(1) }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm state ot digital input 2."
+    ::= { diginput2 2 }
+		
+input2TrapEnable OBJECT-TYPE
+    SYNTAX INTEGER { no(0), yes(1) }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Enable trap from digital input 2."
+    ::= { diginput2 3}
+	
+input2MailEnable OBJECT-TYPE
+    SYNTAX INTEGER { no(0), yes(1) }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Enable mail from digital input 2."
+    ::= { diginput2 4}
+	
+out1Name OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..16))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Name of relay 1 output."
+    ::= { output1 1 }
+	
+out1Control	OBJECT-TYPE
+    SYNTAX INTEGER { manual(0), dryContactInput(1), dryContactInput(2), analogInput1(3), analogInput2(4), sens1temp(5), sens1hum(6), sens2temp(7), sens2hum(8), allSensors(9)}
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Setup control of relay 1."
+    ::= { output1 2}
+	
+out2Name OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..16))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Name of relay 1 output."
+    ::= { output2 1 }
+		
+out2Control	OBJECT-TYPE
+    SYNTAX INTEGER { manual(0), dryContactInput(1), dryContactInput(2), analogInput1(3), analogInput2(4), sens1temp(5), sens1hum(6), sens2temp(7), sens2hum(8), allSensors(9)}
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Setup control of relay 1."
+    ::= { output2 2}
+
+analog1Name OBJECT-TYPE
+	SYNTAX  DisplayString (SIZE (0..18))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Analog 1 input Name"
+	::= { aninput1 1 } 
+	
+analog1Lower OBJECT-TYPE
+	SYNTAX  INTEGER ( 0..60000 )
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Analog 1 low range in integer (decimal x 1000) format."
+	::= { aninput1 2 }  
+	
+analog1Upper OBJECT-TYPE
+	SYNTAX  INTEGER ( 0..60000 )
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Analog 1 upper range in integer (decimal x 1000) format."
+	::= { aninput1 3 }  
+	
+analog1Hyst OBJECT-TYPE
+	SYNTAX  INTEGER ( 0..60000 )
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Analog 1 hysteresis in integer (decimal x 1000) format."
+	::= { aninput1 4 } 
+	
+analog1Email OBJECT-TYPE
+	SYNTAX  INTEGER { no(0), yes(1) }
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Analog 1 email alarm alert."
+	::= { aninput1 5 } 
+	
+analog1Trap OBJECT-TYPE
+	SYNTAX  INTEGER { no(0), yes(1) }
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Analog 1 trap alarm alert."
+	::= { aninput1 6 } 
+	
+analog2Name OBJECT-TYPE
+	SYNTAX  DisplayString (SIZE (0..18))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Analog 2 input Name"
+	::= { aninput2 1 } 
+	
+analog2Lower OBJECT-TYPE
+	SYNTAX  INTEGER ( 0..60000 )
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Analog 2 low range in integer (decimal x 1000) format."
+	::= { aninput2 2 }  
+	
+analog2Upper OBJECT-TYPE
+	SYNTAX  INTEGER ( 0..60000 )
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Analog 1 upper range in integer (decimal x 1000) format."
+	::= { aninput2 3 }  
+	
+analog2Hyst OBJECT-TYPE
+	SYNTAX  INTEGER ( 0..60000 )
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Analog 2 hysteresis in integer (decimal x 1000) format."
+	::= { aninput2 4 } 
+	
+analog2Email OBJECT-TYPE
+	SYNTAX  INTEGER { no(0), yes(1) }
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Analog 2 email alarm alert."
+	::= { aninput2 5 } 
+	
+analog2Trap OBJECT-TYPE
+	SYNTAX  INTEGER { no(0), yes(1) }
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Analog 2 trap alarm alert."
+	::= { aninput2 6 } 
+		
+configSaved OBJECT-TYPE
+	SYNTAX INTEGER { no(0), yes(1) }
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"Configuration save status YES/NO"
+	::= { setup 5 }
+	
+output1 OBJECT-TYPE
+    SYNTAX INTEGER { off(0), on(1) }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "OUT1 - Relay1"
+    ::= { control 1 }
+	
+output2 OBJECT-TYPE
+    SYNTAX INTEGER { off(0), on(1) }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "OUT2 - Relay2"
+    ::= { control 2 }
+
+dryContactInput1 OBJECT-TYPE
+	SYNTAX  INTEGER { closed(0), open(1) }
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"Dry contact input 1"
+	::= { control 3 } 	
+	
+dryContactInput2 OBJECT-TYPE
+	SYNTAX  INTEGER { closed(0), open(1) }
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"Dry contact input 2"
+	::= { control 4 } 
+
+volt1 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Voltage1 in integer (decimal x 1000) format"
+    ::= { control 5 }
+
+volt2 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Voltage2 in integer (decimal x 1000) format"
+    ::= { control 6 }
+
+temperature1 OBJECT-TYPE
+	SYNTAX  INTEGER( -400..1250 )
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"Sensor1 Temperature in integer (decimal x 10) format"
+	::= { control 7 } 	
+	
+humidity1 OBJECT-TYPE
+	SYNTAX  INTEGER( 0..1000 )
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"Sensor1 Humidity in integer (decimal x 10) format"
+	::= { control 8 } 
+	
+temperature2 OBJECT-TYPE
+	SYNTAX  INTEGER( -400..1250 )
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"Sensor2 Temperature in integer (decimal x 10) format"
+	::= { control 9 } 	
+	
+humidity2 OBJECT-TYPE
+	SYNTAX  INTEGER( 0..1000 )
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"Sensor2 Humidity in integer (decimal x 10) format"
+	::= { control 10 } 
+	
+in1Alarm TRAP-TYPE
+        ENTERPRISE etherpower
+        VARIABLES  {dryContactInput1}
+        DESCRIPTION
+			"Dry contact input 1 entered alarm condition"
+       ::=  1
+	   	   
+in2Alarm TRAP-TYPE
+        ENTERPRISE etherpower
+        VARIABLES  {dryContactInput2}
+        DESCRIPTION
+			"Dry contact input 2 entered alarm condition"
+       ::=  2
+	   
+volt1Alarm	TRAP-TYPE
+        ENTERPRISE etherpower
+        VARIABLES  {volt1}
+        DESCRIPTION
+            "Analog Input 1 entered alarm condition"
+       ::=  3
+	   
+volt2Alarm	TRAP-TYPE
+        ENTERPRISE etherpower
+        VARIABLES  {volt2}
+        DESCRIPTION
+            "Analog Input 2 entered alarm condition"
+       ::=  4	
+	   
+sens1TempAlarm TRAP-TYPE
+        ENTERPRISE etherpower
+        VARIABLES  {temperature1}
+        DESCRIPTION
+            "Sensor 1 Temperature entered alarm condition"
+       ::=  5
+	      
+sens1HumidityAlarm TRAP-TYPE
+        ENTERPRISE etherpower
+        VARIABLES  {humidity1}
+        DESCRIPTION
+            "Sensor 1 Humidity entered alarm condition"
+       ::=  6	
+
+sens2TempAlarm TRAP-TYPE
+        ENTERPRISE etherpower
+        VARIABLES  {temperature2}
+        DESCRIPTION
+            "Sensor 2 Temperature entered alarm condition"
+       ::=  7	 
+     
+sens2HumidityAlarm TRAP-TYPE
+        ENTERPRISE etherpower
+        VARIABLES  {humidity2}
+        DESCRIPTION
+            "Sensor 2 Humidity entered alarm condition"
+       ::=  8		   
+
+END   

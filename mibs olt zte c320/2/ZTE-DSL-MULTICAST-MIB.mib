@@ -1,0 +1,1069 @@
+
+-- File Name : ZTE-DSL-MULTICAST-MIB.mi2
+-- Date      : Tue Oct 25 17:02:53 GMT+08:00 2005
+-- Author    : AdventNet Agent Toolkit C Edition - MibEditor 6
+
+
+
+ZTE-DSL-MULTICAST-MIB	DEFINITIONS ::= BEGIN
+	IMPORTS		
+        RowStatus, TruthValue, DisplayString, MacAddress, DateAndTime
+			FROM SNMPv2-TC
+		ifIndex			
+		    FROM RFC1213-MIB
+        MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE, IpAddress, TimeTicks, Counter32, Gauge32, enterprises, Integer32, Unsigned32
+			FROM SNMPv2-SMI
+		SnmpAdminString
+			FROM SNMP-FRAMEWORK-MIB
+		PortList
+			FROM Q-BRIDGE-MIB;
+    
+	zxDslMulticastMib	MODULE-IDENTITY
+		LAST-UPDATED	"200404151500Z"
+		ORGANIZATION	"ZTE Corporation"
+		CONTACT-INFO	"ZTE."
+		DESCRIPTION		"This MIB defines Description of zte multicast Service managed objects."
+		::=  {  zxDsl  8  }
+
+	private	OBJECT IDENTIFIER
+		::=  {  internet  4  }
+
+	enterprises	OBJECT IDENTIFIER
+		::=  {  private  1  }
+
+	zte	OBJECT IDENTIFIER
+		::=  {  enterprises  3902  }
+
+	zxDsl	OBJECT IDENTIFIER
+		::=  {  zte  1004  }
+
+	zxDslMulticastObjects	OBJECT IDENTIFIER
+		::=  {  zxDslMulticastMib  1  }
+
+	zxDslMulticastTrapObjects	OBJECT IDENTIFIER
+		::=  {  zxDslMulticastMib  2  }
+
+	zxDslMulticastIGMP	OBJECT IDENTIFIER
+		::=  {  zxDslMulticastObjects  1  }
+
+	zxDslMulticastMVR	OBJECT IDENTIFIER
+		::=  {  zxDslMulticastObjects  2  }
+
+	zxDslMulticastCAC	OBJECT IDENTIFIER
+		::=  {  zxDslMulticastObjects  3  }
+
+	zxDslMulticastPRW	OBJECT IDENTIFIER
+		::=  {  zxDslMulticastObjects  4  }
+
+	zxDslMulticastCDR	OBJECT IDENTIFIER
+		::=  {  zxDslMulticastObjects  5  }
+
+		
+  zxDslMulticastPerfStat OBJECT IDENTIFIER
+		::=  {  zxDslMulticastObjects  6  }  
+  		
+	zxDslIgmpEnabled	OBJECT-TYPE	
+		SYNTAX			INTEGER  { true ( 1 ) , false ( 2 ) , through ( 3 )} 
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"DURABLE: { false )
+             Setting this object to true(1) enables IGMP .  Setting
+             it to false(2) disables IGMP.             
+             Note that IGMP can function with or without GVRP and
+             GMRP enabled."
+		::=  {  zxDslMulticastIGMP  1  }
+
+	zxDslIgmpAging	OBJECT-TYPE	
+		SYNTAX			Integer32  ( 30 .. 3600  ) 
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"DURABLE: { 300 )
+             The timeout period in seconds for aging out Multicast Groups
+             dynamically learned with IGMP.  Note that aging operates
+             on a per interface per VLAN per multicast group basis."
+		::=  {  zxDslMulticastIGMP  2  }
+
+	zxDslIgmpMode	OBJECT-TYPE	
+		SYNTAX			Integer32  ( 1 .. 3  ) 
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"IGMP mode"
+		::=  {  zxDslMulticastIGMP  3  }
+
+	zxDslIgmpSMSRetrieve	OBJECT-TYPE	
+		SYNTAX			INTEGER  { retrievable ( 0 ) , retrieveType1 ( 1 ) , retrieveType2 ( 2 ) , retrieving ( 3 ) } 
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"used to retrieve data from sms server,when commit '1'or '2',need to retrieve."
+		::=  {  zxDslMulticastIGMP  4  }	
+		
+	zxDslIgmpPortTable	OBJECT-TYPE
+        SYNTAX        SEQUENCE  OF  ZxDslIgmpPortEntry
+		MAX-ACCESS	not-accessible
+		STATUS		current
+		DESCRIPTION	"A table that contains all IGMP informations."
+		::=  { zxDslMulticastIGMP  5 }
+	
+	zxDslIgmpPortEntry	OBJECT-TYPE
+        SYNTAX        ZxDslIgmpPortEntry
+		MAX-ACCESS	not-accessible
+		STATUS		current
+		DESCRIPTION	"A list of  entries of all IGMP information."
+		INDEX		{  ifIndex  }
+		::=  { zxDslIgmpPortTable 1 }
+
+    ZxDslIgmpPortEntry  ::=  SEQUENCE {
+		zxDslIgmpsnoopMaxpermit  Integer32,
+		zxDslIgmpFastLeave  Integer32,
+                zxDslIgmpAdminStatus    INTEGER,
+		zxDslIgmpBandwidth      Unsigned32,
+		zxDslIgmpPacketVersion  BITS,
+                zxDslIgmpMaxIgmpPacketNum INTEGER
+		}
+
+
+	zxDslIgmpsnoopMaxpermit	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"The maximum permitted number of the controlled multicast list about this port ."
+		::=  {  zxDslIgmpPortEntry  2  }
+
+
+	zxDslIgmpFastLeave	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"the status of fast-leave property."
+		::=  {  zxDslIgmpPortEntry  3  }
+	
+	zxDslIgmpAdminStatus  OBJECT-TYPE
+        SYNTAX 	INTEGER
+            {
+            	enable(1),
+				disable(2)
+            }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The administrative status of port's igmp."
+        ::= { zxDslIgmpPortEntry 4 }	
+        
+    zxDslIgmpBandwidth   OBJECT-TYPE
+        SYNTAX 	Unsigned32(1..1048576)
+	MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            ""
+        ::= { zxDslIgmpPortEntry 5 }
+ 
+   zxDslIgmpPacketVersion   OBJECT-TYPE
+        SYNTAX 	BITS
+	{
+         V1(0),
+         V2(1),            
+         V3(2)
+	}
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            ""
+        ::= { zxDslIgmpPortEntry 6 }
+	
+     zxDslIgmpMaxIgmpPacketNum     OBJECT-TYPE
+        SYNTAX         INTEGER(0..500)
+        MAX-ACCESS     read-write
+        STATUS         current
+        DESCRIPTION
+            "The maximum permitted number of the igmp packets about this port ."
+        ::= { zxDslIgmpPortEntry 7}	
+        
+    zxDslIgmpUplinkFloodEnabled  OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { false )
+             Setting this object to true(1) enables IGMP Uplink flood. Setting
+             it to false(2) disables IGMP Uplink flood."
+        ::= { zxDslMulticastIGMP 6 }
+
+    zxDslIgmpBandwidthControl  OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "DURABLE: { false )
+             Setting this object to true(1) enables bandwidth control. Setting
+             it to false(2) disables bandwidth control."
+        ::= { zxDslMulticastIGMP 7 }
+
+    zxDslIgmpManageSTBMacStatus  OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            ""
+        ::= { zxDslMulticastIGMP 8 }
+        
+    zxDslIgmpGeneralLeaveGrpAddr  OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The IP of general leave group addr"
+        ::= { zxDslMulticastIGMP 9 }              
+        
+    zxDslIgmpSubPortTable	OBJECT-TYPE
+        SYNTAX		SEQUENCE  OF  ZxDslIgmpSubPortEntry
+        MAX-ACCESS	not-accessible
+        STATUS		current
+        DESCRIPTION	"A table that contains sub port info of the ports."
+        ::=  { zxDslMulticastIGMP 10 }
+        
+    zxDslIgmpSubPortEntry	OBJECT-TYPE
+        SYNTAX		ZxDslIgmpSubPortEntry
+        MAX-ACCESS	not-accessible
+        STATUS		current
+        DESCRIPTION	"A list of  entries of all sub port info of the ports."
+        INDEX		{  ifIndex, zxDslIgmpSubId  }
+        ::=  { zxDslIgmpSubPortTable 1 }
+        
+    ZxDslIgmpSubPortEntry  ::=  SEQUENCE {
+        zxDslIgmpSubId        INTEGER,
+        zxDslIgmpSubPortType  INTEGER,		
+        zxDslIgmpSubLogicalID Integer32,
+        zxDslIgmpSubRowStatus RowStatus
+        }
+        
+    zxDslIgmpSubId	OBJECT-TYPE	
+        SYNTAX		INTEGER(1..4)
+        MAX-ACCESS	not-accessible
+        STATUS		current
+        DESCRIPTION	"Sub Port id"
+        ::= { zxDslIgmpSubPortEntry 1 }
+        
+    zxDslIgmpSubPortType OBJECT-TYPE	
+        SYNTAX	    INTEGER  
+        { 
+            vlan(1), 
+            pvc(2) 
+        } 
+        MAX-ACCESS	read-create
+        STATUS		current
+        DESCRIPTION	"Sub port Map Mode:Vlan or PVC"
+        ::= { zxDslIgmpSubPortEntry 2 }
+        
+    zxDslIgmpSubLogicalID	OBJECT-TYPE	
+        SYNTAX		Integer32
+        MAX-ACCESS	read-create
+        STATUS		current
+        DESCRIPTION	"Logical Id of this Sub port"
+        ::=  { zxDslIgmpSubPortEntry 3 }
+        
+    zxDslIgmpSubRowStatus	OBJECT-TYPE	
+        SYNTAX			RowStatus
+        MAX-ACCESS		read-create
+        STATUS			current
+        DESCRIPTION		"RowStatus"
+        ::=  { zxDslIgmpSubPortEntry 10 }
+        
+-- ---------------------------------------------------------------------------
+--     zxDslMulticastMVR
+-- ---------------------------------------------------------------------------
+    zxDslMVREnable OBJECT-TYPE
+        SYNTAX INTEGER{
+            enable(1),
+            disable(2)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Enable/disable MVR in this system."
+        ::= { zxDslMulticastMVR 1 }     
+
+    zxDslMVRMaxResponseTime OBJECT-TYPE
+        SYNTAX INTEGER
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Max response time ."
+        ::= { zxDslMulticastMVR 2 }           	
+
+	zxDslIgmpMVRTable	OBJECT-TYPE
+        SYNTAX        SEQUENCE  OF  ZxDslIgmpMVREntry
+		MAX-ACCESS	not-accessible
+		STATUS		current
+		DESCRIPTION	"A table that contains all ZXDSL informations in this stack system.
+	    It is allowed to get in master module."
+		::=  { zxDslMulticastMVR  3 }
+
+	zxDslIgmpMVREntry	OBJECT-TYPE
+        SYNTAX        ZxDslIgmpMVREntry
+		MAX-ACCESS	not-accessible
+		STATUS		current
+		DESCRIPTION	"A list of  entries of all ZXDSL information."
+		INDEX		{  zxDslIgmpMVRMvlan  }
+		::=  { zxDslIgmpMVRTable 1 }
+
+    ZxDslIgmpMVREntry  ::=  SEQUENCE {
+		zxDslIgmpMVRMvlan  Integer32,
+		zxDslIgmpMVRMaxGroup  Integer32,
+		zxDslIgmpMVRSrcIp  IpAddress,
+		zxDslIgmpMVRSrcPortList  PortList,
+		zxDslIgmpMVRRowStatus  RowStatus
+		}
+
+
+	zxDslIgmpMVRMvlan	OBJECT-TYPE	
+		SYNTAX			Integer32  ( 1 .. 4095  ) 
+		MAX-ACCESS		not-accessible
+		STATUS			current
+		DESCRIPTION		"mvlan ID."
+		::=  {  zxDslIgmpMVREntry  1  }
+
+
+	zxDslIgmpMVRMaxGroup	OBJECT-TYPE	
+		SYNTAX			Integer32  ( 1 .. 2048  ) 
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		"Max groups in mvlan"
+		::=  {  zxDslIgmpMVREntry  2  }
+
+
+	zxDslIgmpMVRSrcIp	OBJECT-TYPE	
+		SYNTAX			IpAddress
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		" "
+		::=  {  zxDslIgmpMVREntry  3  }
+
+
+	zxDslIgmpMVRSrcPortList	OBJECT-TYPE	
+		SYNTAX			PortList
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		"Source port in mvlan"
+		::=  {  zxDslIgmpMVREntry  4  }
+
+
+	zxDslIgmpMVRRowStatus	OBJECT-TYPE	
+		SYNTAX			RowStatus
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		"RowStatus"
+		::=  {  zxDslIgmpMVREntry  5  }
+
+	zxDslIgmpMVRExtTable	OBJECT-TYPE
+        SYNTAX        SEQUENCE  OF  ZxDslIgmpMVRExtEntry
+		MAX-ACCESS	not-accessible
+		STATUS		current
+		DESCRIPTION	"A table that contains all ZXDSL informations in this stack system.
+	    It is allowed to get in master module."
+		::=  { zxDslMulticastMVR  4 }
+
+	zxDslIgmpMVRExtEntry	OBJECT-TYPE
+        SYNTAX        ZxDslIgmpMVRExtEntry
+		MAX-ACCESS	not-accessible
+		STATUS		current
+		DESCRIPTION	"A list of  entries of all ZXDSL information."
+		INDEX		{  zxDslIgmpMVRMvlan, zxDslIgmpMVRScId  }
+		::=  { zxDslIgmpMVRExtTable 1 }
+
+    ZxDslIgmpMVRExtEntry  ::=  SEQUENCE {
+		zxDslIgmpMVRExtRecvPortList  PortList,
+		zxDslIgmpMVRExtRowStatus  RowStatus
+		}
+
+
+	zxDslIgmpMVRExtRecvPortList	OBJECT-TYPE	
+		SYNTAX			PortList
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		"Interface ."
+		::=  {  zxDslIgmpMVRExtEntry  1  }
+
+
+	zxDslIgmpMVRExtRowStatus	OBJECT-TYPE	
+		SYNTAX			RowStatus
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		"RowStatus"
+		::=  {  zxDslIgmpMVRExtEntry  2  }
+
+	zxDslIgmpMVRGroupTable	OBJECT-TYPE
+		SYNTAX		SEQUENCE  OF  zxDslIgmpMVRGroupEntry
+		MAX-ACCESS	not-accessible
+		STATUS		current
+		DESCRIPTION	"A table that contains all groups in the mvlan."
+		::=  { zxDslMulticastMVR  5 }
+
+	zxDslIgmpMVRGroupEntry	OBJECT-TYPE
+		SYNTAX		zxDslIgmpMVRGroupEntry
+		MAX-ACCESS	not-accessible
+		STATUS		current
+		DESCRIPTION	"A list of  entries of all groups information in mvlan."
+		INDEX		{  zxDslIgmpMVRGroupIp  }
+		::=  { zxDslIgmpMVRGroupTable 1 }
+
+	zxDslIgmpMVRGroupEntry  ::=  SEQUENCE {
+		zxDslIgmpMVRGroupIp  IpAddress,
+		zxDslIgmpMVRMvlanId  Integer32,
+		zxDslIgmpMVRGroupStaRecvPortList  PortList,
+		zxDslIgmpMVRGroupDynRecvPortList  PortList,
+		zxDslIgmpMVRGroupRowStatus  RowStatus
+		}
+
+
+	zxDslIgmpMVRGroupIp	OBJECT-TYPE	
+		SYNTAX			IpAddress
+		MAX-ACCESS		not-accessible
+		STATUS			current
+		DESCRIPTION		"multicast ip address . it can be 0.0.0.0 when setting "
+		::=  {  zxDslIgmpMVRGroupEntry  1  }
+
+
+	zxDslIgmpMVRMvlanId	OBJECT-TYPE	
+		SYNTAX			Integer32  ( 1 .. 4095  ) 
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		"vlan."
+		::=  {  zxDslIgmpMVRGroupEntry  2  }
+
+
+	zxDslIgmpMVRGroupStaRecvPortList	OBJECT-TYPE	
+		SYNTAX			PortList
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		"Interface ."
+		::=  {  zxDslIgmpMVRGroupEntry  3  }
+
+
+	zxDslIgmpMVRGroupDynRecvPortList	OBJECT-TYPE	
+		SYNTAX			PortList
+		MAX-ACCESS		read-only
+		STATUS			current
+		DESCRIPTION		" "
+		::=  {  zxDslIgmpMVRGroupEntry  4  }
+
+
+	zxDslIgmpMVRGroupRowStatus	OBJECT-TYPE	
+		SYNTAX			RowStatus
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		"RowStatus"
+		::=  {  zxDslIgmpMVRGroupEntry  5  }
+
+	zxDslIgmpMVRPortScTable	OBJECT-TYPE
+		SYNTAX		SEQUENCE  OF  zxDslIgmpMVRPortScEntry
+		MAX-ACCESS	not-accessible
+		STATUS		current
+		DESCRIPTION	"A table that contains pvc info of the ports in mvlan."
+		::=  { zxDslMulticastMVR  7 }
+		
+	zxDslIgmpSpanVlanEnable	OBJECT-TYPE	
+		SYNTAX			INTEGER  { enable ( 1 ) , disable ( 2 ) } 
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Enable/disable multi-vlans."
+		::=  {  zxDslMulticastMVR  8  }
+
+	zxDslIgmpMVRPortScEntry	OBJECT-TYPE
+		SYNTAX		zxDslIgmpMVRPortScEntry
+		MAX-ACCESS	not-accessible
+		STATUS		current
+		DESCRIPTION	"A list of  entries of all pvc info of the ports in mvlan."
+		INDEX		{  ifIndex, zxDslIgmpMVRScId  }
+		::=  { zxDslIgmpMVRPortScTable 1 }
+
+	zxDslIgmpMVRPortScEntry  ::=  SEQUENCE {
+		zxDslIgmpMVRScId  Integer32,
+		zxDslIgmpMVRScVlanOrPvc  INTEGER,
+		zxDslIgmpMVRScPvcID  Integer32,
+		zxDslIgmpMVRScVlanID  Integer32,
+		zxDslIgmpMVRScType  INTEGER,
+		zxDslIgmpMVRPortScRowStatus  RowStatus
+		}
+
+
+	zxDslIgmpMVRScId	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		not-accessible
+		STATUS			current
+		DESCRIPTION		"MVR sub channel id"
+		::=  {  zxDslIgmpMVRPortScEntry  2  }
+
+
+	zxDslIgmpMVRScVlanOrPvc	OBJECT-TYPE	
+		SYNTAX			INTEGER  { VLAN ( 1 ) , PVC ( 2 ) } 
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		"Sc Map Mode:Vlan or PVC"
+		::=  {  zxDslIgmpMVRPortScEntry  3  }
+
+
+	zxDslIgmpMVRScPvcID	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		"Pvc id of this SC"
+		::=  {  zxDslIgmpMVRPortScEntry  4  }
+
+
+	zxDslIgmpMVRScVlanID	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		"vlan ID of this Sc"
+		::=  {  zxDslIgmpMVRPortScEntry  5  }
+
+
+	zxDslIgmpMVRScType	OBJECT-TYPE	
+		SYNTAX			INTEGER  { ALL ( 1 ) , IGMP ( 2 ) , DATA ( 3 ) } 
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		"Sc Type "
+		::=  {  zxDslIgmpMVRPortScEntry  6  }
+
+
+	zxDslIgmpMVRPortScRowStatus	OBJECT-TYPE	
+		SYNTAX			RowStatus
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		"RowStatus"
+		::=  {  zxDslIgmpMVRPortScEntry  7  }
+
+
+-- Bandwidth Ctrl table
+
+
+    zxDslAcBandwidthCtrlTable	OBJECT-TYPE
+        SYNTAX        SEQUENCE  OF  ZxDslAcBandwidthCtrlEntry
+		MAX-ACCESS	not-accessible
+		STATUS		current
+		DESCRIPTION	""
+		::=  { zxDslMulticastMVR  9 }
+
+	zxDslAcBandwidthCtrlEntry	OBJECT-TYPE
+        SYNTAX        ZxDslAcBandwidthCtrlEntry
+		MAX-ACCESS	not-accessible
+		STATUS		current
+		DESCRIPTION	""
+		INDEX		{ zxDslIgmpACGpIp  }
+		::=  { zxDslAcBandwidthCtrlTable 1 }
+
+	ZxDslAcBandwidthCtrlEntry  ::=  SEQUENCE {
+		zxDslAcGpBandwidthCost  Unsigned32,
+		zxDslAcGpFastJoin       Integer32
+		}
+
+	zxDslAcGpBandwidthCost	OBJECT-TYPE	
+		SYNTAX			Unsigned32(1..65536)
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Bandwidth Cost by this group "
+		::=  {  zxDslAcBandwidthCtrlEntry  1  }
+
+
+	zxDslAcGpFastJoin	OBJECT-TYPE	
+		SYNTAX			Integer32
+		                {
+		                    enable(1),
+		                    disable(2)
+		                }
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		" if use FastJoin group function."
+		::=  {  zxDslAcBandwidthCtrlEntry  2  }
+
+-- CAC table
+	zxDslIgmpACPrwSwitch	OBJECT-TYPE	
+		SYNTAX			INTEGER  { enable ( 1 ) , disable ( 2 ) } 
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"the switch used by both CAC and PRW module, '1'-enable."
+		::=  {  zxDslMulticastCAC  1  }
+
+	zxDslIgmpACGpIpTable	OBJECT-TYPE
+        SYNTAX        SEQUENCE  OF  ZxDslIgmpACGpIpEntry
+		MAX-ACCESS	not-accessible
+		STATUS		current
+		DESCRIPTION	"CAC Address Table info"
+		::=  { zxDslMulticastCAC  2 }
+
+	zxDslIgmpACGpIpEntry	OBJECT-TYPE
+        SYNTAX        ZxDslIgmpACGpIpEntry
+		MAX-ACCESS	not-accessible
+		STATUS		current
+		DESCRIPTION	"A list of  entries of all Multicast address information."
+		INDEX		{  zxDslIgmpACGpIp  }
+		::=  { zxDslIgmpACGpIpTable 1 }
+
+    ZxDslIgmpACGpIpEntry  ::=  SEQUENCE {
+		zxDslIgmpACGpIp  IpAddress,
+		zxDslIgmpACGpMaxPrwCount  Counter32,
+		zxDslIgmpACGpMaxPrwInter  Counter32,
+		zxDslIgmpACGpPrwResumeInter  Integer32,
+		zxDslIgmpACGpPortList  PortList,
+		zxDslIgmpACGpPortRight  PortList,
+		zxDslIgmpACGpName        DisplayString,
+        zxDslIgmpACGpViewParamPrf   DisplayString,
+		zxDslIgmpACGpRowStatus  RowStatus
+		}
+
+
+	zxDslIgmpACGpIp	OBJECT-TYPE	
+		SYNTAX			IpAddress
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		"Group IP."
+		::=  {  zxDslIgmpACGpIpEntry  1  }
+
+
+	zxDslIgmpACGpMaxPrwCount	OBJECT-TYPE	
+		SYNTAX			Counter32
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		"The max preview count of the multicast group."
+		::=  {  zxDslIgmpACGpIpEntry  2  }
+
+
+	zxDslIgmpACGpMaxPrwInter	OBJECT-TYPE	
+		SYNTAX			Counter32
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		"The max preview time."
+		::=  {  zxDslIgmpACGpIpEntry  3  }
+
+
+	zxDslIgmpACGpPrwResumeInter	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		"The interval of two continuous previews."
+		::=  {  zxDslIgmpACGpIpEntry  4  }
+
+
+	zxDslIgmpACGpPortList	OBJECT-TYPE	
+		SYNTAX			PortList
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		"port list."
+		::=  {  zxDslIgmpACGpIpEntry  5  }
+
+
+	zxDslIgmpACGpPortRight	OBJECT-TYPE	
+		SYNTAX			PortList
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		"The Group Right for multicast."
+		::=  {  zxDslIgmpACGpIpEntry  6  }
+		
+	zxDslIgmpACGpName OBJECT-TYPE
+	        SYNTAX DisplayString
+	        MAX-ACCESS read-create
+	        STATUS current
+	        DESCRIPTION
+	            "zxACGpName"
+	        ::= { zxDslIgmpACGpIpEntry 7 }   
+
+        zxDslIgmpACGpViewParamPrf OBJECT-TYPE
+	        SYNTAX DisplayString
+	        MAX-ACCESS read-create
+	        STATUS current
+	        DESCRIPTION
+	            "ViewParamProfile name for this Group."
+	        ::= { zxDslIgmpACGpIpEntry 8 }   
+	        
+
+	zxDslIgmpACGpRowStatus	OBJECT-TYPE	
+		SYNTAX			RowStatus
+		MAX-ACCESS		read-create
+		STATUS			current
+		DESCRIPTION		"Row Status of AC Table."
+		::=  {  zxDslIgmpACGpIpEntry  9  }
+
+
+-- Pkg of group 
+
+    zxDslAcPkgTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF zxDslAcPkgEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A table that contains Pkg info."
+        ::= { zxDslMulticastCAC 3 }
+
+    zxDslAcPkgEntry OBJECT-TYPE
+        SYNTAX zxDslAcPkgEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A list of entries of all Pkg info.
+             Pkg is a collection of multicast groups."
+        INDEX {zxDslAcPkgName }
+        ::= { zxDslAcPkgTable 1 }
+
+    zxDslAcPkgEntry ::= SEQUENCE {
+        zxDslAcPkgName           SnmpAdminString,
+        zxDslAcPkgDesc           SnmpAdminString,
+        zxDslAcPkgUserRecvPortList    PortList,
+		zxDslAcPkgRowStatus      RowStatus
+    }
+		
+    zxDslAcPkgName OBJECT-TYPE
+        SYNTAX      SnmpAdminString
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Pkg Name is display name,only latin letter permit."
+        ::= { zxDslAcPkgEntry 1 } 
+        
+    zxDslAcPkgDesc OBJECT-TYPE
+        SYNTAX      SnmpAdminString
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Pkg Name is display name,only latin letter permit."
+        ::= { zxDslAcPkgEntry 3 }
+
+    zxDslAcPkgUserRecvPortList OBJECT-TYPE
+        SYNTAX      PortList
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "RecvPort of User who ordered this pkg."
+        ::= { zxDslAcPkgEntry 4 }
+
+    zxDslAcPkgRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "RowStatus of this row."
+        ::= { zxDslAcPkgEntry 5 }
+
+
+--  Groups info for Pkg
+
+    zxDslAcPkgGroupsTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF ZxDslAcPkgGroupsEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A table that contains multicast Groups info for pkg."
+        ::= { zxDslMulticastCAC 4 }
+
+    zxDslAcPkgGroupsEntry OBJECT-TYPE
+        SYNTAX ZxDslAcPkgGroupsEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A list of entries of all PkgGroups info.
+             This table indicates Pkg is a collection of multicast groups."
+        INDEX {zxDslAcPkgName, zxDslIgmpACGpIp }
+        ::= { zxDslAcPkgGroupsTable 1 }
+
+    ZxDslAcPkgGroupsEntry ::= SEQUENCE {
+        zxDslAcPkgGpAccessRight    INTEGER,
+        zxDslAcPkgGpDesc           SnmpAdminString,
+        zxDslAcPkgGpRowStatus      RowStatus
+    }
+		
+
+    zxDslAcPkgGpAccessRight OBJECT-TYPE
+         SYNTAX      INTEGER  {
+              noRight (1),
+              view (2),
+              preview (3)
+            }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "User's Right of access multicast group in this pkg."
+
+        DEFVAL { 2 }
+        ::= { zxDslAcPkgGroupsEntry 1 }
+
+
+    zxDslAcPkgGpRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "RowStatus of this row."
+        ::= { zxDslAcPkgGroupsEntry 2 }
+	
+
+
+  zxDslIgmpPortGroupTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF zxDslIgmpPortGroupEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            ""
+        ::= { zxDslMulticastMVR 10 }
+
+    zxDslIgmpPortGroupEntry OBJECT-TYPE
+        SYNTAX zxDslIgmpPortGroupEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A list of  entries of all groups information in mvlan."
+            INDEX {ifIndex,zxDslIgmpMVRGroupIp}
+        ::= { zxDslIgmpPortGroupTable 1 }
+
+    zxDslIgmpPortGroupEntry ::= SEQUENCE {
+        zxIgmpPortTypeInGroup   INTEGER
+    } 
+
+    zxIgmpPortTypeInGroup     OBJECT-TYPE
+        SYNTAX         INTEGER{
+            static(1),
+            dynamic(2)
+        }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            ""
+        ::= { zxDslIgmpPortGroupEntry 1}
+        
+
+-- View(including preview) cfg param profile
+
+    zxDslAcViewParamPrfTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF zxDslAcViewParamPrfEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "   A table that contains view(including preview)  cfg param profile 
+             info.It is used to define group's preview attributes.
+             
+                When some of the parameters in a view Profile are changed, 
+             the new settings shall take effect for the channels using this 
+             Profile immediately."
+        ::= { zxDslMulticastCAC 6 }
+
+    zxDslAcViewParamPrfEntry OBJECT-TYPE
+        SYNTAX zxDslAcViewParamPrfEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A list of entries of all zxDslAcViewParamPrf info."
+        INDEX {zxDslAcViewParamPrfName }
+        ::= { zxDslAcViewParamPrfTable 1 }
+
+    zxDslAcViewParamPrfEntry ::= SEQUENCE {
+        zxDslAcViewParamPrfName  DisplayString,
+        zxDslAcViewParamMaxPrwCount  INTEGER,
+        zxDslAcViewParamMaxPrwInter  INTEGER,
+        zxDslAcViewParamPrwBlackoutInter INTEGER,
+        zxDslAcViewParamProfileRowStatus RowStatus
+    }
+		
+    zxDslAcViewParamPrfName OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Profile Name."
+        ::= {zxDslAcViewParamPrfEntry 1 }      
+        
+		
+    zxDslAcViewParamMaxPrwCount OBJECT-TYPE
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Max Preview Count for channels."
+        ::= {zxDslAcViewParamPrfEntry 2 }      
+        
+    zxDslAcViewParamMaxPrwInter OBJECT-TYPE
+        SYNTAX      INTEGER
+        UNITS       "seconds"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Max Preview Count for channels."
+        ::= {zxDslAcViewParamPrfEntry 3 }      
+
+    zxDslAcViewParamPrwBlackoutInter OBJECT-TYPE
+        SYNTAX      INTEGER
+        UNITS       "seconds"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "User's blackout interval of preview for channels."
+        ::= {zxDslAcViewParamPrfEntry 4 }      
+        
+        
+    zxDslAcViewParamProfileRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "RowStatus of this row."
+        ::= { zxDslAcViewParamPrfEntry 5 }    
+        
+        
+-- ---------------------------------------------------------------------------
+--	zxMulticastPRW
+-- ---------------------------------------------------------------------------
+	
+
+	zxDslIgmpPRWManageReset	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"used to manage reset in PRW module,when '1',need to reset."
+		::=  {  zxDslMulticastPRW  1  }
+
+	zxDslIgmpPRWResetPeriod	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"specify the fix time of reseting the preview management structure."
+		::=  {  zxDslMulticastPRW  2  }
+		
+	zxDslIgmpPRWRecongnitionTime	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"specify the time of building a record."
+		::=  {  zxDslMulticastPRW  3  }
+
+	zxDslIgmpCDRMaxSize	OBJECT-TYPE	
+		SYNTAX			Unsigned32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"The max size of CDR."
+		::=  {  zxDslMulticastCDR  1  }
+
+	zxDslIgmpCDRServerIP	OBJECT-TYPE	
+		SYNTAX			IpAddress
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"The IP of SMS server."
+		::=  {  zxDslMulticastCDR  2  }
+
+	zxDslIgmpCDRMaxSendInterval	OBJECT-TYPE	
+		SYNTAX			Unsigned32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"The Max Send Interval of CDR Record."
+		::=  {  zxDslMulticastCDR  3  }
+
+	zxDslIgmpCDREnable	OBJECT-TYPE	
+		SYNTAX			TruthValue
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"DURABLE: { false )
+             Setting this object to true(1) enables CDR .  Setting
+             it to false(2) disables CDR."
+		::=  {  zxDslMulticastCDR  4  }
+
+	zxDslIgmpCDRCurrentRecordNumber	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-only
+		STATUS			current
+		DESCRIPTION		"the number of CDR records"
+		::=  {  zxDslMulticastCDR  5  }
+
+    zxDslCDRDenyEnable OBJECT-TYPE
+        SYNTAX   TruthValue
+        MAX-ACCESS  read-write
+        STATUS current
+        DESCRIPTION
+            "Setting this object to true(1) enables CDR when the right of user is deny.  Setting
+             it to false(2) disables CDR when the right of user is deny."
+        ::= { zxDslMulticastCDR 6 }
+        
+    zxDslCDRPreviewEnable OBJECT-TYPE
+        SYNTAX   TruthValue
+        MAX-ACCESS  read-write
+        STATUS current
+        DESCRIPTION
+            "Setting this object to true(1) enables CDR when the right of user is preview.  Setting
+             it to false(2) disables CDR when the right of user is preview."
+        ::= { zxDslMulticastCDR 7 }
+   
+   zxDslCDRInterval OBJECT-TYPE
+        SYNTAX   Unsigned32(0..360)
+        MAX-ACCESS  read-write
+        STATUS current
+        DESCRIPTION
+            "the interval  between two CDR in minutes"
+        ::= { zxDslMulticastCDR 8 }  
+              
+   zxDslCDRReportAction OBJECT-TYPE
+        SYNTAX   INTEGER
+        MAX-ACCESS  read-write
+        STATUS current
+        DESCRIPTION
+            ""
+        ::= { zxDslMulticastCDR 9 }	
+
+
+-- ---------------------------------------------------------------------------
+--	zxDslMulticastPacketLossRatioStatistic
+-- ---------------------------------------------------------------------------
+	zxDslMulticastLOPTestingMac	OBJECT-TYPE	
+		SYNTAX			MacAddress
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Destination MAC address of special multicast stream."
+		::=  {  zxDslMulticastPerfStat  1  }
+		
+	zxDslMulticastLOPTestingIp	OBJECT-TYPE	
+		SYNTAX			IpAddress
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Destination IP address of special multicast stream."
+		::=  {  zxDslMulticastPerfStat  2  }
+    
+	zxDslMulticastLOPTestingVlanId	OBJECT-TYPE	
+		SYNTAX			INTEGER (1 .. 4093)
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Destination VLAN Id of special multicast stream."
+		::=  {  zxDslMulticastPerfStat  3  }    		
+
+	zxDslMulticastLOPTestingBW	OBJECT-TYPE	
+		SYNTAX			INTEGER(1..3000)
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Bandwidth of special multicast stream(pps)"
+		::=  {  zxDslMulticastPerfStat  4  }
+		
+	zxDslMulticastLOPThreshold	OBJECT-TYPE	
+		SYNTAX			INTEGER(0..180000)
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Alarm threshold of packets loss.
+                  A value of `0' will disable the trap. "
+		::=  {  zxDslMulticastPerfStat  5  }
+
+	zxDslMulticastCurrentLOP	OBJECT-TYPE	
+		SYNTAX			INTEGER
+		MAX-ACCESS		read-only
+		STATUS			current
+		DESCRIPTION		"the current packets loss."
+		::=  {  zxDslMulticastPerfStat  6  }	
+
+	zxDslMulticastLOPMonitorInterval	OBJECT-TYPE	
+		SYNTAX			INTEGER(5..60)
+    UNITS       "seconds"		
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"the Monitor Interval value."
+		::=  {  zxDslMulticastPerfStat  7  }	
+
+--------------------------------------------------------------------------------
+-- definition of sysctrl traps.
+
+  zxDslMulticastLOPTrap NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+      "It is generated when the current packets loss exceed Configurable Threshold.The zxDslMulticastCurrentLOP object identifies the current packets loss. "
+        ::= { zxDslMulticastTrapObjects 1 }
+END

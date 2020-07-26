@@ -1,0 +1,134 @@
+
+
+ZTE-DSL-UPLINK-VLAN-MIB	DEFINITIONS ::= BEGIN
+	IMPORTS
+		zxDsl	                            FROM ZTE-DSL-MIB
+		RowStatus, TEXTUAL-CONVENTION		FROM SNMPv2-TC
+        ifIndex                             FROM IF-MIB
+		dot1dBasePort                       FROM BRIDGE-MIB
+        dot1qVlanIndex                      FROM Q-BRIDGE-MIB
+		MODULE-IDENTITY, OBJECT-TYPE, Integer32  FROM SNMPv2-SMI;
+
+	zxDslUplinkVlanMib	MODULE-IDENTITY
+		LAST-UPDATED	"200404151500Z"
+		ORGANIZATION	"ZTE Corporation"
+		CONTACT-INFO	"ma ke
+                  Mail: ZTE@zte.com.cn
+                  Tel : 021-68896477"
+		DESCRIPTION		"This MIB defines zte dsl uplink vlan managed objects."
+		::=  {  zxDsl  32  }
+
+-- TEXTUAL-CONVENTIONS --
+	PortList ::= TEXTUAL-CONVENTION 
+		DISPLAY-HINT	""
+		STATUS			current
+		DESCRIPTION
+			"Each octet within this value specifies a set of eight
+        ports, with the first octet specifying ports 1 through
+        8, the second octet specifying ports 9 through 16, etc.
+        Within each octet, the most significant bit represents
+        the lowest numbered port, and the least significant bit
+        represents the highest numbered port.  Thus, each port
+        of the bridge is represented by a single bit within the
+        value of this object.  If that bit has a value of '1'
+        then that port is included in the set of ports; the port
+        is not included if its bit has a value of '0'."
+		SYNTAX 			OCTET STRING
+
+	zxDslUplinkVlanObjects	OBJECT IDENTIFIER		::=  {  zxDslUplinkVlanMib  1  }
+
+
+
+-- -------------------------------------------------------------
+-- The Static VLAN for Uplink Port
+-- -------------------------------------------------------------
+
+zxDslUplinkVlanStaticTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF zxDslUplinkVlanStaticEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing static configuration information for
+        each VLAN configured into the device by (local or
+        network) management.  All entries are permanent and will
+        be restored after the device is reset."
+    ::= { zxDslUplinkVlanObjects  1 }
+
+zxDslUplinkVlanStaticEntry OBJECT-TYPE
+    SYNTAX      zxDslUplinkVlanStaticEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Static information for a VLAN configured into the
+        device by (local or network) management."
+    
+    INDEX { dot1qVlanIndex }
+    ::= { zxDslUplinkVlanStaticTable 1 }
+
+zxDslUplinkVlanStaticEntry ::=
+    SEQUENCE {
+        zxDslUplinkVlanStaticEgressPorts         PortList,
+        zxDslUplinkVlanForbiddenEgressPorts      PortList,
+        zxDslUplinkVlanStaticUntaggedPorts       PortList
+    }
+
+zxDslUplinkVlanStaticEgressPorts OBJECT-TYPE
+    SYNTAX      PortList
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The set of ports which are permanently assigned to the
+        egress list for this VLAN by management.  Changes to a
+        bit in this object affect the per-port per-VLAN
+        Registrar control for Registration Fixed for the
+        relevant GVRP state machine on each port.  A port may
+        not be added in this set if it is already a member of
+        the set of ports in zxDslUplinkVlanForbiddenEgressPorts.  The
+        default value of this object is a string of zeros of
+        appropriate length, indicating not fixed."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.7.7.3, 11.2.3.2.3"
+    ::= { zxDslUplinkVlanStaticEntry 1 }
+
+zxDslUplinkVlanForbiddenEgressPorts OBJECT-TYPE
+    SYNTAX      PortList
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The set of ports which are prohibited by management
+        from being included in the egress list for this VLAN.
+        Changes to this object that cause a port to be included
+        or excluded affect the per-port per-VLAN Registrar
+
+        control for Registration Forbidden for the relevant GVRP
+        state machine on each port.  A port may not be added in
+        this set if it is already a member of the set of ports
+        in zxDslUplinkVlanStaticEgressPorts.  The default value of
+        this object is a string of zeros of appropriate length,
+        excluding all ports from the forbidden set."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.7.7.3, 11.2.3.2.3"
+    ::= { zxDslUplinkVlanStaticEntry 2 }
+
+zxDslUplinkVlanStaticUntaggedPorts OBJECT-TYPE
+    SYNTAX      PortList
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The set of ports which should transmit egress packets
+        for this VLAN as untagged.  The default value of this
+        object for the default VLAN (dot1qVlanIndex = 1) is a string
+        of appropriate length including all ports.  There is no
+        specified default for other VLANs.  If a device agent cannot
+        support the set of ports being set then it will reject the
+        set operation with an error. An example might be if a
+        manager attempts to set more than one VLAN to be untagged
+        on egress where the device does not support this IEEE 802.1Q
+        option."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.10.2.1"
+    ::= { zxDslUplinkVlanStaticEntry 3 }
+
+
+
+END

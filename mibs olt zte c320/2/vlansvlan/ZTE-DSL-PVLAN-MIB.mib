@@ -1,0 +1,117 @@
+
+ZTE-DSL-PVLAN-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+        Integer32, Counter64,TimeTicks,Counter32,IpAddress
+                            FROM SNMPv2-SMI
+        
+        DisplayString,   RowStatus				FROM SNMPv2-TC
+        MODULE-COMPLIANCE, OBJECT-GROUP         FROM SNMPv2-CONF
+        PortList                                FROM Q-BRIDGE-MIB
+	    zxDsl               			        FROM ZTE-DSL-MIB;
+                                                                    
+
+    zxPvlanMib MODULE-IDENTITY
+            LAST-UPDATED "200611101330Z"
+            ORGANIZATION "zte dsl product line"
+            CONTACT-INFO
+                " su chunshan
+                  Mail: suchunshan@zte.com.cn
+                  Tel : 021-68896292,68896251"
+            DESCRIPTION
+                "This mib defines pvlan mo (managed object ) for dslam.
+                "
+        ::= { zxDsl 28 }
+
+-- ---------------------------------------------------------------------------
+--	1.zxDsl Pvlan type and uplink port 
+-- ---------------------------------------------------------------------------
+
+        zxDslPvlanType   OBJECT-TYPE
+       	SYNTAX      Integer32(1..4) 
+        MAX-ACCESS  read-write
+        STATUS current
+        DESCRIPTION
+            "."
+        ::= { zxPvlanMib 1}
+
+------------------------------------------------------------------------------
+        zxDslPvlanUplinkSlot   OBJECT-TYPE
+       	SYNTAX      Integer32 
+        MAX-ACCESS  read-write
+        STATUS current
+        DESCRIPTION
+            "the pvlan uplink card slot."
+        ::= { zxPvlanMib 2}
+
+------------------------------------------------------------------------------
+        zxDslPvlanUplinkPortList   OBJECT-TYPE
+       	SYNTAX      PortList
+        MAX-ACCESS  read-write
+        STATUS current
+        DESCRIPTION
+            "the pvlan uplink port list."
+        ::= { zxPvlanMib 3}
+
+
+
+
+-- ---------------------------------------------------------------------------
+--	2.zxDsl Pvlan port table
+-- ---------------------------------------------------------------------------
+
+     zxDslPvlanPortTable         OBJECT-TYPE
+          SYNTAX         SEQUENCE OF ZxDslPvlanPortEntry
+          MAX-ACCESS     not-accessible
+          STATUS         current
+          DESCRIPTION
+           " "
+          ::= { zxPvlanMib 5 }
+
+     zxDslPvlanPortEntry         OBJECT-TYPE
+          SYNTAX         ZxDslPvlanPortEntry
+          MAX-ACCESS     not-accessible
+          STATUS         current
+          DESCRIPTION
+           "An entry of configuration table."
+          INDEX  {zxDslPvlanPort}
+          ::= { zxDslPvlanPortTable  1}
+
+     ZxDslPvlanPortEntry    ::= SEQUENCE  {
+          zxDslPvlanPort	  	    Integer32,
+          zxDslPvlanPortInterList   PortList,
+          zxDslPvlanPortEnable      INTEGER
+     }
+           
+     zxDslPvlanPort            OBJECT-TYPE
+          SYNTAX         Integer32
+          MAX-ACCESS     not-accessible
+          STATUS         current
+          DESCRIPTION
+           "The pvlan port No. "
+          ::= { zxDslPvlanPortEntry 1}     
+          
+     zxDslPvlanPortInterList            OBJECT-TYPE
+          SYNTAX         PortList
+          MAX-ACCESS     read-write
+          STATUS         current
+          DESCRIPTION
+           "the port list interconnected with each ."
+          ::= { zxDslPvlanPortEntry 2}
+     
+     zxDslPvlanPortEnable            OBJECT-TYPE
+          SYNTAX         INTEGER{
+                           enable(1),
+                           disable(2)
+                           } 
+          MAX-ACCESS     read-write
+          STATUS         current
+          DESCRIPTION
+           "enable/disable the interconnection"
+          ::= { zxDslPvlanPortEntry 3}
+-- ----------------------------------------------------------------------------
+
+
+
+END

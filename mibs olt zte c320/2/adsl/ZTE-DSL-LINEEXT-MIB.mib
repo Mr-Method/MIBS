@@ -1,0 +1,3847 @@
+--
+-- Zte Dsl Line Ext Mib 
+-- 
+-- 
+
+ZTE-DSL-LINEEXT-MIB DEFINITIONS ::= BEGIN
+    IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE,
+        TimeTicks,Counter32, Gauge32    FROM SNMPv2-SMI
+        MODULE-COMPLIANCE, OBJECT-GROUP FROM SNMPv2-CONF
+        SnmpAdminString                 FROM SNMP-FRAMEWORK-MIB
+        ifIndex                         FROM IF-MIB
+        adslLineConfProfileName, adslLineAlarmConfProfileName,
+        adslLineConfProfileEntry,adslLineAlarmConfProfileEntry,adslLineEntry,
+        adslAtucChanIntervalEntry,adslAturChanIntervalEntry
+                                        FROM ADSL-LINE-MIB
+        Xdsl2LineLdsf,Xdsl2LdsfResult   FROM VDSL2-LINE-TC-MIB                                        
+        RowStatus,DisplayString,TruthValue         FROM SNMPv2-TC
+          enterprises                                FROM RFC1155-SMI;
+        
+
+UChar   ::= TEXTUAL-CONVENTION
+        STATUS          current
+        DESCRIPTION
+                "The 8-bit unsigned integer."
+        SYNTAX  INTEGER (0..255)
+
+-- ZTE Dsl line ext MIB objects
+
+    zxAdslExtMib MODULE-IDENTITY
+            LAST-UPDATED "200404081300Z"
+            ORGANIZATION "zte dsl product line"
+            CONTACT-INFO
+                " su chunshan
+                  Mail: suchunshan@zte.com.cn
+                  Tel : 021-68896292,68896251"
+            DESCRIPTION
+                "This mib defines extended dsl line mo (managed object ) for adsl2,
+                 adsl+ and dsl loop test.
+                 
+                 Naming Conventions:
+                 Atuc -- (ATUC) modem at near (Central) end of line
+                 Atur -- (ATUR) modem at Remote end of line "
+    ::= {zxDsl 1}
+    
+
+    zte OBJECT IDENTIFIER ::= { enterprises 3902 }
+    zxDsl OBJECT IDENTIFIER ::= { zte 1004 }
+    
+    
+    zxAdslExtMibObjects OBJECT IDENTIFIER ::= { zxAdslExtMib 1 }
+    
+
+--  Is support adsl2+
+
+    zxAdslIsSupportAdsl2Plus  OBJECT-TYPE
+            SYNTAX      Integer32 {
+                support   (1),
+                noSupport (2)
+                }
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "A flag is to indicate whether this device is support Adsl2Plus management."
+            ::= {zxAdslExtMibObjects 11 }
+    
+
+--  Is support dsl connection rate threshold
+
+    zxAdslIsSupportAdslRateThresh  OBJECT-TYPE
+            SYNTAX      Integer32 {
+                support   (1),
+                noSupport (2)
+                }
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "A flag is to indicate whether this device is support dsl 
+                connection rate threshold management."
+            ::= {zxAdslExtMibObjects 14 }
+    
+
+
+--  Adsl Line Extended Table
+
+    zxAdslLineTable  OBJECT-TYPE
+            SYNTAX      SEQUENCE OF ZxAdslLineEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                "Adsl line additional information table."
+            ::= {zxAdslExtMibObjects 1}
+    
+    
+    zxAdslLineEntry  OBJECT-TYPE
+            SYNTAX      ZxAdslLineEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                "Adsl line additional information entry"
+            INDEX    { ifIndex }
+            ::= {zxAdslLineTable 1}
+    
+    
+    ZxAdslLineEntry ::=
+            SEQUENCE {
+                zxAdslLinePMConfPMSF              Integer32,
+                zxAdslLinePMState                 Integer32,
+                zxAdslLineDMTTrellis              Integer32,
+                zxAdslLineTxAtmCells              Counter32,
+                zxAdslLineRxAtmCells              Counter32,
+                zxAdslLineIdleCells               Counter32,
+                zxAdslLineTxDataRate              Gauge32,
+                zxAdslLineRxDataRate              Gauge32,
+                zxAdslLineExtConfPrf              SnmpAdminString,
+                zxAdslLineCmndConfLdsf            INTEGER,
+                zxAdslLineCmndConfLdsfFailReason  INTEGER
+                }
+    
+    zxAdslLinePMConfPMSF  OBJECT-TYPE
+        SYNTAX      Integer32 {
+            l0_FullOn   (1),
+            l2_LowPower (3),
+            l3_Idle     (4)
+            }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "This configuration parameter defines the line states to be forced by 
+            the near-end ATU on this line. It is coded as an integer value with 
+            following definition:
+                L0_FullOn   Force the line to transition from the L3 idle state 
+                            to the L0 full-on state. This transition requires 
+                            the (short) initialization procedures. After 
+                            reaching the L0 state, the line may transition into 
+                            or exit from the L2 low power state (if L2 state is 
+                            enabled). If the L0 state is not reached (after a 
+                            vendor discretionary number of retries and/or within
+                            a vendor discretionary timeout), then an 
+                            Initialization Failure occurs. Whenever the line is 
+                            in the L3 state, attemps shall be made to transition 
+                            to the L0 state until it is forced into another 
+                            state through this configuration parameter.
+                L2_LowPower Force the line to transition from L0 full on to L2 
+                            low power state. This transition requires the entry 
+                            into L2 mode. This is a out-of-service test value 
+                            for triggering the L2 mode.
+                L3_Idle     Force the line to transition from the L0 full-on or
+                            L2 low power state to the L3 idle state. This 
+                            transition requires the (orderly) shutdown procedure. 
+                            After reaching the L3 state, the line shall remain 
+                            in the L3 idle state until it is forced into another 
+                            state through this configuration parameter.
+                
+                Forced line state transitions require the line to enter or exit 
+                from the L3 idle state. These transitions are not restricted by 
+                the Line state enabling parameter value.
+                
+                NOTE - Supported for ADSL2/ADSL2plus ONLY.
+                       This configuration parameter maps to the AdminStatus of 
+                the line, which is part of the GeneralInformationGroup object 
+                group specified in RFC 2233, and may not need to be duplicated 
+                in the ADSL MIB. See also RFC2662. The Administrative Status of 
+                the line is UP when the line is forced to the L0 state and is 
+                DOWN when the line is forced to the L3 state."
+
+        REFERENCE "Section 7.3.1.1.3 Power management state forced (PMSF), 
+                   G.997.1 (05/2003) "
+        DEFVAL { 1 }                   
+        ::= { zxAdslLineEntry 1 }
+
+    
+    
+    zxAdslLinePMState  OBJECT-TYPE
+        SYNTAX      Integer32 {
+            l0_FullOn   (1),
+            l1_LowPower (2),
+            l2_LowPower (3),
+            l3_Idle     (4)
+            }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The Line has four possible power management states, numbered 0 to 3 
+            and corresponding to respectively:
+            
+                L0 - Synchronized - This Line state (L0) is when the Line has 
+                     full transmission (i.e. showtime). 
+                     
+                L1 - Power Down Data transmission - This line state (L1) is when
+                     there is transmission on the line but the net data rate is 
+                     reduced (e.g. only for OAM and higher layer connection and 
+                     session control). This state applies to G.992.2 only.
+                     
+                L2 - Power Down Data transmission - This line state (L2) is when
+                     there is transmission on the line but the net data rate is 
+                     reduced (e.g. only for OAM and higher layer connection and 
+                     session control). This state applies to G.992.3 and G.992.4 only.
+                     
+                L3 - No power - This Line state (L3) is when there is No Power
+                     transmitted on the line at all.
+                     
+            NOTE -  This parameter maps to the OperStatus of the line, which is 
+                    part of the GeneralInformationGroup object group specified 
+                    in RFC 2233, and may not need to be duplicated in the ADSL MIB. 
+                    See also RFC2662 and RFC3440. The Operational Status of the 
+                    line is UP in the L0, L1 or L2 state (i.e., during showtime)
+                    and is DOWN in the L3 state (e.g., during (short) 
+                    initialization and loop diagnostics mode). "
+                    
+        REFERENCE "Section 7.5.1.2  Line power management state  5.4 Profiles, 
+                   G.997.1 (05/2003) "
+        ::= { zxAdslLineEntry 2 }
+    
+    zxAdslLineDMTTrellis  OBJECT-TYPE
+            SYNTAX      Integer32 {
+                unknown(0), 
+                on     (1),   -- Trellis coding enabled
+                off    (2)    -- Trellis coding disabled
+                }
+            MAX-ACCESS  read-only
+            STATUS      deprecated
+            DESCRIPTION
+                "Parameter that indicates whether trellis coding has been enabled or
+                disabled.Trellis coding should always be enabled for its clear 
+                performancen advantage.Trellis coding is mandatory for ADSL/ADSL2plus."
+            ::= { zxAdslLineEntry 3 }
+
+    zxAdslLineTxAtmCells  OBJECT-TYPE
+            SYNTAX      Counter32 
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Transmitted ATM cell counter.This is a count of total data cells 
+                 only transmitted  by ATU-C."
+            ::= { zxAdslLineEntry 4 }
+    
+
+    zxAdslLineRxAtmCells  OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Received ATM cell counter.This is a count of total data cells 
+                 only received by ATU-C."
+            ::= { zxAdslLineEntry 5 }
+    
+    zxAdslLineIdleCells  OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Number of idle cells transmitted/recieved by ATU-C."
+            ::= { zxAdslLineEntry 6 }
+    
+    zxAdslLineTxDataRate  OBJECT-TYPE
+            SYNTAX      Gauge32
+            UNITS       "kbps"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Transmitted net data rate on this line."
+            ::= { zxAdslLineEntry 7 }
+    
+    zxAdslLineRxDataRate  OBJECT-TYPE
+            SYNTAX      Gauge32
+            UNITS       "kbps"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Recieved net data rate on this line."
+            ::= { zxAdslLineEntry 8 }
+    
+    zxAdslLineExtConfPrf OBJECT-TYPE
+        SYNTAX      SnmpAdminString (SIZE (1..32))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The value of this object identifies the row in the XDSL2
+             Line Ext Profile Table, (zxAnXdsl2LnExtConfPrfTable),
+             which applies for this line."
+        ::= { zxAdslLineEntry 9 } 
+        
+    zxAdslLineCmndConfLdsf  OBJECT-TYPE
+        SYNTAX INTEGER {
+           inhibit(0),
+           force(1)
+        }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Loop diagnostics mode forced (LDSF).  Defines whether the
+             line should be forced into the loop diagnostics mode by the
+             near-end xTU on this line or only be responsive to loop
+             diagnostics initiated by the far-end xTU.     
+             This object MUST be maintained in a persistent manner.
+             However, in case the operator forces loop diagnostics mode
+             then the access node should reset the object (inhibit) when
+             loop diagnostics mode procedures are completed."
+        REFERENCE    "ITU-T G.997.1, paragraph #7.3.1.1.8"
+        DEFVAL       { inhibit }
+        ::= { zxAdslLineEntry 10 }
+     
+    zxAdslLineCmndConfLdsfFailReason  OBJECT-TYPE
+        SYNTAX INTEGER {
+          none (1),
+          success (2),
+          inProgress (3),
+          unsupported (4),
+          cannotRun (5),
+          aborted (6),
+          failed (7),
+          illegalMode (8),
+          adminUp (9),
+          tableFull (10),
+          noResources (11)
+        }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The status of the recent occasion the Loop diagnostics mode
+             forced (LDSF) was issued for the associated line.  Possible
+             values are:
+                none        (1) - The default value in case LDSF was never
+                                 requested for the associated line.
+                success     (2) - The recent command completed
+                                 successfully.
+                inProgress  (3) - The Loop Diagnostics process is in
+                                 progress.
+                unsupported (4) - The NE or the line card doesn't support
+                                 LDSF.
+                cannotRun   (5) - The NE cannot initiate the command, due
+                                 to a non specific reason.
+                aborted     (6) - The Loop Diagnostics process aborted.
+                failed      (7) - The Loop Diagnostics process failed.
+                illegalMode (8) - The NE cannot initiate the command, due
+                                 to the specific mode of the relevant
+                                 line.
+                adminUp     (9) - The NE cannot initiate the command, as
+                                 the relevant line is administratively
+                                 'Up'.
+                tableFull   (10)- The NE cannot initiate the command, due
+                                 to reaching the maximum number of rows
+                                 in the results table.
+                noResources (11)- The NE cannot initiate the command, due
+                                 to lack of internal memory resources."
+        DEFVAL       { none }
+        ::= { zxAdslLineEntry 11 }        
+
+--  Adsl Line Config Profile Extended Table
+
+    zxAdslLineConfProfileExtTable  OBJECT-TYPE
+            SYNTAX      SEQUENCE OF ZxAdslLineConfProfileExtEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                "Adsl line config profile extended information table."
+            ::= {zxAdslExtMibObjects 2}
+    
+    
+    zxAdslLineConfProfileExtEntry  OBJECT-TYPE
+            SYNTAX      ZxAdslLineConfProfileExtEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+               "An entry extends the adslLineConfProfileEntry defined in 
+               [RFC2662]. Each entry corresponds to an ADSL line profile."
+               
+            INDEX    { adslLineConfProfileName }
+            ::= {zxAdslLineConfProfileExtTable 1}
+    
+    
+    ZxAdslLineConfProfileExtEntry ::=
+            SEQUENCE {
+                zxAdslLineDMTConfTrellis         Integer32,
+                zxAdslAtucConfMaxBitsPerBin      Integer32,
+                zxAdslAtucConfTxStartBin         Integer32,
+                zxAdslAtucConfTxEndBin           Integer32,
+                zxAdslAtucConfRxStartBin         Integer32,
+                zxAdslAtucConfRxEndBin           Integer32,
+                zxAdslAtucConfUseCustomBins      Integer32,
+--                zxAdslAtucConfBinUsage           OCTET STRING,
+                zxAdslAtucConfDnBitSwap          Integer32,
+                zxAdslAtucConfUpBitSwap          Integer32,
+                zxAdslAtucConfREADSL2Enable      Integer32,
+                zxAdslAtucConfPsdMaskType        Integer32,
+                zxAdslAtucConfPMMode             BITS,
+                zxAdslAtucConfPML0Time           Integer32,
+                zxAdslAtucConfPML2Time           Integer32,
+                zxAdslAtucConfPML2ATPR           Integer32,
+                zxAdslAtucConfPML2Rate           Integer32,
+                zxAdsl2ConfMinProtectionDs       Integer32,
+                zxAdsl2ConfMinProtectionUs       Integer32,
+                zxAdsl2ConfPsdMaskDs             OCTET STRING,
+                zxAdsl2ConfPsdMaskUs             OCTET STRING,
+                zxAdsl2ConfSnrModeDs             INTEGER,   
+                zxAdsl2ConfSnrModeUs             INTEGER,                   
+                zxAdsl2ConfTxRefVnDs             OCTET STRING,                
+                zxAdsl2ConfTxRefVnUs             OCTET STRING,
+                zxAdsl2ConfDpboEpsd              OCTET STRING, 
+                zxAdsl2ConfDpboEsEl              Unsigned32,
+                zxAdsl2ConfDpboEsCableModelA     Unsigned32,
+                zxAdsl2ConfDpboEsCableModelB     Unsigned32,
+                zxAdsl2ConfDpboEsCableModelC     Unsigned32,
+                zxAdsl2ConfDpboMus               Unsigned32, 
+                zxAdsl2ConfDpboFmin              Unsigned32,
+                zxAdsl2ConfDpboFmax              Unsigned32            
+                }
+    
+            
+    zxAdslLineDMTConfTrellis  OBJECT-TYPE
+            SYNTAX      Integer32 {
+                on     (1),   -- Enable Trellis coding 
+                off    (2)    -- Disable Trellis coding 
+                }
+            MAX-ACCESS  read-create
+            STATUS      deprecated
+            DESCRIPTION
+                "Parameter that enable or disable trellis coding. Trellis coding 
+                should always be enabled for its clear performancen advantage.
+                Trellis coding is mandatory for ADSL/ADSL2plus.
+                The value on(1) is default for all Annexes and ADSL2/ADSL2plus."
+            ::= { zxAdslLineConfProfileExtEntry 1 }
+    
+    zxAdslAtucConfMaxBitsPerBin  OBJECT-TYPE
+            SYNTAX      Integer32 (0..15)
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "Specifies maximum Rx number of bits per bin."
+            DEFVAL { 15 }
+            ::= { zxAdslLineConfProfileExtEntry 2 }
+    
+    zxAdslAtucConfTxStartBin  OBJECT-TYPE
+            SYNTAX      Integer32 
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "Specifies lowest bin number allowed for Tx signal.
+                 Different line coding type has different default value.
+                    0x20 (default for Annex A only)
+                    0x20 (default for ADSL2/ADSL2plus)
+                    0x06 (default for Annex A if G.Span and/or G.Span Plus are also defined)
+                    0x40 (default for Annex B)
+                    0x06 (default for Annex C/C.x)
+                    0x06 (default for G.Span)
+                    0x06 (default for G.Span Plus)"
+            ::= { zxAdslLineConfProfileExtEntry 3 }
+    
+    zxAdslAtucConfTxEndBin  OBJECT-TYPE
+            SYNTAX      Integer32(0..512) 
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "Specifies highest bin number allowed for Tx signal.
+                 Default = 0x3ff (default for all Annexes and ADSL2/ADSL2plus)"
+            ::= { zxAdslLineConfProfileExtEntry 4 }
+    
+
+
+    zxAdslAtucConfRxStartBin  OBJECT-TYPE
+            SYNTAX      Integer32 
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "Specifies lowest bin number allowed for Rx signal.
+                 Different line coding type has different default value.
+                    0x06 (default for Annex A)
+                    0x01 (default for Annex B)
+                    0x06 (default for Annex C/C.x)
+                    0x06 (default for G.Span/ADSL+)
+                    0x06 (default for G.Span Plus)
+                    0x06 (default for ADSL2/ADLS2plus) "
+            ::= { zxAdslLineConfProfileExtEntry 5 }
+    
+    
+    
+    zxAdslAtucConfRxEndBin  OBJECT-TYPE
+            SYNTAX      Integer32(0..512) 
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "Specifies highest bin number allowed for Rx signal.
+                Default = 0x3f (default for all Annexes and ADSL2/ADLS2plus)"
+            ::= { zxAdslLineConfProfileExtEntry 6 }
+
+    
+    zxAdslAtucConfUseCustomBins  OBJECT-TYPE
+            SYNTAX      Integer32 {
+                enable(1),  -- enable use custom Bins
+                disable(2)  -- disable use custom Bins
+                }
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "Enable or disable custom bin selection for upstream/downstream 
+                transmission. This parameter is used in conjunction with the
+                adslAtucDMTConfFreqBins and 
+                adslAturDMTConfFreqBins[ADSL-DMT-LINE-MIB] parameter."
+            DEFVAL { 2 } 
+            ::= { zxAdslLineConfProfileExtEntry 7 }
+
+
+
+--    zxAdslAtucConfBinUsage  OBJECT-TYPE
+--            SYNTAX      OCTET STRING(SIZE (64))
+--            MAX-ACCESS  read-create
+--            STATUS      current
+--            DESCRIPTION
+--                "Customer selected value (default value is all 1 that is 0x1ff) 
+--                64-byte parameter that allows the user to select which of the 
+--                bins will be enabled for upstream and downstream transmission 
+--                when using non-overlapped (FDM) mode. A 1 in bit position 
+--                indicates usage of corresponding bin,whereas a 0 disables usage 
+--                of corresponding bin.  "
+--            ::= { zxAdslLineConfProfileExtEntry 6 }
+
+
+    zxAdslAtucConfDnBitSwap  OBJECT-TYPE
+            SYNTAX      Integer32 {
+                enable(1),
+                disable(2)
+                }
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "enables/disables downstream bit swapping.
+                 Different line coding type has different default value.
+                     disable(2)  (default for ADSL2/ADLS2plus, Annex B, Annex C
+                                 C.x, G.Span/ADSL+ and G.Span Plus) 
+                     enable(1)   (default for Annex A) "
+            ::= { zxAdslLineConfProfileExtEntry 8 }
+
+    zxAdslAtucConfUpBitSwap  OBJECT-TYPE
+            SYNTAX      Integer32 {
+                enable(1),
+                disable(2)
+                }
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "enables/disables upstream bit swapping.
+                 Different line coding type has different default value.
+                     disable(2)  (default for ADSL2/ADLS2plus, Annex B, Annex C
+                                 C.x, G.Span/ADSL+ and G.Span Plus) 
+                     enable(1)   (default for Annex A) "
+            ::= { zxAdslLineConfProfileExtEntry 9 }
+
+
+    zxAdslAtucConfREADSL2Enable  OBJECT-TYPE
+            SYNTAX      Integer32 {
+                enable(1),
+                disable(2)
+                }
+            MAX-ACCESS  read-create
+            STATUS      deprecated
+            DESCRIPTION
+                "Defines whether downstream READSL2 operation should be forced 
+                by the ATU-C."
+
+            REFERENCE "Section 6.10.1 on page 66,Annex L ITU G.992.3"
+            DEFVAL { 2 }
+            ::= { zxAdslLineConfProfileExtEntry 10 }
+
+
+
+    zxAdslAtucConfPsdMaskType  OBJECT-TYPE
+            SYNTAX      Integer32
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                " It is supported by G.Span. Dsl card team will provide files 
+                about it in details."
+            ::= { zxAdslLineConfProfileExtEntry 11 }
+
+    zxAdslAtucConfPMMode  OBJECT-TYPE
+            SYNTAX      BITS {
+                idle (0),
+                lowPower(1)
+                }
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                " This configuration parameter defines the line states the ATU-C
+                may autonomously transition to on this line. It is coded in a 
+                bit map representation (0 if not allowed, 1 if allowed) with 
+                following definition:
+                    Bit 0   L3 state (Idle state)
+                    Bit 1   L1/L2 state (Low power state)."
+                    
+            REFERENCE "Section 7.3.1.1.4 ITU G.997.1(05/2003) "
+            ::= { zxAdslLineConfProfileExtEntry 12 }
+
+    zxAdslAtucConfPML0Time  OBJECT-TYPE
+            SYNTAX      Integer32 (0..255)
+            UNITS       "seconds"            
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                " PM configuration parameter,related to the L2 low power state.
+                This parameter represents the minimum time between an exit from 
+                the L2 state and the next entry into the L2 state. "
+
+            REFERENCE "Section 7.3.1.1.5 ITU G.997.1(05/2003) "
+            ::= { zxAdslLineConfProfileExtEntry 13 }
+
+    zxAdslAtucConfPML2Time  OBJECT-TYPE
+            SYNTAX      Integer32 (0..255)
+            UNITS       "seconds"            
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                " PM configuration parameter,related to the L2 low power state.
+                This parameter represents the minimum time between an entry into
+                the L2 state and the first Power Trim in the L2 state and between 
+                two consecutive Power Trims in the L2 State."
+
+            REFERENCE "Section 7.3.1.1.6 ITU G.997.1(05/2003) "
+            ::= { zxAdslLineConfProfileExtEntry 14 }
+
+
+
+    zxAdslAtucConfPML2ATPR  OBJECT-TYPE
+            SYNTAX      Integer32 (0..31)
+            UNITS       "dB"            
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                " PM configuration parameter,related to the L2 low power state.
+                This parameter represents the Maximum Aggregate Transmit Power 
+                Reduction (in dB) that can be performed through a single Power
+                Trim in the L2 state. It ranges from 0 dB to 31 dB."
+
+            REFERENCE "Section 7.3.1.1.3 ITU G.997.1(05/2003) "
+            ::= { zxAdslLineConfProfileExtEntry 15 }
+
+
+    zxAdslAtucConfPML2Rate  OBJECT-TYPE
+            SYNTAX      Integer32 (256..1024)
+            UNITS       "kbps"            
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                " PM configuration parameter,related to the L2 low power state.
+                This parameter specifies the minimum net data rate during the
+                low power state (L2)."
+
+            REFERENCE "Section 7.3.2.1.5 ITU G.997.1(05/2003) "
+            ::= { zxAdslLineConfProfileExtEntry 16 }
+    
+
+
+    zxAdsl2ConfMinProtectionDs  OBJECT-TYPE
+            SYNTAX      Integer32
+                {
+                 noProtection (1),
+                 halfSymbol (2),
+                 singleSymbol (3),
+                 twoSymbols (4),
+                 fourSymbols (5),
+                 eightSymbols (6),
+                 sixteenSymbols (7) 
+                 }
+            UNITS       "symbols"
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+             "Minimum Impulse Noise Protection on Downstream direction.  The
+              minimum impulse noise protection for the bearer channel,
+              expressed in symbols.  The parameter can take the following
+              values: noProtection (i.e., INP not required), halfSymbol
+              (i.e., INP length is 1/2 symbol) and 1-16 symbols in steps
+              of 1 symbol."
+            REFERENCE    "ITU-T G.997.1, paragraph 7.3.2.3"
+            DEFVAL       { noProtection }
+            ::= { zxAdslLineConfProfileExtEntry 20 }
+
+   zxAdsl2ConfMinProtectionUs  OBJECT-TYPE
+            SYNTAX      Integer32
+                {
+                 noProtection (1),
+                 halfSymbol (2),
+                 singleSymbol (3),
+                 twoSymbols (4),
+                 fourSymbols (5),
+                 eightSymbols (6),
+                 sixteenSymbols (7) 
+                 }
+            UNITS       "symbols"
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+             "  Minimum Impulse Noise Protection on Upstream direction.  The
+                minimum impulse noise protection for the bearer channel,
+                expressed in symbols. "
+            REFERENCE    "ITU-T G.997.1, paragraph 7.3.2.3"
+            DEFVAL       { noProtection }
+            ::= { zxAdslLineConfProfileExtEntry 21 }
+
+    zxAdsl2ConfPsdMaskDs   OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(0..96))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "(PSDMASKDS).
+             The downstream PSD mask applicable at the U-C2 reference
+             point.
+             This parameter is used only for G.992.5 and it may impose PSD
+             restrictions (breakpoints) in addition to the Limit PSD mask
+             defined in G.992.5.
+             This is a string of 32 pairs of values in the following
+             structure:
+             Octets 0+1 - Index of 1st sub-carrier used in the context
+                          of a first breakpoint.     
+             Octet 2    - The PSD reduction for the sub-carrier indicated in
+                          octets 0 and 1.
+             Octets 3-5 - Same, for a 2nd breakpoint.
+             Octets 6-8 - Same, for a 3rd breakpoint.
+             This architecture continues until octets 94-95, which are
+             associated with a 32nd breakpoint.
+             Each subcarrier index is an unsigned number in the range 1 and
+             NSCds.  Each PSD reduction value is in the range 0 (0dBm/Hz) to
+             255 (-127.5dBm/Hz) with steps of 0.5dBm/Hz.  Valid values are
+             in the range 0 to 190 (0 to -95dBm/Hz).
+             When the number of breakpoints is less than 32, all remaining
+             octets are set to the value 0.  Note that the content of this
+             object should be correlated with the sub-carriers mask and with
+             the RFI setup. "
+        REFERENCE    
+            "ITU-T G.997.1, paragraph #7.3.1.2.9"
+        ::= { zxAdslLineConfProfileExtEntry 22 }
+     
+    zxAdsl2ConfPsdMaskUs   OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(0..48))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "(PSDMASKUS).
+             The upstream PSD mask applicable at the U-R2 reference
+             point.
+             This parameter is used only for G.992.5 and it may impose PSD
+             restrictions (breakpoints) in addition to the Limit PSD mask
+             defined in G.992.5.
+             This is a string of 16 pairs of values in the following
+             structure:
+             Octets 0+1 - Index of 1st sub-carrier used in the context
+                          of a first breakpoint.
+             Octet 2    - The PSD reduction for the sub-carrier indicated in
+                          octets 0 and 1.
+             Octets 3-5 - Same, for a 2nd breakpoint.
+             Octets 6-8 - Same, for a 3rd breakpoint.
+             This architecture continues until octets 9-47, which are
+             associated with a 16th breakpoint.
+             Each subcarrier index is an unsigned number in the range 1 and
+             NSCus.  Each PSD reduction value is in the range 0 (0dBm/Hz) to
+             255 (-127.5dBm/Hz) with steps of 0.5dBm/Hz.  Valid values are
+             in the range 0 to 190 (0 to -95dBm/Hz).
+             When the number of breakpoints is less than 16, all remaining
+             octets are set to the value 0.  Note that the content of this
+             object should be correlated with the sub-carriers mask and with
+             the RFI setup. "
+         REFERENCE    
+             "ITU-T G.997.1, paragraph #7.3.1.2.12"
+         ::= { zxAdslLineConfProfileExtEntry 23 }
+
+    zxAdsl2ConfSnrModeDs  OBJECT-TYPE
+        SYNTAX      INTEGER {
+            virtualNoiseDisabled(1),
+            virtualNoiseEnabled(2)
+        }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+             "This parameter enables/disables the transmitter referred virtual 
+              noise in the downstream direction.
+              
+              virtualNoiseDisabled(1) - virtual noise is disabled.
+              virtualNoiseEnabled(2)  - virtual noise is enabled.                   
+             "
+        DEFVAL      { virtualNoiseDisabled }
+        ::= { zxAdslLineConfProfileExtEntry 24 }
+
+    zxAdsl2ConfSnrModeUs  OBJECT-TYPE
+        SYNTAX      INTEGER {
+            virtualNoiseDisabled(1),
+            virtualNoiseEnabled(2)
+        }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+             "This parameter enables/disables the transmitter referred virtual 
+              noise in the upstream direction.            
+              virtualNoiseDisabled(1) - virtual noise is disabled.
+              virtualNoiseEnabled(2)  - virtual noise is enabled.              
+             "
+        DEFVAL      { virtualNoiseDisabled }
+        ::= { zxAdslLineConfProfileExtEntry 25 }  
+
+    zxAdsl2ConfTxRefVnDs  OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(0..96)) 
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "This configuration parameter defines the downstream transmitter 
+             referred virtual noise (TXREFVNds). 
+             The TXREFVNds shall be specified through a set of breakpoints. 
+             Each breakpoint shall consist of a subcarrier index t, with a 
+             sub-carrier spacing of 4.3125 kHz, and a noise PSD level 
+             (expressed in dBm/Hz) at that subcarrier. The set of breakpoints
+             can then be represented as 
+             [(t1, PSD1), (t2, PSD2), ¡­ , (tN, PSDN)]. 
+             The subcarrier index shall be coded as an unsigned integer. 
+             The noise level shall be coded as an 8-bit unsigned integer 
+             representing the noise level -40 dBm/Hz (coded as 0) to -140 
+             dBm/Hz (coded as 200), in steps of 0.5 dBm/Hz. Values from 201 to
+             255 are special values indicating a noise level of 0 W/Hz. 
+             The maximum number of breakpoints is 32."
+        ::= { zxAdslLineConfProfileExtEntry 26 }
+
+    zxAdsl2ConfTxRefVnUs  OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(0..48)) 
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "This configuration parameter defines the upstream transmitter 
+             referred virtual noise (TXREFVNus). 
+             The TXREFVNus shall be specified through a set of breakpoints. 
+             Each breakpoint shall consist of a subcarrier index t, with a 
+             sub-carrier spacing of 4.3125 kHz, and a noise PSD level 
+             (expressed in dBm/Hz) at that subcarrier. 
+             The set of breakpoints can then be represented as 
+             [(t1, PSD1), (t2, PSD2), ¡­ , (tN, PSDN)]. 
+             The subcarrier index shall be coded as an unsigned integer. 
+             The noise level shall be coded as an 8-bit unsigned integer 
+             representing the noise level -40 dBm/Hz (coded as 0) to -140 
+             dBm/Hz (coded as 200), in steps of 0.5 dBm/Hz. Values from 201 
+             to 255 are special values indicating a noise level of 0 W/Hz. 
+             The maximum number of breakpoints is 16."
+        ::= { zxAdslLineConfProfileExtEntry 27 }
+
+    zxAdsl2ConfDpboEpsd  OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(0..96))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "(DPBOEPSD).
+             This configuration parameter defines the PSD mask that
+             is assumed to be permitted at the exchange. This parameter
+             shall use the same format as zxAdsl2ConfPsdMaskDs (PSDMASKDS).
+             The maximum number of breakpoints for zxAdsl2ConfDpboEpsd is
+             16."
+        REFERENCE   
+            "ITU-T G.997.1, paragraph #7.3.1.2.13"
+        ::= { zxAdslLineConfProfileExtEntry 28 }
+     
+    zxAdsl2ConfDpboEsEl  OBJECT-TYPE
+        SYNTAX      Unsigned32 (0..511)
+        UNITS       "0.5 dB"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "(DPBOESEL).
+             This configuration parameter defines the assumed
+             electrical length of cables (E-side cables) connecting
+             exchange based DSL services to a remote flexibility point
+             (cabinet), that hosts the xTU-C that is subject to
+             spectrally shaped downstream power back-off (DPBO)
+             depending on this length. The electrical length is
+             defined as the loss (in dB) of an equivalent length of
+             hypothetical cable at a reference frequency defined by
+             the network operator or in spectrum management regulations.
+             This parameter shall be coded as an unsigned integer
+             representing an electrical length from 0 dB (coded as 0)
+             to 255.5 dB (coded as 511) in steps of 0.5 dB. All values
+             in the range are valid. If this parameter is set to zero,
+             the DPBO shall be disabled."
+        REFERENCE   
+            "ITU-T G.997.1, paragraph #7.3.1.2.13"
+        DEFVAL      { 0 }
+        ::= { zxAdslLineConfProfileExtEntry 29 }
+     
+    zxAdsl2ConfDpboEsCableModelA  OBJECT-TYPE
+        SYNTAX      Unsigned32 (0..640)
+        UNITS       "2^-8"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "(DPBOESCMA).
+             The E-side Cable Model parameter A (DPBOESCMA) of the
+             cable model (DPBOESCM) for cables connecting exchange based DSL
+             services to a remote flexibility point (cabinet), that hosts
+             the xTU-C that is subject to spectrally shaped downstream
+             power back-off (DPBO) depending on this value.
+             The cable model is in terms of three scalars 
+             zxAdsl2ConfDpboEsCableModelA (DPBOESCMA),
+             zxAdsl2ConfDpboEsCableModelB(DPBOESCMB),
+             and zxAdsl2ConfDpboEsCableModelC (DPBOESCMC),
+             that are used to estimate the frequency dependent loss of E-side
+             cables calculated from the zxAdsl2ConfDpboEsEl (DPBOESEL)
+             parameter. 
+             Possible values shall be coded as unsigned integers representing 
+             a scalar value from -1 (coded as 0) to 1.5 (coded as 640) in 
+             steps of 2^-8. All values in the range are valid. 
+             This parameter is used only for G.993.2."
+        REFERENCE   
+            "ITU-T G.997.1, paragraph #7.3.1.2.13"
+        DEFVAL      { 263 }
+        ::= { zxAdslLineConfProfileExtEntry 30 }
+     
+    zxAdsl2ConfDpboEsCableModelB  OBJECT-TYPE
+        SYNTAX      Unsigned32 (0..640)
+        UNITS       "2^-8"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "(DPBOESCMB).
+             The E-side Cable Model parameter B (DPBOESCMB) of the
+             cable model (DPBOESCM) for cables connecting exchange based DSL
+             services to a remote flexibility point (cabinet), that hosts
+             the xTU-C that is subject to spectrally shaped downstream
+             power back-off (DPBO) depending on this value.
+             The cable model is in terms of three scalars 
+             zxAdsl2ConfDpboEsCableModelA(DPBOESCMA),
+             zxAdsl2ConfDpboEsCableModelB(DPBOESCMB),
+             and zxAdsl2ConfDpboEsCableModelC(DPBOESCMC),
+             that are used to estimate the frequency dependent loss of E-side
+             cables calculated from the zxAdsl2ConfDpboEsEl (DPBOESEL)
+             parameter. 
+             Possible values shall be coded as unsigned integers representing 
+             a scalar value from -1 (coded as 0) to 1.5 (coded as 640) in 
+             steps of 2^-8. All values in the range are valid. 
+             This parameter is used only for G.993.2."
+        REFERENCE   
+            "ITU-T G.997.1, paragraph #7.3.1.2.13"
+        DEFVAL      { 509 }
+        ::= { zxAdslLineConfProfileExtEntry 31 }
+     
+    zxAdsl2ConfDpboEsCableModelC  OBJECT-TYPE
+        SYNTAX      Unsigned32 (0..640)
+        UNITS       "2^-8"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "(DPBOESCMC).
+             The E-side Cable Model parameter C (DPBOESCMC) of the cable model
+             (DPBOESCM) for cables connecting exchange based DSL services to 
+             a remote flexibility point (cabinet), that hosts the xTU-C that 
+             is subject to spectrally shaped downstream power back-off (DPBO) 
+             depending on this value.
+             The cable model is in terms of three scalars 
+             zxAdsl2ConfDpboEsCableModelA (DPBOESCMA),
+             zxAdsl2ConfDpboEsCableModelB(DPBOESCMB),
+             and zxAdsl2ConfDpboEsCableModelC (DPBOESCMC),
+             that are used to estimate the frequency dependent loss of E-side
+             cables calculated from the zxAdsl2ConfDpboEsEl (DPBOESEL)
+             parameter. 
+             Possible values shall be coded as unsigned integers representing 
+             a scalar value from -1 (coded as 0) to 1.5 (coded as 640) in 
+             steps of 2^-8. All values in the range are valid. 
+             This parameter is used only for G.993.2."
+        REFERENCE   
+            "ITU-T G.997.1, paragraph #7.3.1.2.13"
+        DEFVAL      { 261 }
+        ::= { zxAdslLineConfProfileExtEntry 32 }
+     
+    zxAdsl2ConfDpboMus OBJECT-TYPE
+        SYNTAX      Unsigned32 (0..255)
+        UNITS       "0.5 dB"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "(DPBOMUS).
+             This configuration parameter defines the assumed Minimum Usable
+             receive PSD mask (in dBm/Hz) for exchange based services,
+             used to modify parameter zxAdsl2ConfDpboFmax (DPBOFMAX) 
+             defined below [to determine the DPBO]. 
+             It shall be coded as an unsigned integer representing a PSD mask 
+             level from 0 dBm/Hz (coded as 0) to -127.5 dBm/Hz (coded as 255) 
+             in steps of 0.5 dB. 
+             All values in the range are valid.
+             NOTE - The PSD mask level is 3.5 dB above the signal PSD level. 
+             This parameter is used only for G.993.2."
+        REFERENCE   
+            "ITU-T G.997.1, paragraph #7.3.1.2.13"
+        DEFVAL      { 190 }
+        ::= { zxAdslLineConfProfileExtEntry 33 }
+     
+    zxAdsl2ConfDpboFmin OBJECT-TYPE
+        SYNTAX      Unsigned32 (0..2048)
+        UNITS       "4.3125 kHz"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "(DPBOFMIN).
+             This configuration parameter defines the minimum frequency from 
+             which the DPBO shall be applied. 
+             It ranges from 0 kHz (coded as 0) to 8832 kHz (coded as 2048) in 
+             steps of 4.3125 kHz. 
+             This parameter is used only for G.993.2."
+        REFERENCE   
+            "ITU-T G.997.1, paragraph #7.3.1.2.13"
+        DEFVAL      { 32 }
+        ::= { zxAdslLineConfProfileExtEntry 34 }
+     
+    zxAdsl2ConfDpboFmax OBJECT-TYPE
+        SYNTAX      Unsigned32 (32..6956)
+        UNITS       "4.3125 kHz"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "(DPBOFMAX).
+             This configuration parameter defines the maximum frequency at
+             which DPBO may be applied. It ranges from 138 kHz (coded as 32)
+             to 29997.75 kHz (coded as 6956) in steps of 4.3125 kHz.
+             This parameter is used only for G.993.2."
+        REFERENCE   
+            "ITU-T G.997.1, paragraph #7.3.1.2.13"
+        DEFVAL      { 511 }
+        ::= { zxAdslLineConfProfileExtEntry 35 }
+        
+-- Atuc Physical Table
+
+    zxAdslAtucPhysTable  OBJECT-TYPE
+            SYNTAX      SEQUENCE OF ZxAdslAtucPhysEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                 "This table provides one row for each ATUC
+                 Each row contains the Physical Layer Parameters
+                 table for that ATUC. ADSL physical interfaces are
+                 those ifEntries where ifType is equal to adsl(94)."
+            ::= {zxAdslExtMibObjects 3}
+    
+    
+    zxAdslAtucPhysEntry  OBJECT-TYPE
+            SYNTAX      ZxAdslAtucPhysEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                "Adsl physical layer line actuals information entry"
+            INDEX    { ifIndex }
+            ::= {zxAdslAtucPhysTable 1}
+    
+    
+    ZxAdslAtucPhysEntry ::=
+            SEQUENCE {
+                zxAdslAtucPrevSnrMgn          Integer32,
+                zxAdslAtucPrevAtn             Gauge32,
+                zxAdslAtucPrevAttainableRate  Gauge32,
+                zxAdslAtucChipVersion         SnmpAdminString
+                }
+    
+    zxAdslAtucPrevSnrMgn  OBJECT-TYPE
+            SYNTAX      Integer32 (-640..640)
+            UNITS       "tenth dB"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "The adslAtucCurrSnrMgn at the time of the last linkup event."
+            ::= { zxAdslAtucPhysEntry 1 }
+    
+
+    zxAdslAtucPrevAtn  OBJECT-TYPE
+            SYNTAX      Gauge32(0..630)
+            UNITS       "tenth dB"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "The adslAtucCurrAtn at the time of the last linkup event."
+            ::= { zxAdslAtucPhysEntry 2 }
+    
+    zxAdslAtucPrevAttainableRate  OBJECT-TYPE
+            SYNTAX      Gauge32
+            UNITS       "kbps"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "The adslAtucCurrAttainableRate at the time of the last linkup event."
+            ::= { zxAdslAtucPhysEntry 3 }
+    
+    zxAdslAtucChipVersion  OBJECT-TYPE
+            SYNTAX      SnmpAdminString (SIZE (0..32))
+            MAX-ACCESS  read-only
+            STATUS      deprecated
+            DESCRIPTION
+                 "The atuc chip version number."
+            ::= { zxAdslAtucPhysEntry 4 }
+    
+    
+    
+
+-- Atur Physical Table
+
+    zxAdslAturPhysTable  OBJECT-TYPE
+            SYNTAX      SEQUENCE OF ZxAdslAturPhysEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                 "This table provides one row for each ATUR
+                 Each row contains the Physical Layer Parameters
+                 table for that ATUR. ADSL physical interfaces are
+                 those ifEntries where ifType is equal to adsl(94)."
+            ::= {zxAdslExtMibObjects 4}
+    
+    
+    zxAdslAturPhysEntry  OBJECT-TYPE
+            SYNTAX      ZxAdslAturPhysEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                "Adsl physical layer line actuals information entry"
+            INDEX    { ifIndex }
+            ::= {zxAdslAturPhysTable 1}
+    
+    
+    ZxAdslAturPhysEntry ::=
+            SEQUENCE {
+                zxAdslAturPrevSnrMgn          Integer32,
+                zxAdslAturPrevAtn             Gauge32,
+                zxAdslAturPrevAttainableRate  Gauge32
+                }
+    
+    zxAdslAturPrevSnrMgn  OBJECT-TYPE
+            SYNTAX      Integer32 (-640..640)
+            UNITS       "tenth dB"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "The adslAturCurrSnrMgn at the time of the last linkup event."
+            ::= { zxAdslAturPhysEntry 1 }
+    
+
+    zxAdslAturPrevAtn  OBJECT-TYPE
+            SYNTAX      Gauge32(0..630)
+            UNITS       "tenth dB"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "The adslAturCurrAtn at the time of the last linkup event."
+            ::= { zxAdslAturPhysEntry 2 }
+    
+    zxAdslAturPrevAttainableRate  OBJECT-TYPE
+            SYNTAX      Gauge32
+            UNITS       "kbps"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "The adslAturCurrAttainableRate at the time of the last linkup event."
+            ::= { zxAdslAturPhysEntry 3 }
+
+
+
+
+
+-- Atuc Channel Table
+
+    zxAdslAtucChanTable  OBJECT-TYPE
+            SYNTAX      SEQUENCE OF ZxAdslAtucChanEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                 "This table provides one row for each Atuc channel.
+                 ADSL channel interfaces are those ifEntries
+                 where ifType is equal to adslInterleave(124)
+                 or adslFast(125)."
+            ::= {zxAdslExtMibObjects 5}
+    
+    
+    zxAdslAtucChanEntry  OBJECT-TYPE
+            SYNTAX      ZxAdslAtucChanEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                "Adsl channel layer line actuals information entry"
+            INDEX    { ifIndex }
+            ::= {zxAdslAtucChanTable 1}
+    
+    
+    ZxAdslAtucChanEntry ::=
+            SEQUENCE {
+                zxAdslAtucChanRsSymbols       Integer32,
+                zxAdslAtucChanRsDepth         Integer32,
+                zxAdslAtucChanRsRedundancy    Integer32,
+                zxAdslAtucChanActInp          Integer32,
+                zxAdslAtucChanInpEtr          Unsigned32,
+                zxAdslAtucChanInpEftr         Unsigned32,           
+                zxAdslAtucChanInpMinEftr      Unsigned32,       
+                zxAdslAtucChanInpActDelay     INTEGER
+                }
+    
+    zxAdslAtucChanRsSymbols  OBJECT-TYPE
+            SYNTAX      Integer32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "The number of DMT symbols per ReedSolomon code word (S) in
+                 the upstream direction. 
+                    Note that S is not restricted to interleaved mode only.
+                 This parameter is calculated differently for G.992.3 and
+                 G.992.5."
+            ::= { zxAdslAtucChanEntry 1 }
+    
+    zxAdslAtucChanRsDepth  OBJECT-TYPE
+            SYNTAX      Integer32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "This parameter indicates interleaving depth (D) in the upstream
+                  direction.
+                     Note that D is not restricted to interleaved mode only.
+                  Even in fast mode, D is a valid constant value and is equal to 1."
+            ::= { zxAdslAtucChanEntry 2 }
+
+    zxAdslAtucChanRsRedundancy  OBJECT-TYPE
+            SYNTAX      Integer32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "The number of redundant bytes (R) per Reed-Solomon code in the
+                  upstream direction. "
+            ::= { zxAdslAtucChanEntry 3 }
+
+
+    zxAdslAtucChanActInp  OBJECT-TYPE
+            SYNTAX      Integer32(0..255)
+            UNITS       "0.1 symbols"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Actual impulse noise protection.
+               This parameter reports the actual impulse noise
+               protection (INP) on the channel in the L0
+               state. In the L1 or L2 state, the parameter contains the
+               INP in the previous L0 state. 
+            "
+            ::= { zxAdslAtucChanEntry 4 }
+
+    zxAdslAtucChanInpEtr OBJECT-TYPE
+        SYNTAX      Unsigned32(0..52000)
+        UNITS       "kbps"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters of downstream.
+             The expected throughput (ETR)."
+        ::= { zxAdslAtucChanEntry 5 }                        
+      
+    zxAdslAtucChanInpEftr OBJECT-TYPE
+        SYNTAX      Unsigned32(0..52000)
+        UNITS       "kbps"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters of downstream.
+             The error-free throughput (EFTR is defined as the average 
+             bit-rate at the alpha1/beta1 reference point, of bits 
+             originating from DTU¡¯s which have been detected to contain
+             no error at the moment of crossing the alpha1/beta1 reference 
+             point."
+        ::= { zxAdslAtucChanEntry 6 }             
+      
+    zxAdslAtucChanInpMinEftr OBJECT-TYPE
+        SYNTAX      Unsigned32(0..52000)
+        UNITS       "kbps"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters of downstream.
+             The minimum error-free throughput (EFTR_min is defined as the 
+             minimum of the EFTR observed since the last reading of the 
+             EFTR_min."
+        ::= { zxAdslAtucChanEntry 7 }                   
+      
+    zxAdslAtucChanInpActDelay OBJECT-TYPE
+        SYNTAX      INTEGER(0..63)
+        UNITS       "ms"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters of downstream.
+             If retransmission is used in a given transmit direction, this 
+             Object is defined as the actual value of the time-independent 
+             component of the delay between the alfa1 and beta1 reference 
+             points. 
+             This can be calculated as the minimum possible instantaneous 
+             delay between the alfa1 and beta1 reference points, based on 
+             the actual settings of the framing parameters."
+        ::= { zxAdslAtucChanEntry 8 }  
+
+-- Atur Channel Table
+
+    zxAdslAturChanTable  OBJECT-TYPE
+            SYNTAX      SEQUENCE OF ZxAdslAturChanEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                 "This table provides one row for each ATUR channel.
+                 ADSL channel interfaces are those ifEntries
+                 where ifType is equal to adslInterleave(124)
+                 or adslFast(125)."
+            ::= {zxAdslExtMibObjects 6}
+    
+    
+    zxAdslAturChanEntry  OBJECT-TYPE
+            SYNTAX      ZxAdslAturChanEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                "Adsl channel layer line actuals information entry"
+            INDEX    { ifIndex }
+            ::= {zxAdslAturChanTable 1}
+    
+    
+    ZxAdslAturChanEntry ::=
+            SEQUENCE {
+                zxAdslAturChanRsSymbols       Integer32,
+                zxAdslAturChanRsDepth         Integer32,
+                zxAdslAturChanRsRedundancy    Integer32,
+                zxAdslAturChanActInp          Integer32,
+                zxAdslAturChanInpEtr          Unsigned32, 
+                zxAdslAturChanInpEftr         Unsigned32,                            
+                zxAdslAturChanInpMinEftr      Unsigned32,        
+                zxAdslAturChanInpActDelay     INTEGER 
+                }
+    
+    zxAdslAturChanRsSymbols  OBJECT-TYPE
+            SYNTAX      Integer32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "The number of DMT symbols per ReedSolomon code word (S) in
+                 the upstream direction. 
+                    Note that S is not restricted to interleaved mode only.
+                    This parameter is calculated differently for G.992.3 and
+                 G.992.5."
+            ::= { zxAdslAturChanEntry 1 }
+    
+
+    zxAdslAturChanRsDepth  OBJECT-TYPE
+            SYNTAX      Integer32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "This parameter indicates interleaving depth (D) in the upstream
+                  direction.
+                     Note that D is not restricted to interleaved mode only.
+                  Even in fast mode, D is a valid constant value and is equal to 1."
+            ::= { zxAdslAturChanEntry 2 }
+
+    zxAdslAturChanRsRedundancy  OBJECT-TYPE
+            SYNTAX      Integer32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "The number of redundant bytes (R) per Reed-Solomon code in the
+                  upstream direction. "
+            ::= { zxAdslAturChanEntry 3 }
+
+    zxAdslAturChanActInp  OBJECT-TYPE
+            SYNTAX      Integer32(0..255)
+            UNITS       "0.1 symbols"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Actual impulse noise protection.
+               This parameter reports the actual impulse noise
+               protection (INP) on the channel in the L0
+               state. In the L1 or L2 state, the parameter contains the
+               INP in the previous L0 state. 
+            "
+            ::= { zxAdslAturChanEntry 4 }
+
+    zxAdslAturChanInpEtr OBJECT-TYPE
+        SYNTAX      Unsigned32(0..52000)
+        UNITS       "kbps"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters of upstream.
+             The expected throughput (ETR)."
+        ::= { zxAdslAturChanEntry 5 }   
+      
+    zxAdslAturChanInpEftr OBJECT-TYPE
+        SYNTAX      Unsigned32(0..52000)
+        UNITS       "kbps"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters of upstream..
+             The error-free throughput (EFTR is defined as the average 
+             bit-rate at the alpha1/beta1 reference point, of bits 
+             originating from DTU¡¯s which have been detected to contain
+             no error at the moment of crossing the alpha1/beta1 reference 
+             point."
+        ::= { zxAdslAturChanEntry 6 }                                
+      
+    zxAdslAturChanInpMinEftr OBJECT-TYPE
+        SYNTAX      Unsigned32(0..52000)
+        UNITS       "kbps"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters of upstream.
+             The minimum error-free throughput (EFTR_min is defined as the 
+             minimum of the EFTR observed since the last reading of the 
+             EFTR_min."
+        ::= { zxAdslAturChanEntry 7 } 
+      
+    zxAdslAturChanInpActDelay OBJECT-TYPE
+        SYNTAX      INTEGER(0..63)
+        UNITS       "ms"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters of upstream.
+             If retransmission is used in a given transmit direction, this 
+             Object is defined as the actual value of the time-independent 
+             component of the delay between the alfa1 and beta1 reference 
+             points. 
+             This can be calculated as the minimum possible instantaneous 
+             delay between the alfa1 and beta1 reference points, based on 
+             the actual settings of the framing parameters."
+        ::= { zxAdslAturChanEntry 8 } 
+
+-- Atuc Channel Performance Data Table
+
+    zxAdslAtucChanPerfTable  OBJECT-TYPE
+            SYNTAX      SEQUENCE OF ZxAdslAtucChanPerfEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                 "This table provides one row for each Atuc channel.
+                 ADSL channel interfaces are those ifEntries
+                 where ifType is equal to adslInterleave(124)
+                 or adslFast(125)."
+            ::= {zxAdslExtMibObjects 7}
+    
+    
+    zxAdslAtucChanPerfEntry  OBJECT-TYPE
+            SYNTAX      ZxAdslAtucChanPerfEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                "DMT channel layer line actuals information entry"
+            INDEX    { ifIndex }
+            ::= {zxAdslAtucChanPerfTable 1}
+    
+    
+    ZxAdslAtucChanPerfEntry ::=
+            SEQUENCE {
+                zxAdslAtucChanPerfNcd           Counter32,
+                zxAdslAtucChanPerfOcd           Counter32,
+                zxAdslAtucChanPerfHec           Counter32,
+                zxAdslAtucChanPerfCurr15Ncd     Counter32,
+                zxAdslAtucChanPerfCurr15Ocd     Counter32,
+                zxAdslAtucChanPerfCurr15Hec     Counter32,
+                zxAdslAtucChanPerfCurr1DayNcd   Counter32,
+                zxAdslAtucChanPerfCurr1DayOcd   Counter32,
+                zxAdslAtucChanPerfCurr1DayHec   Counter32,
+                zxAdslAtucChanPerfPrev1DayNcd   Counter32,
+                zxAdslAtucChanPerfPrev1DayOcd   Counter32,
+                zxAdslAtucChanPerfPrev1DayHec   Counter32,
+                zxAdslAtucChanPerfCurr15RtxDtu    Counter32,
+                zxAdslAtucChanPerfCurr15RtxCDtu   Counter32,
+                zxAdslAtucChanPerfCurr15RtxUcDtu  Counter32,                             
+                zxAdslAtucChanPerfCurr1DRtxDtu    Counter32,
+                zxAdslAtucChanPerfCurr1DRtxCDtu   Counter32,
+                zxAdslAtucChanPerfCurr1DRtxUcDtu  Counter32                
+                }
+    
+    zxAdslAtucChanPerfNcd  OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Count of no cell delineation (ncd) on this channel."
+            ::= { zxAdslAtucChanPerfEntry 1 }
+    
+    zxAdslAtucChanPerfOcd  OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Count of out of cell delineation (ocd) on this channel."
+            ::= { zxAdslAtucChanPerfEntry 2 }
+    
+    zxAdslAtucChanPerfHec  OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Header error check counter (hec) on this channel."
+            ::= { zxAdslAtucChanPerfEntry 3 }
+    
+    zxAdslAtucChanPerfCurr15Ncd  OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Count of no cell delineation (ncd) on this channel within
+                 the current 15 minute time interval."
+            ::= { zxAdslAtucChanPerfEntry 4 }
+    
+
+    zxAdslAtucChanPerfCurr15Ocd  OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Count of out of cell delineation (ocd) on this channel  within
+                  the current 15 minute time interval."
+            ::= { zxAdslAtucChanPerfEntry 5 }
+    
+    zxAdslAtucChanPerfCurr15Hec  OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Header error check counter (hec) on this channel within the 
+                 current 15 minute time interval."
+            ::= { zxAdslAtucChanPerfEntry 6 }
+    
+
+    zxAdslAtucChanPerfCurr1DayNcd  OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Count of no cell delineation (ncd) on this channel within
+                 the current 1 day interval."
+            ::= { zxAdslAtucChanPerfEntry 7 }
+    
+
+    zxAdslAtucChanPerfCurr1DayOcd  OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Count of out of cell delineation (ocd) on this channel  within
+                  the current 1 day interval."
+            ::= { zxAdslAtucChanPerfEntry 8 }
+    
+    zxAdslAtucChanPerfCurr1DayHec  OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Header error check counter (hec) on this channel within the 
+                 current 1 day interval"
+            ::= { zxAdslAtucChanPerfEntry 9 }
+
+    zxAdslAtucChanPerfPrev1DayNcd  OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Count of no cell delineation (ncd) on this channel within
+                  the most recent previous 1-day period."
+            ::= { zxAdslAtucChanPerfEntry 10 }
+    
+
+    zxAdslAtucChanPerfPrev1DayOcd  OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Count of out of cell delineation (ocd) on this channel  within
+                   the most recent previous 1-day period."
+            ::= { zxAdslAtucChanPerfEntry 11 }
+    
+    zxAdslAtucChanPerfPrev1DayHec  OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Header error check counter (hec) on this channel within the most
+                  recent previous 1-day period."
+            ::= { zxAdslAtucChanPerfEntry 12 }
+
+   zxAdslAtucChanPerfCurr15RtxDtu  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters.
+             this is a counter that is incremented each time a DTU has been
+             retransmitted by the transmitter in the current 15 minute 
+             interval. Multiple retransmission of the same DTU is counted 
+             as many times as it has been retransmitted.
+             "         
+        ::= { zxAdslAtucChanPerfEntry 13 }
+           
+    zxAdslAtucChanPerfCurr15RtxCDtu  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters.
+             this is a counter that is incremented each time a DTU has been 
+             detected in error and has been successfully corrected by a 
+             retransmission in the current 15 minute interval"
+        ::= { zxAdslAtucChanPerfEntry 14 }   
+    
+    zxAdslAtucChanPerfCurr15RtxUcDtu  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters.
+             this is a counter that is incremented each time a DTU is detected
+             in error and has not been corrected by a retransmission in the 
+             current 15 minute interval."
+        ::= { zxAdslAtucChanPerfEntry 15 }   
+              
+    zxAdslAtucChanPerfCurr1DRtxDtu  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters.
+             this is a counter that is incremented each time a DTU has been 
+             retransmitted by the transmitter in the current day interval. 
+             Multiple retransmission of the same DTU is counted as many times 
+             as it has been retransmitted.
+             "
+        ::= { zxAdslAtucChanPerfEntry 16 }
+           
+    zxAdslAtucChanPerfCurr1DRtxCDtu  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters.
+             this is a counter that is incremented each time a DTU has been 
+             detected in error and has been successfully corrected by a 
+             retransmission in the current day interval"
+        ::= { zxAdslAtucChanPerfEntry 17 }   
+    
+    zxAdslAtucChanPerfCurr1DRtxUcDtu  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters.
+             this is a counter that is incremented each time a DTU is detected
+             in error and has not been corrected by a retransmission."
+        ::= { zxAdslAtucChanPerfEntry 18 }  
+
+
+-- Atur Channel Performance Data Table
+
+    zxAdslAturChanPerfTable  OBJECT-TYPE
+            SYNTAX      SEQUENCE OF ZxAdslAturChanPerfEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                 "This table provides one row for each Atur channel.
+                 ADSL channel interfaces are those ifEntries
+                 where ifType is equal to adslInterleave(124)
+                 or adslFast(125)."
+            ::= {zxAdslExtMibObjects 8}
+    
+    
+    zxAdslAturChanPerfEntry  OBJECT-TYPE
+            SYNTAX      ZxAdslAturChanPerfEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                "DMT channel layer line actuals information entry"
+            INDEX    { ifIndex }
+            ::= {zxAdslAturChanPerfTable 1}
+    
+    
+    ZxAdslAturChanPerfEntry ::=
+            SEQUENCE {
+                zxAdslAturChanPerfNcd           Counter32,
+                zxAdslAturChanPerfHec           Counter32,
+                zxAdslAturChanPerfCurr15Ncd     Counter32,
+                zxAdslAturChanPerfCurr15Hec     Counter32,
+                zxAdslAturChanPerfCurr1DayNcd   Counter32,
+                zxAdslAturChanPerfCurr1DayHec   Counter32,
+                zxAdslAturChanPerfPrev1DayNcd   Counter32,
+                zxAdslAturChanPerfPrev1DayHec   Counter32,
+                zxAdslAturChanPerfCurr15RtxDtu     Counter32,
+                zxAdslAturChanPerfCurr15RtxCDtu    Counter32,
+                zxAdslAturChanPerfCurr15RtxUcDtu   Counter32,                             
+                zxAdslAturChanPerfCurr1DRtxDtu     Counter32,
+                zxAdslAturChanPerfCurr1DRtxCDtu    Counter32,
+                zxAdslAturChanPerfCurr1DRtxUcDtu   Counter32
+                }
+    
+    zxAdslAturChanPerfNcd  OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Count of no cell delineation (ncd) on this channel."
+            ::= { zxAdslAturChanPerfEntry 1 }
+    
+    zxAdslAturChanPerfHec  OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Header error check counter (hec) on this channel."
+            ::= { zxAdslAturChanPerfEntry 2 }
+    
+    zxAdslAturChanPerfCurr15Ncd  OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Count of no cell delineation (ncd) on this channel within
+                 the current 15 minute time interval."
+            ::= { zxAdslAturChanPerfEntry 3 }
+    
+
+    zxAdslAturChanPerfCurr15Hec  OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Header error check counter (hec) on this channel within the 
+                 current 15 minute time interval"
+            ::= { zxAdslAturChanPerfEntry 4 }
+    
+
+    zxAdslAturChanPerfCurr1DayNcd  OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Count of no cell delineation (ncd) on this channel within
+                 the current 1 day interval."
+            ::= { zxAdslAturChanPerfEntry 5 }
+    
+
+    zxAdslAturChanPerfCurr1DayHec  OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Header error check counter (hec) on this channel within the 
+                 current 1 day interval"
+            ::= { zxAdslAturChanPerfEntry 6 }
+
+    zxAdslAturChanPerfPrev1DayNcd  OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Count of no cell delineation (ncd) on this channel within
+                  the most recent previous 1-day period."
+            ::= { zxAdslAturChanPerfEntry 7 }
+    
+
+    zxAdslAturChanPerfPrev1DayHec  OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "Header error check counter (hec) on this channel within the most
+                  recent previous 1-day period."
+            ::= { zxAdslAturChanPerfEntry 8 }
+
+   zxAdslAturChanPerfCurr15RtxDtu  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters.
+             this is a counter that is incremented each time a DTU has been
+             retransmitted by the transmitter in the current 15 minute 
+             interval. Multiple retransmission of the same DTU is counted 
+             as many times as it has been retransmitted.
+             "         
+        ::= { zxAdslAturChanPerfEntry 9 }
+           
+    zxAdslAturChanPerfCurr15RtxCDtu  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters.
+             this is a counter that is incremented each time a DTU has been 
+             detected in error and has been successfully corrected by a 
+             retransmission in the current 15 minute interval"
+        ::= { zxAdslAturChanPerfEntry 10 }   
+    
+    zxAdslAturChanPerfCurr15RtxUcDtu  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters.
+             this is a counter that is incremented each time a DTU is detected
+             in error and has not been corrected by a retransmission in the 
+             current 15 minute interval."
+        ::= { zxAdslAturChanPerfEntry 11 }   
+              
+    zxAdslAturChanPerfCurr1DRtxDtu  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters.
+             this is a counter that is incremented each time a DTU has been 
+             retransmitted by the transmitter in the current day interval. 
+             Multiple retransmission of the same DTU is counted as many times 
+             as it has been retransmitted.
+             "
+        ::= { zxAdslAturChanPerfEntry 12 }
+           
+    zxAdslAturChanPerfCurr1DRtxCDtu  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters.
+             this is a counter that is incremented each time a DTU has been 
+             detected in error and has been successfully corrected by a 
+             retransmission in the current day interval"
+        ::= { zxAdslAturChanPerfEntry 13 }   
+    
+    zxAdslAturChanPerfCurr1DRtxUcDtu  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters.
+             this is a counter that is incremented each time a DTU is detected
+             in error and has not been corrected by a retransmission."
+        ::= { zxAdslAturChanPerfEntry 14 }   
+
+
+-- Dsl Loop Test Table
+    zxDslLoopTestTable  OBJECT-TYPE
+            SYNTAX      SEQUENCE OF ZxDslLoopTestEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                 "This table provides one row for each DSL line pvc tesing."
+            ::= {zxAdslExtMibObjects 9}
+    
+    zxDslLoopTestEntry  OBJECT-TYPE
+            SYNTAX      ZxDslLoopTestEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                "DSL line pvc tesing information entry"
+            INDEX    { zxDslLoopTestPort, zxDslLoopTestPvcNo }
+            ::= {zxDslLoopTestTable 1}
+    
+    ZxDslLoopTestEntry ::=
+            SEQUENCE {
+                zxDslLoopTestPort               INTEGER,
+                zxDslLoopTestPvcNo              INTEGER,
+                zxDslLoopTestType               INTEGER,
+                zxDslLoopTestOperStatus         INTEGER,
+                zxDslLoopTestResult             INTEGER
+                }
+    
+    zxDslLoopTestPort  OBJECT-TYPE
+            SYNTAX      INTEGER
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                 "Dsl port number.It should be equal to ifIndex in DSL layer."
+            ::= { zxDslLoopTestEntry 1 }
+            
+    zxDslLoopTestPvcNo  OBJECT-TYPE
+            SYNTAX      INTEGER
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                 "Dsl port pvc number.If it is 65535,it means this test doesn't 
+            base on pvc but physical port."
+            ::= { zxDslLoopTestEntry 2 }
+
+    zxDslLoopTestType  OBJECT-TYPE
+            SYNTAX      INTEGER {
+                noOper(0),  -- No operation or delete loopback point.
+                cancle(1),  -- Cancle this test
+                
+                utopia(2),  -- ATUC Utopia loopback test
+                afe(3),     -- ATUC AFE loopback test
+                hybrid(4),  -- ATUC Hybrid loopback test
+                atuc_OAM(5),-- ATUC data path loopback test,such as ATM OAM F5 loopback.
+                atur_OAM(6),-- ATUR data path loopback test,such as ATM OAM F5 loopback.
+                atur_CC(7), -- ATUR ATM continuity cell test.
+                digital(8)  -- ATUC DSP module loopback test.
+                }
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                 "This is loop test action expected."
+            ::= { zxDslLoopTestEntry 3 }
+            
+    zxDslLoopTestOperStatus  OBJECT-TYPE
+            SYNTAX      INTEGER {
+                neverExecute(0),   -- Never execute test
+                executing(1),      -- Executing test now
+                executed(2),       -- Test has been executed
+                failedToCommit(3) -- Failed to commit test command to DSL card.
+                }
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "This is loop test operational status.
+                  
+                  Note: if zxDslLoopTestOperStatus equal to Executing(1),
+                  ifOperStaus should be tesing(3). "
+            ::= { zxDslLoopTestEntry 4 }
+
+    zxDslLoopTestResult  OBJECT-TYPE
+            SYNTAX      INTEGER {
+                noResult(0), 
+                success(1),
+                generalFailed(2),  -- Test failed but no detailed reason.                 
+                noSupport(3),      -- Current DSL card doesn't support this test.         
+                unknown(4),        -- Unkown the test result.                             
+                noSuchPort(5),     -- No this port on dsl card                            
+                loopBackFailed(6), -- Loop back failed on dsl card                        
+                portNotActive(7),  -- Some test can't be executed when port is not actived. 
+                portInTesting(8),  -- Port in testing and can't execute the new test            
+                portInService(9),  -- Port in service and can't execute the test                
+                portFailures(10),  -- Port has failures and can't execute the test             
+                cardFailures(11),  -- Dsl card has failures and can't execute the test
+                noPvcFound(12),    -- No PVC found on the test port or VPI/VCI is not 8/81 while test type is ATUR-OAM
+                unknownTestType(13)-- The test type is not defined in zxDslLoopTestType
+
+                }
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "This is loop test result and includes reasons for test failures."
+            ::= { zxDslLoopTestEntry 5 }
+            
+
+
+
+-- zxAdslAppliedLineConfPrfTable start
+    zxAdslAppliedLineConfPrfTable  OBJECT-TYPE
+            SYNTAX      SEQUENCE OF ZxAdslAppliedLineConfPrfEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                 "This table provides lineconfprofile parameters applied by linecard."
+            ::= {zxAdslExtMibObjects 10}
+            
+    zxAdslAppliedLineConfPrfEntry  OBJECT-TYPE
+            SYNTAX      ZxAdslAppliedLineConfPrfEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                ""
+            INDEX    { ifIndex }
+            ::= {zxAdslAppliedLineConfPrfTable 1}
+
+    ZxAdslAppliedLineConfPrfEntry ::=
+            SEQUENCE {
+                AppadslAtucConfRateMode               INTEGER,
+                AppadslAtucConfRateChanRatio               INTEGER,
+                AppadslAtucConfTargetSnrMgn         INTEGER,
+                AppadslAtucConfMaxSnrMgn        INTEGER,
+                AppadslAtucConfMinSnrMgn         INTEGER,
+                AppadslAtucConfDownshiftSnrMgn         INTEGER,
+                AppadslAtucConfUpshiftSnrMgn         INTEGER,
+                AppadslAtucConfMinUpshiftTime         INTEGER,
+                AppadslAtucConfMinDownshiftTime         INTEGER,
+                AppadslAtucChanConfFastMinTxRate       Unsigned32,
+                AppadslAtucChanConfInterleaveMinTxRate               Unsigned32,
+                AppadslAtucChanConfFastMaxTxRate               Unsigned32,
+                AppadslAtucChanConfInterleaveMaxTxRate         Unsigned32,
+                AppadslAtucChanConfMaxInterleaveDelay             INTEGER,
+                AppadslAturConfRateMode         INTEGER,
+                AppadslAturConfRateChanRatio         INTEGER,
+                AppadslAturConfTargetSnrMgn         INTEGER,
+                AppadslAturConfMaxSnrMgn         INTEGER,
+                AppadslAturConfMinSnrMgn         INTEGER,
+                AppadslAturConfDownshiftSnrMgn       INTEGER,
+                AppadslAturConfUpshiftSnrMgn               INTEGER,
+                AppadslAturConfMinUpshiftTime               INTEGER,
+                AppadslAturConfMinDownshiftTime         INTEGER,
+                AppadslAturChanConfFastMinTxRate             Unsigned32,
+                AppadslAturChanConfInterleaveMinTxRate         Unsigned32,
+                AppadslAturChanConfFastMaxTxRate         Unsigned32,
+                AppadslAturChanConfInterleaveMaxTxRate         Unsigned32,
+                AppadslAturChanConfMaxInterleaveDelay         INTEGER,
+                AppadslAtucDMTConfFreqBins         OCTET STRING,
+                AppadslAturDMTConfFreqBins       OCTET STRING,
+                AppadslLineDMTConfEOC               INTEGER,
+                AppzxAdslLineDMTConfTrellis               INTEGER,
+                AppzxAdslAtucConfMaxBitsPerBin         INTEGER,
+                AppzxAdslAtucConfTxStartBin             INTEGER,
+                AppzxAdslAtucConfTxEndBin         INTEGER,
+                AppzxAdslAtucConfRxStartBin         INTEGER,
+                AppzxAdslAtucConfRxEndBin         INTEGER,
+                AppzxAdslAtucConfUseCustomBins         INTEGER,
+                AppzxAdslAtucConfDnBitSwap         INTEGER,
+                AppzxAdslAtucConfUpBitSwap       INTEGER,                
+                AppzxAdslAtucConfREADSL2Enable               INTEGER,
+                AppzxAdslAtucConfPsdMaskType               INTEGER,
+                AppzxAdslAtucConfPMMode         INTEGER,
+                AppzxAdslAtucConfPML0Time             INTEGER,
+                AppzxAdslAtucConfPML2Time         INTEGER,
+                AppzxAdslAtucConfPML2ATPR         INTEGER,
+                AppzxAdslAtucConfPML2Rate         Unsigned32,
+                AppadslConfProfileLineType         INTEGER                                                                            
+                }            
+
+    AppadslAtucConfRateMode  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 1 }
+                
+    AppadslAtucConfRateChanRatio  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 2 }
+                               
+    AppadslAtucConfTargetSnrMgn  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 3 }
+                                
+    AppadslAtucConfMaxSnrMgn  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 4 }               
+               
+    AppadslAtucConfMinSnrMgn  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 5 }                 
+                
+    AppadslAtucConfDownshiftSnrMgn  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 6 }                 
+                                
+    AppadslAtucConfUpshiftSnrMgn  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 7 }                   
+                                
+    AppadslAtucConfMinUpshiftTime  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 8 }                 
+                                
+    AppadslAtucConfMinDownshiftTime  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 9 }                 
+                                
+    AppadslAtucChanConfFastMinTxRate  OBJECT-TYPE
+            SYNTAX      Unsigned32               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 10 }                 
+                                
+    AppadslAtucChanConfInterleaveMinTxRate  OBJECT-TYPE
+            SYNTAX      Unsigned32               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 11 } 
+                                
+    AppadslAtucChanConfFastMaxTxRate  OBJECT-TYPE
+            SYNTAX      Unsigned32               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 12 }                 
+                                
+    AppadslAtucChanConfInterleaveMaxTxRate  OBJECT-TYPE
+            SYNTAX      Unsigned32               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 13 }                 
+                                
+    AppadslAtucChanConfMaxInterleaveDelay  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 14 }                  
+                                
+    AppadslAturConfRateMode  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 15 }                 
+                                
+    AppadslAturConfRateChanRatio  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 16 } 
+                                
+    AppadslAturConfTargetSnrMgn  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 17 } 
+                                
+    AppadslAturConfMaxSnrMgn  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 18 }
+                               
+    AppadslAturConfMinSnrMgn  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 19 }                
+                                
+    AppadslAturConfDownshiftSnrMgn  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 20 } 
+                                
+    AppadslAturConfUpshiftSnrMgn  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 21 }
+                                
+    AppadslAturConfMinUpshiftTime  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 22 }
+                                
+    AppadslAturConfMinDownshiftTime  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 23 }
+                                
+    AppadslAturChanConfFastMinTxRate  OBJECT-TYPE
+            SYNTAX      Unsigned32               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 24 }                
+                                
+    AppadslAturChanConfInterleaveMinTxRate  OBJECT-TYPE
+            SYNTAX      Unsigned32               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 25 } 
+                                
+    AppadslAturChanConfFastMaxTxRate  OBJECT-TYPE
+            SYNTAX      Unsigned32               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 26 } 
+                               
+    AppadslAturChanConfInterleaveMaxTxRate  OBJECT-TYPE
+            SYNTAX      Unsigned32               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 27 }
+                                
+    AppadslAturChanConfMaxInterleaveDelay  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 28 }
+                                
+    AppadslAtucDMTConfFreqBins  OBJECT-TYPE
+            SYNTAX      OCTET STRING               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 29 } 
+                                           
+    AppadslAturDMTConfFreqBins  OBJECT-TYPE
+            SYNTAX      OCTET STRING               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 30 }                 
+                                
+    AppadslLineDMTConfEOC  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 31 }                
+                                
+    AppzxAdslLineDMTConfTrellis  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 32 }                
+                                
+    AppzxAdslAtucConfMaxBitsPerBin  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 33 }                 
+                                
+    AppzxAdslAtucConfTxStartBin  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 34 } 
+                                
+    AppzxAdslAtucConfTxEndBin  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 35 }                 
+                                
+    AppzxAdslAtucConfRxStartBin  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 36 }                  
+                                
+    AppzxAdslAtucConfRxEndBin  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 37 } 
+                                
+    AppzxAdslAtucConfUseCustomBins  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 38 }                 
+                                
+    AppzxAdslAtucConfDnBitSwap  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 39 }                
+                                
+    AppzxAdslAtucConfUpBitSwap  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 40 }                 
+                                                
+    AppzxAdslAtucConfREADSL2Enable  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 41 }                 
+                                
+    AppzxAdslAtucConfPsdMaskType  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 42 } 
+                                
+    AppzxAdslAtucConfPMMode  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 43 } 
+                                
+    AppzxAdslAtucConfPML0Time  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 44 } 
+                                
+    AppzxAdslAtucConfPML2Time  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 45 } 
+                                
+    AppzxAdslAtucConfPML2ATPR  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 46 } 
+                                
+    AppzxAdslAtucConfPML2Rate  OBJECT-TYPE
+            SYNTAX      Unsigned32               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 47 } 
+                                
+    AppadslConfProfileLineType  OBJECT-TYPE
+            SYNTAX      INTEGER               
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                ""           
+            ::= { zxAdslAppliedLineConfPrfEntry 48 }                                
+-- zxAdslAppliedLineConfPrfTable end
+
+--  Adsl Line Alarm Profile Extended Table
+
+
+    zxAdslLineAlarmConfProfileExtTable  OBJECT-TYPE
+            SYNTAX      SEQUENCE OF ZxAdslLineAlarmConfProfileExtEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                "Adsl line alarm config profile extended information table.
+            The cycle of thresholds monitoring shoul be less than 5 minutes."
+            ::= {zxAdslExtMibObjects 20}
+    
+    
+    zxAdslLineAlarmConfProfileExtEntry  OBJECT-TYPE
+            SYNTAX      ZxAdslLineAlarmConfProfileExtEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+               "An entry extends the adslLineAlarmConfProfileEntry defined in 
+               [RFC2662]. Each entry corresponds to an ADSL line alarm profile."
+               
+            INDEX { adslLineAlarmConfProfileName }
+            ::= {zxAdslLineAlarmConfProfileExtTable 1}
+    
+    
+    ZxAdslLineAlarmConfProfileExtEntry ::=
+            SEQUENCE {
+                zxAdslAtucConnRateTolerance          Integer32,
+                zxAdslAturConnRateTolerance          Integer32,
+                zxAdslThreshAtucConnRate             Integer32,
+                zxAdslThreshAturConnRate             Integer32,
+                zxAdslThreshAtucBandwidthUtil        Integer32,
+                zxAdslThreshAturBandwidthUtil        Integer32,
+                zxAdslThreshAtucPacketLossRate       Integer32,
+                zxAdslThreshAturPacketLossRate       Integer32,
+                zxAdslThreshAtucBlockErrorRate       Integer32,
+                zxAdslThreshAturBlockErrorRate       Integer32,
+                zxAdslThreshReservedMetric1          Integer32,
+                zxAdslThreshReservedMetric2          Integer32,
+                zxAdslThreshReservedMetric3          Integer32,
+                zxAdslAturInitFailTrapEnable         BITS,
+                zxAdslThreshAtucInpLeftr             INTEGER,         
+                zxAdslThreshAturInpLeftr             INTEGER                
+                }
+    
+            
+    zxAdslAtucConnRateTolerance  OBJECT-TYPE
+            SYNTAX      Integer32(0..100)
+            UNITS       "%"
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                " Tolerance between configured adslAtucChanConfInterleaveMaxTxRate and
+                actual adslAtucChanCurrTxRate. 
+                  
+                Calculation:
+
+                           100*(adslAtucChanConfInterleaveMaxTxRate - adslAtucChanCurrTxRate)
+                Difference =-------------------------------------------------------------------
+                                          adslAtucChanConfInterleaveMaxTxRate
+
+                If Difference  is larger than zxAdslAtucConnRateTolerance, and 
+                has also no active zxAdslConnRateAlarm .zxAdslConnRateAlarmRisingTrap 
+                trap will be sent.
+                 
+                  A value of `0' will disable the trap. "
+                  
+            DEFVAL { 0 }
+            ::= { zxAdslLineAlarmConfProfileExtEntry 1 }
+    
+
+
+    zxAdslAturConnRateTolerance  OBJECT-TYPE
+            SYNTAX      Integer32(0..100)
+            UNITS       "%"
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                " Tolerance between configured adslAturChanConfInterleaveMaxTxRate and
+                actual adslAturChanCurrTxRate. 
+                  
+                Calculation:
+
+                           100*(adslAturChanConfInterleaveMaxTxRate - adslAturChanCurrTxRate)
+                Difference =-------------------------------------------------------------------
+                                          adslAturChanConfInterleaveMaxTxRate
+
+
+                If Difference  is larger than zxAdslAturConnRateTolerance, and 
+                has also no active zxAdslConnRateAlarm .zxAdslConnRateAlarmRisingTrap 
+                trap will be sent.
+
+                  A value of `0' will disable the trap. "
+
+            DEFVAL { 0 }
+            ::= { zxAdslLineAlarmConfProfileExtEntry 2 }
+    
+
+
+    zxAdslThreshAtucConnRate  OBJECT-TYPE
+            SYNTAX      Integer32
+            UNITS       "kbps"
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "   Threshold of Atuc connection rate. 
+                    If adslAtucChanCurrTxRate  is lower than zxAdslThreshAtucConnRate, 
+                and has also no active zxAdslConnRateAlarm .zxAdslConnRateAlarmRisingTrap 
+                trap will be sent.
+                    A value of `0' will disable the trap. "
+
+            DEFVAL { 0 }
+            ::= { zxAdslLineAlarmConfProfileExtEntry 3 }
+   
+
+
+    zxAdslThreshAturConnRate  OBJECT-TYPE
+            SYNTAX      Integer32
+            UNITS       "kbps"
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "   Threshold of Atur connection rate. 
+                    If adslAturChanCurrTxRate  is lower than zxAdslThreshAturConnRate, 
+                and has also no active zxAdslConnRateAlarm .zxAdslConnRateAlarmRisingTrap 
+                trap will be sent.
+                    A value of `0' will disable the trap. "
+
+            DEFVAL { 0 }
+            ::= { zxAdslLineAlarmConfProfileExtEntry 4 }
+   
+
+    zxAdslThreshAtucBandwidthUtil  OBJECT-TYPE
+            SYNTAX      Integer32(0..100)
+            UNITS       "%"
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "  Threshold of Atuc bandwidth utilization. 
+                  
+                Calculation:
+
+                                                 Delta(ifOutOctets)*8*1024*100
+                    Atuc Utilization = ----------------------------------------------------
+                                       (time interval)*adslAtucChanConfInterleaveMaxTxRate
+
+                where:
+                    Delta(ifOutOctets):  difference of ifOutOctets in two polling cycles
+                                        of collecting the ifOutOctets.
+                                        Unit is bytes.
+                                        
+                    (time interval)  :  the polling cycles.
+                                        Unit is seconds.
+                                        
+                    adslAtucChanConfInterleaveMaxTxRate: configured atuc Tx rate.
+                                        Unit is kbps.
+                
+                
+                or
+                                                 zxAdslLineTxDataRate*100
+                    Atuc Utilization = ----------------------------------------------------
+                                              adslAtucChanConfInterleaveMaxTxRate
+                                                   
+                    zxAdslLineTxDataRate               : actual atuc Tx rate.      Unit is kbps.
+                    adslAtucChanConfInterleaveMaxTxRate: configured atuc Tx rate.  Unit is kbps.
+
+                
+                
+                If Utilization is larger than zxAdslThreshAtucBandwidthUtil, 
+                zxAdslAtucBandwidthUtilOverThreshTrap will be sent.
+
+                  A value of `0' will disable the trap. "
+
+            DEFVAL { 0 }
+            ::= { zxAdslLineAlarmConfProfileExtEntry 5 }
+   
+
+    zxAdslThreshAturBandwidthUtil  OBJECT-TYPE
+            SYNTAX      Integer32(0..100)
+            UNITS       "%"
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "  Threshold of Atur bandwidth utilization. 
+                  
+                Calculation:
+    
+                                                 Delta(ifInOctets)*8*1024*100
+                    Atur Utilization = ----------------------------------------------------
+                                       (time interval)*adslAturChanConfInterleaveMaxTxRate
+
+                where:
+                    Delta(ifInOctets):  difference of ifInOctets in two poll cycles
+                                        of collecting the ifInOctets.
+                                        Unit is bytes.
+                                        
+                    (time interval)  :  the poll cycles.
+                                        Unit is seconds.
+                                        
+                    adslAturChanConfInterleaveMaxTxRate: configured atur Tx rate.
+                                        Unit is kbps.
+
+                or
+                                                 zxAdslLineRxDataRate*100
+                    Atur Utilization = ----------------------------------------------------
+                                              adslAturChanConfInterleaveMaxTxRate
+                                                   
+                    zxAdslLineRxDataRate               : actual atuc Rx rate.      Unit is kbps.
+                    adslAturChanConfInterleaveMaxTxRate: configured atur Tx rate.  Unit is kbps.                
+
+                If Utilization is larger than zxAdslThreshAturBandwidthUtil, 
+                zxAdslAturBandwidthUtilOverThreshTrap trap will be sent.
+
+                  A value of `0' will disable the trap. "
+
+            DEFVAL { 0 }
+            ::= { zxAdslLineAlarmConfProfileExtEntry 6 }   
+   
+
+    zxAdslThreshAtucPacketLossRate  OBJECT-TYPE
+            SYNTAX      Integer32(0..100)
+            UNITS       "%"
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "  The percentage of lost packets to total packets received on 
+                the Atuc interface.
+                
+                Calculation:
+                                                      ifOutDiscards*100
+                  Atuc PacketLossRate = ---------------------------------------------------
+                                        ifOutUcastPkts+ifOutMulticastPkts+ifOutBroadcastPkts
+                    
+
+                If this threshold is across, zxAdslAtucPacketLossRateOverThreshTrap trap will be sent.
+                   A value of `0' will disable the trap. "
+
+            DEFVAL { 0 }
+            ::= { zxAdslLineAlarmConfProfileExtEntry 7 }   
+   
+
+    zxAdslThreshAturPacketLossRate  OBJECT-TYPE
+            SYNTAX      Integer32(0..100)
+            UNITS       "%"
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "  The percentage of lost packets  to total packets received on 
+                the Atur interface.
+
+                Calculation:
+                                                      ifInDiscards*100
+                  Atur PacketLossRate = ---------------------------------------------------
+                                        ifInUcastPkts+ifInMulticastPkts+ifInBroadcastPkts
+                    
+                
+                If this threshold is across, zxAdslAturPacketLossRateOverThreshTrap trap will be sent.
+                   A value of `0' will disable the trap. "
+
+            DEFVAL { 0 }
+            ::= { zxAdslLineAlarmConfProfileExtEntry 8 }  
+
+
+
+    zxAdslThreshAtucBlockErrorRate  OBJECT-TYPE
+            SYNTAX      Integer32(0..100)
+            UNITS       "%"
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "  The percentage of adslAtucChanUncorrectBlks to 
+                adslAtucChanReceivedBlks on the Atuc interface.
+                If this threshold is across, zxAdslAtucBlockErrorRateOverThreshTrap
+                trap will be sent.
+                   A value of `0' will disable the trap.   "
+
+            DEFVAL { 0 }
+            ::= { zxAdslLineAlarmConfProfileExtEntry 9 }  
+            
+
+    zxAdslThreshAturBlockErrorRate  OBJECT-TYPE
+            SYNTAX      Integer32(0..100)
+            UNITS       "%"
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "  The percentage of adslAturChanUncorrectBlks to 
+                adslAturChanReceivedBlks on the Atur interface.
+                If this threshold is across, zxAdslAturBlockErrorRateOverThreshTrap
+                trap will be sent.
+                   A value of `0' will disable the trap. "
+
+            DEFVAL { 0 }
+            ::= { zxAdslLineAlarmConfProfileExtEntry 10 }  
+                        
+
+    zxAdslThreshReservedMetric1  OBJECT-TYPE
+            SYNTAX      Integer32(0..100)
+            UNITS       ""
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "  reserved threshold.
+                   A value of `0' will disable the trap. "
+
+            DEFVAL { 0 }
+            ::= { zxAdslLineAlarmConfProfileExtEntry 11 }  
+
+
+    zxAdslThreshReservedMetric2  OBJECT-TYPE
+            SYNTAX      Integer32(0..100)
+            UNITS       ""
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "  reserved threshold.
+                   A value of `0' will disable the trap. "
+
+            DEFVAL { 0 }
+            ::= { zxAdslLineAlarmConfProfileExtEntry 12 }  
+
+    zxAdslThreshReservedMetric3  OBJECT-TYPE
+            SYNTAX      Integer32(0..100)
+            UNITS       ""
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "  reserved threshold.
+                   A value of `0' will disable the trap. "
+
+            DEFVAL { 0 }
+            ::= { zxAdslLineAlarmConfProfileExtEntry 13 }  
+
+    zxAdslAturInitFailTrapEnable OBJECT-TYPE
+            SYNTAX      BITS{
+                unused1             (0),
+                lossOfFraming       (1),
+                lossOfSignal        (2),
+                lossOfPower         (3),
+                unused2             (4),
+                lossOfSignalQuality (5)
+            }
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "Enables and disables the InitFailureTrap on the atur interface.
+                
+                 unused1             (0) - This bit is no use to enable or
+                                           disable the the InitFailureTrap on
+                                           the atur interface.
+
+                 lossOfFraming       (1) - Value 0 means disable the loss of
+                                           frame trap on the atur interface.
+                                    
+                 lossOfSignal        (2) - Value 0 means disable the loss of
+                                           signal trap on the atur interface.                                                   
+                 
+                 lossOfPower         (3) - Value 0 means disable the loss of
+                                           power trap on the atur interface.
+                                 
+                 unused2             (4) - This bit is no use to enable or
+                                           disable the InitFailureTrap on the
+                                           atur interface.
+                                       
+                 lossOfSignalQuality (5) - Value 0 means disable the loss of 
+                                           signal quality trap on the atur
+                                           interface.                
+                "
+            ::= { zxAdslLineAlarmConfProfileExtEntry 14 }
+
+    zxAdslThreshAtucInpLeftr OBJECT-TYPE     
+        SYNTAX      INTEGER(0..100)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters of downstream.
+             The fraction of NDR that shall be used as the threshold for 
+             leftr defects.
+             lefter (The low error-free throughput rate) defect is defined as:
+               A leftr defect occuurs when EFTR < EFTR_THRESH * NDR
+               A leftr defect terminates when EFTR >= EFTR_THRESH * NDR
+             When EFTR_THRESH is set to the special value of 0, ETR shall be 
+             used as the threshold in above inequalities:
+               A leftr defect occurs when EFTR < ETR  
+               A leftr defect terminates when EFTR >=ETR.
+             Valid values are from 0 to 100 in increments of 0.01.      
+             "
+        DEFVAL       { 0 }
+        ::= { zxAdslLineAlarmConfProfileExtEntry 15 }  
+        
+    zxAdslThreshAturInpLeftr OBJECT-TYPE
+        SYNTAX      INTEGER(0..100)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters of upstream.
+             The fraction of NDR that shall be used as the threshold for 
+             leftr defects.
+             lefter (The low error-free throughput rate) defect is defined as:
+               A leftr defect occuurs when EFTR < EFTR_THRESH * NDR
+               A leftr defect terminates when EFTR >= EFTR_THRESH * NDR
+             When EFTR_THRESH is set to the special value of 0, ETR shall be 
+             used as the threshold in above inequalities:
+               A leftr defect occurs when EFTR < ETR  
+               A leftr defect terminates when EFTR >=ETR.   
+             Valid values are from 0 to 100 in increments of 0.01.   
+            "
+        DEFVAL       { 0 }
+        ::= { zxAdslLineAlarmConfProfileExtEntry 16 } 
+
+--  Adsl Line Profile Apply Extended Table
+
+    zxAdslLineConfProfileApplyExtTable  OBJECT-TYPE
+            SYNTAX      SEQUENCE OF ZxAdslLineConfProfileApplyExtEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                "Adsl line config profile extended information table."
+            ::= {zxAdslExtMibObjects 21}
+    
+    
+    zxAdslLineConfProfileApplyExtEntry  OBJECT-TYPE
+            SYNTAX      ZxAdslLineConfProfileApplyExtEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+               "An entry extends the adslLineConfProfileEntry defined in 
+               [RFC2662]. Each entry corresponds to an ADSL line profile."
+               
+            INDEX    { adslLineConfProfileName }
+            ::= {zxAdslLineConfProfileApplyExtTable 1}
+    
+    
+    ZxAdslLineConfProfileApplyExtEntry ::=
+            SEQUENCE {
+                zxAdslLineConfPrfBindPortList     OCTET STRING,
+                zxAdslLineConfPrfAppPortList     OCTET STRING,
+                zxAdslLineConfPrfAction             INTEGER
+                }
+    zxAdslLineConfPrfBindPortList  OBJECT-TYPE
+            SYNTAX      OCTET STRING                  
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "portlist boud the lineconfprofile"           
+            ::= { zxAdslLineConfProfileApplyExtEntry 1 }      
+            
+    zxAdslLineConfPrfAppPortList  OBJECT-TYPE
+            SYNTAX      OCTET STRING                  
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "portlist applied the lineconfprofile"           
+            ::= { zxAdslLineConfProfileApplyExtEntry 2 }     
+
+    zxAdslLineConfPrfAction  OBJECT-TYPE
+            SYNTAX      INTEGER                  
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "private mib,1 = linecondfprofile rebind and reapply the ports"           
+            ::= { zxAdslLineConfProfileApplyExtEntry 3 } 
+             
+------------------------------------------------------------------------------
+-- zxAdslAtucChanIntervalTable
+------------------------------------------------------------------------------
+
+    zxAdslAtucChanIntervalTable  OBJECT-TYPE
+       SYNTAX      SEQUENCE  OF  ZxAdslAtucChanIntervalEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION
+          "The table zxAdslAtucChanIntervalTable contains history Performance
+           Monitoring results for 15min of DSL channel. "          
+       ::= { zxAdslExtMibObjects 22 }
+    
+    zxAdslAtucChanIntervalEntry  OBJECT-TYPE
+       SYNTAX      ZxAdslAtucChanIntervalEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION
+          "The table zxAdslAtucChanIntervalTable contains history Performance
+           Monitoring results for 15min of DSL channel.
+          "
+       AUGMENTS  { adslAtucChanIntervalEntry }           
+       ::= { zxAdslAtucChanIntervalTable 1 }
+    
+    ZxAdslAtucChanIntervalEntry  ::=
+       SEQUENCE {
+          zxAdslAtucChanIntervalRtxDtu                  Counter32,
+          zxAdslAtucChanIntervalRtxCDtu                 Counter32,
+          zxAdslAtucChanIntervalRtxUcDtu                Counter32    
+       }
+         
+    zxAdslAtucChanIntervalRtxDtu  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters.
+             this is a counter that is incremented each time a DTU has been 
+             retransmitted by the transmitter during this interval. Multiple
+             retransmission of the same DTU is counted as many times as it 
+             has been retransmitted.
+             "
+        ::= { zxAdslAtucChanIntervalEntry 1 }
+           
+    zxAdslAtucChanIntervalRtxCDtu  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters.
+             this is a counter that is incremented each time a DTU has been 
+             detected in error and has been successfully corrected by a 
+             retransmission during this interval."       
+        ::= { zxAdslAtucChanIntervalEntry 2 }   
+    
+    zxAdslAtucChanIntervalRtxUcDtu OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters.
+             this is a counter that is incremented each time a DTU is detected
+             in error and has not been corrected by a retransmission. during 
+             this interval."
+        ::= { zxAdslAtucChanIntervalEntry 3 }          
+             
+------------------------------------------------------------------------------
+-- zxAdslAturChanIntervalTable
+------------------------------------------------------------------------------
+
+    zxAdslAturChanIntervalTable  OBJECT-TYPE
+       SYNTAX      SEQUENCE  OF  ZxAdslAturChanIntervalEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION
+          "The table zxAdslAturChanIntervalTable contains history Performance 
+           Monitoring results for 15min of DSL channel. "
+       ::= { zxAdslExtMibObjects 23 }
+    
+    zxAdslAturChanIntervalEntry  OBJECT-TYPE
+       SYNTAX      ZxAdslAturChanIntervalEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION
+          "The table zxAdslAturChanIntervalTable contains history Performance  
+           Monitoring results for 15min of DSL channel.
+          "
+       AUGMENTS  { adslAturChanIntervalEntry }           
+       ::= { zxAdslAturChanIntervalTable 1 }
+    
+    ZxAdslAturChanIntervalEntry  ::=
+       SEQUENCE {
+          zxAdslAturChanIntervalRtxDtu                  Counter32,
+          zxAdslAturChanIntervalRtxCDtu                 Counter32,
+          zxAdslAturChanIntervalRtxUcDtu                Counter32    
+       }
+         
+    zxAdslAturChanIntervalRtxDtu  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters.
+             this is a counter that is incremented each time a DTU has been 
+             retransmitted by the transmitter during this interval. Multiple
+             retransmission of the same DTU is counted as many times as it 
+             has been retransmitted.
+             "
+        ::= { zxAdslAturChanIntervalEntry 1 }
+           
+    zxAdslAturChanIntervalRtxCDtu  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters.
+             this is a counter that is incremented each time a DTU has been 
+             detected in error and has been successfully corrected by a 
+             retransmission during this interval."       
+        ::= { zxAdslAturChanIntervalEntry 2 }   
+    
+    zxAdslAturChanIntervalRtxUcDtu OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters.
+             this is a counter that is incremented each time a DTU is detected
+             in error and has not been corrected by a retransmission. during 
+             this interval."
+        ::= { zxAdslAturChanIntervalEntry 3 }  
+                                         
+------------------------------------------------------------------------------
+--  zxAdslAtucChanHist1DayTable               
+------------------------------------------------------------------------------                                         
+
+    zxAdslAtucChanHist1DayTable         OBJECT-TYPE
+        SYNTAX      SEQUENCE  OF  ZxAdslAtucChanHist1DayEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The table zxAdslAtucChanHist1DayTable contains channel history
+             for 1 day intervals of DSL. "
+        ::= { zxAdslExtMibObjects 24 }
+
+    zxAdslAtucChanHist1DayEntry  OBJECT-TYPE
+        SYNTAX      ZxAdslAtucChanHist1DayEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The table zxAdslAtucChanHist1DayTable contains PM channel 
+             history for 1 day intervals of DSL.
+             The indexes of this table is an interface index where
+             the interface has an ifType value which is applicable
+             for a DSL channel, the termination unit and the
+             interval number."
+        INDEX  { ifIndex,zxAdslAtucChanHist1DayNumber }
+        ::= { zxAdslAtucChanHist1DayTable 1 }
+
+    ZxAdslAtucChanHist1DayEntry  ::= SEQUENCE {
+        zxAdslAtucChanHist1DayNumber         INTEGER, 
+        zxAdslAtucChanHist1DayRtxDtu         Counter32,
+        zxAdslAtucChanHist1DayRtxCDtu        Counter32,
+        zxAdslAtucChanHist1DayRtxUcDtu       Counter32 
+    }
+
+    zxAdslAtucChanHist1DayNumber OBJECT-TYPE
+        SYNTAX      INTEGER(1..30)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The interval number."
+        ::= { zxAdslAtucChanHist1DayEntry 1 }
+
+    zxAdslAtucChanHist1DayRtxDtu  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters.
+             this is a counter that is incremented each time a DTU has been 
+             retransmitted by the transmitter during this interval. Multiple 
+             retransmission of the same DTU is counted as many times as it 
+             has been retransmitted."
+        ::= { zxAdslAtucChanHist1DayEntry 2 }
+           
+    zxAdslAtucChanHist1DayRtxCDtu  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters.
+             this is a counter that is incremented each time a DTU has been 
+             detected in error and has been successfully corrected by a 
+             retransmission during this interval."       
+        ::= { zxAdslAtucChanHist1DayEntry 3 }   
+    
+    zxAdslAtucChanHist1DayRtxUcDtu  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters.
+             this is a counter that is incremented each time a DTU is detected
+             in error and has not been corrected by a retransmission during 
+             this interval."
+        ::= { zxAdslAtucChanHist1DayEntry 4 }
+
+------------------------------------------------------------------------------
+--  zxAdslAturChanHist1DayTable             
+------------------------------------------------------------------------------                                         
+    zxAdslAturChanHist1DayTable         OBJECT-TYPE
+        SYNTAX      SEQUENCE  OF  ZxAdslAturChanHist1DayEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The table zxAdslAturChanHist1DayTable contains channel history
+             for 1 day intervals of DSL. "
+        ::= { zxAdslExtMibObjects 25 }
+
+    zxAdslAturChanHist1DayEntry  OBJECT-TYPE
+        SYNTAX      ZxAdslAturChanHist1DayEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The table zxAdslAturChanHist1DayTable contains PM channel 
+             history for 1 day intervals of DSL.
+             The indexes of this table is an interface index where
+             the interface has an ifType value which is applicable
+             for a DSL channel, the termination unit and the
+             interval number."
+        INDEX  { ifIndex,zxAdslAturChanHist1DayNumber }
+        ::= { zxAdslAturChanHist1DayTable 1 }
+
+    ZxAdslAturChanHist1DayEntry  ::= SEQUENCE {
+        zxAdslAturChanHist1DayNumber         INTEGER, 
+        zxAdslAturChanHist1DayRtxDtu         Counter32,
+        zxAdslAturChanHist1DayRtxCDtu        Counter32,
+        zxAdslAturChanHist1DayRtxUcDtu       Counter32 
+    }
+
+    zxAdslAturChanHist1DayNumber OBJECT-TYPE
+        SYNTAX      INTEGER(1..30)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The interval number."
+        ::= { zxAdslAturChanHist1DayEntry 1 }
+
+    zxAdslAturChanHist1DayRtxDtu  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters.
+             this is a counter that is incremented each time a DTU has been 
+             retransmitted by the transmitter during this interval. Multiple
+             retransmission of the same DTU is counted as many times as it 
+             has been retransmitted."
+        ::= { zxAdslAturChanHist1DayEntry 2 }
+           
+    zxAdslAturChanHist1DayRtxCDtu  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters.
+             this is a counter that is incremented each time a DTU has been 
+             detected in error and has been successfully corrected by a 
+             retransmission during this interval."       
+        ::= { zxAdslAturChanHist1DayEntry 3 }   
+    
+    zxAdslAturChanHist1DayRtxUcDtu  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "GINP configuration parameters.
+             this is a counter that is incremented each time a DTU is detected
+             in error and has not been corrected by a retransmission during 
+             this interval."
+        ::= { zxAdslAturChanHist1DayEntry 4 }        
+                         
+--  Trap Definitions
+
+    zxAdslExtTraps OBJECT IDENTIFIER ::= { zxAdslExtMib 2 }
+
+
+    zxAdslConnRateAlarmRisingTrap      NOTIFICATION-TYPE
+            OBJECTS { adslAtucChanConfInterleaveMaxTxRate,
+                      adslAturChanConfInterleaveMaxTxRate,
+                      adslAtucChanCurrTxRate,
+                      adslAturChanCurrTxRate
+                        }
+            STATUS  current
+            DESCRIPTION
+                "zxAdslAtuXConnRateTolerance threshold or zxAdslThreshAtuXSConnRate 
+                threshold is reached, and the ConnRateAlarm should be rised."
+            ::= { zxAdslExtTraps 1 }
+
+
+    zxAdslConnRateAlarmClearingTrap      NOTIFICATION-TYPE
+            OBJECTS { adslAtucChanConfInterleaveMaxTxRate,
+                      adslAturChanConfInterleaveMaxTxRate,
+                      adslAtucChanCurrTxRate,
+                      adslAturChanCurrTxRate
+                      }
+            STATUS  current
+            DESCRIPTION
+                " ConnRateAlarm is cleared,that is no conn rate alarm on this 
+                  port already."
+            ::= { zxAdslExtTraps 2 }
+
+
+-- zxDslamLinePerfStatisticTable
+
+zxDslamLinePerfStatisticTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF ZxDslamLinePerfStatisticEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+         "This table provides one row for each  interface.
+          Each row contains the perf statistic parameters for this line"
+     ::= { zxAdslExtMib 3 }
+
+     zxDslamLinePerfStatisticEntry  OBJECT-TYPE
+       SYNTAX      ZxDslamLinePerfStatisticEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION
+               "An entry containing additional performance management information
+               applicable to a  line interface."
+       INDEX    { ifIndex }
+     ::= { zxDslamLinePerfStatisticTable 1 }
+
+     
+     ZxDslamLinePerfStatisticEntry ::=
+          SEQUENCE {
+             zxDslamLinePerfStatisticType       UChar,
+             zxDslamLinePerfStatisticTableIdList BITS,
+             zxDslamLinePerfStatisticAction      INTEGER
+          }
+     zxDslamLinePerfStatisticType   OBJECT-TYPE
+         SYNTAX   UChar
+         MAX-ACCESS  read-write
+         STATUS      current
+         DESCRIPTION
+               "
+               0 - ETH
+               1 - ADSL
+               2 - SHDSL
+               3 - VDSL
+               " 
+     ::= { zxDslamLinePerfStatisticEntry 1 }                
+          
+     zxDslamLinePerfStatisticTableIdList   OBJECT-TYPE
+         SYNTAX   BITS
+                     {
+                      atuc_PHYSTABLE(0),
+                      atur_PHYSTABLE(1),            
+                      atuc_CHANTABLE(2),
+                      atur_CHANTABLE(3),            
+                      atuc_PERFDATATABLE(4),      
+                      atur_PERFDATATABLE(5),      
+                      atuc_INTERVALTABLE(6),        
+                      atur_INTERVALTABLE(7) ,       
+                      atuc_CHANPERFDATATABLE(8),
+                      atur_CHANPERFDATATABLE(9),    
+                      atuc_CHANINTERVALTABLE(10) ,   
+                      atur_CHANINTERVALTABLE(11),
+                      mib2_LINETABLE(12),
+                      mib2_BATCHTABLE(14),
+                      stat_DATA_Table(15),
+                      vtuc_PHYS_TAB(16),
+                      vtur_PHYS_TAB(17),
+                      vtuc_PERF_DATA_TAB(18),
+                      vtur_PERF_DATA_TAB(19),
+                      vtuc_PERF_INTERVAL_TAB(20),
+                      vtur_PERF_INTERVAL_TAB(21),
+                      vtuc_PERF_1DAY_INTERVAL_TAB(22),
+                      vtur_PERF_1DAY_INTERVAL_TAB(23),
+                      vtuc_CHAN_TAB(24),
+                      vtur_CHAN_TAB(25),
+                      vtuc_CHAN_PERF_DATA_TAB(26),
+                      vtur_CHAN_PERF_DATA_TAB(27),
+                      vtuc_CHAN_INTERVAL_TAB(28),
+                      vtur_CHAN_INTERVAL_TAB(29),
+                      vtuc_CHAN_1DAY_INTERVAL_TAB(30),
+                      vtur_CHAN_1DAY_INTERVAL_TAB(31),
+                      shdsl_SPAN_STATUS_TAB(32),
+                      shdsl_INVENTORY_TAB(33),
+                      shdsl_ENDPOINT_CURR_TAB(34),
+                      shdsl_15MIN_INTERVAL_TAB(35),
+                      shdsl_1DAY_INTERVAL_TAB(36),
+                      shdsl_ENDPOINT_MAINT_TAB(37),
+                      shdsl_UNIT_MAINT_TAB(38)
+                     }
+         MAX-ACCESS  read-write
+         STATUS      current
+         DESCRIPTION
+               "bitmap for perf statistic object table" 
+     ::= { zxDslamLinePerfStatisticEntry 2 }              
+     
+     zxDslamLinePerfStatisticAction   OBJECT-TYPE   
+        SYNTAX INTEGER{
+                    noop(2),         -- no operation
+                    on(1),      
+                    off(0)
+                 }
+       MAX-ACCESS  read-write
+         STATUS      current
+         DESCRIPTION
+               "bitmap for perf statistic object table" 
+     ::= { zxDslamLinePerfStatisticEntry 3 }     
+
+-- zxDslPortPvcTable
+
+zxDslPortPvcTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF ZxDslPortPvcEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+         "This table is PVC table"
+     ::= { zxAdslExtMib 4 }
+
+     zxDslPortPvcEntry  OBJECT-TYPE
+       SYNTAX      ZxDslPortPvcEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION
+               "An entry containing PVC information."
+       INDEX    { zxDslPortIfIndex,zxDslPortPvcId}
+     ::= { zxDslPortPvcTable 1 }
+
+     
+     ZxDslPortPvcEntry ::=
+          SEQUENCE {
+             zxDslPortIfIndex         Integer32,
+             zxDslPortPvcId           Integer32,
+             zxDslPortVpi             Integer32,
+             zxDslPortVci             Integer32,
+             zxDslPortBrgBasePort     Integer32,
+             zxDslPortPvcAdminstatus  INTEGER,
+             zxDslPortPvcOperstatus   INTEGER,
+             zxDslPortPvcAlias        DisplayString,
+             zxDslPortPvcUsage        INTEGER,
+             zxDslPortPvcRowStatus    RowStatus,
+             zxDslPortPvcActualUsage  INTEGER
+          }
+          
+     zxDslPortIfIndex     OBJECT-TYPE
+         SYNTAX      Integer32 
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+             "The port index of the PVC"
+         ::= { zxDslPortPvcEntry 1 }    
+              
+     zxDslPortPvcId     OBJECT-TYPE
+         SYNTAX      Integer32(1..8) 
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+             "The PVC id of the PVC"
+         ::= { zxDslPortPvcEntry 2 }    
+         
+      
+     zxDslPortVpi     OBJECT-TYPE
+         SYNTAX      Integer32 
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+             "The vpi of the PVC"
+         ::= { zxDslPortPvcEntry 3 } 
+         
+     zxDslPortVci     OBJECT-TYPE
+         SYNTAX      Integer32 
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+             "The vci of the PVC"
+         ::= { zxDslPortPvcEntry 4 }               
+                  
+    zxDslPortBrgBasePort     OBJECT-TYPE
+        SYNTAX      Integer32 (1..65535)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "A table that contains generic information about
+             every port that is associated with this bridge.
+             Transparent, source-route, and srt ports are
+             included."
+    ::= { zxDslPortPvcEntry 5 } 
+                  
+    zxDslPortPvcAdminstatus     OBJECT-TYPE
+        SYNTAX      INTEGER
+            {
+                up(1),
+                down(2)
+            }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "pvc admin status"
+        DEFVAL    {up}
+        ::= { zxDslPortPvcEntry 6 }     
+        
+    zxDslPortPvcOperstatus     OBJECT-TYPE
+        SYNTAX      INTEGER
+            {
+                up(1),
+                down(2)
+            }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "pvc operation status"
+        DEFVAL    {down}
+        ::= { zxDslPortPvcEntry 7 }     
+
+    zxDslPortPvcAlias OBJECT-TYPE
+        SYNTAX      DisplayString (SIZE (32))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The PVC alias name.
+             The default form is :ifindex-vpi-vci-baseport"        
+        ::= { zxDslPortPvcEntry 8 }
+    
+    zxDslPortPvcUsage     OBJECT-TYPE
+        SYNTAX      INTEGER
+            {
+                normal(1),
+                cpeMgmt(2),
+                multiCast(3),
+                mgmt(4),
+                oam(5),
+                pppoa(6),
+                pppoa_llc_pvc(9),
+                pppoa_vcmux_pvc(10),
+                ipoa_llc_pvc(12),
+                ipoa_vcmux_pvc(13),
+                auto(20)
+            }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "PVC operation status"
+        DEFVAL    {normal}
+        ::= { zxDslPortPvcEntry 9 }
+                      
+    zxDslPortPvcRowStatus     OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "PVC row status"              
+        ::= { zxDslPortPvcEntry 10 }
+              
+    zxDslPortPvcActualUsage     OBJECT-TYPE
+        SYNTAX      INTEGER
+            {
+                normal(1),
+                cpeMgmt(2),
+                multiCast(3),
+                mgmt(4),
+                oam(5),
+                pppoa(6),
+                pppoa_llc_pvc(9),
+                pppoa_vcmux_pvc(10),
+                ipoa_llc_pvc(12),
+                ipoa_vcmux_pvc(13),
+                unknown(20)   -- unknown PVC operation status
+            }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "PVC operation status"
+        DEFVAL    {normal}
+        ::= { zxDslPortPvcEntry 11 }
+
+-- uplink Port Pvc Table
+
+zxDslUplinkPortPvcTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF ZxDslUplinkPortPvcEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+         "This table is pvc table"
+     ::= { zxAdslExtMib 5 }
+
+     zxDslUplinkPortPvcEntry  OBJECT-TYPE
+       SYNTAX      ZxDslUplinkPortPvcEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION
+               "An entry containing pvc information."
+       INDEX    { ifIndex,zxDslUplinkPortPvcId}
+     ::= { zxDslUplinkPortPvcTable 1 }
+
+     
+     ZxDslUplinkPortPvcEntry ::=
+          SEQUENCE {
+             zxDslUplinkPortPvcId               Integer32,
+             zxDslUplinkPortVpi                     Integer32,
+             zxDslUplinkPortVci                    Integer32,
+             zxDslUplinkPortPvcPvid             Integer32,
+             zxDslUplinkPortPvcIngressFiltering TruthValue,
+                 zxDslUplinkPortPvcBroadcastEnable  Integer32,
+                 zxDslUplinkPortPvcMulticastEnable  Integer32,
+                 zxDslUplinkPortPvcDlfEnable        Integer32,
+             zxDslUplinkPortPvcAdminstatus        Integer32,
+             zxDslUplinkPortPvcOperstatus          Integer32,
+             zxDslUplinkPortPvcAlias                DisplayString,
+             zxDslUplinkPortPvcUsage              Integer32,
+             zxDslUplinkPortPvcRowStatus        RowStatus
+             
+          }
+              
+      
+       zxDslUplinkPortPvcId     OBJECT-TYPE
+              SYNTAX  Integer32(1..1024) 
+              MAX-ACCESS not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "the pvc id of the pvc"
+              ::= { zxDslUplinkPortPvcEntry 1 }    
+              
+
+      zxDslUplinkPortVpi     OBJECT-TYPE
+              SYNTAX  Integer32 
+              MAX-ACCESS read-only
+              STATUS  current
+              DESCRIPTION
+                      "the vpi of the pvc"
+              ::= { zxDslUplinkPortPvcEntry 2 } 
+              
+       zxDslUplinkPortVci     OBJECT-TYPE
+              SYNTAX  Integer32 
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "the vci of the pvc"
+              ::= { zxDslUplinkPortPvcEntry 3 }               
+                       
+
+        zxDslUplinkPortPvcPvid OBJECT-TYPE
+            SYNTAX      Integer32
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The PVID, the VLAN ID assigned to untagged frames or
+                Priority-Tagged frames received on this port."
+            REFERENCE
+                "IEEE 802.1Q/D11 Section 12.10.1.1"
+            DEFVAL      { 1 }
+            ::= { zxDslUplinkPortPvcEntry 4 }
+        
+        
+        zxDslUplinkPortPvcIngressFiltering OBJECT-TYPE
+            SYNTAX      TruthValue
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "When this is true(1) the device will discard incoming
+                frames for VLANs which do not include this Port in its
+                Member set.  When false(2), the port will accept all
+                incoming frames.
+        
+                This control does not affect VLAN independent BPDU
+                frames, such as GVRP and STP.  It does affect VLAN
+                dependent BPDU frames, such as GMRP."
+            REFERENCE
+                "IEEE 802.1Q/D11 Section 12.10.1.4"
+            DEFVAL      { false }
+            ::= { zxDslUplinkPortPvcEntry 5 }
+            
+    
+      zxDslUplinkPortPvcBroadcastEnable     OBJECT-TYPE    
+            SYNTAX            Integer32{ enable ( 1 ) , disable ( 2 ) } 
+            MAX-ACCESS        read-write
+            STATUS            current
+            DESCRIPTION        "Boardcast control of the port."
+            ::=  {  zxDslUplinkPortPvcEntry  6  }
+    
+      zxDslUplinkPortPvcMulticastEnable     OBJECT-TYPE    
+          SYNTAX            Integer32{ enable ( 1 ) , disable ( 2 ) } 
+          MAX-ACCESS        read-write
+          STATUS            current
+          DESCRIPTION        "Multicast control of the port."
+          ::=  {  zxDslUplinkPortPvcEntry  7  }
+      
+      zxDslUplinkPortPvcDlfEnable       OBJECT-TYPE    
+          SYNTAX            Integer32{ enable ( 1 ) , disable ( 2 ) } 
+          MAX-ACCESS        read-write
+          STATUS            current
+          DESCRIPTION        "Unknown unicast control of the port."
+          ::=  {  zxDslUplinkPortPvcEntry 8  }
+           
+                  
+    zxDslUplinkPortPvcAdminstatus     OBJECT-TYPE
+              SYNTAX  Integer32{
+                            up(1),
+                            down(2)
+                            }
+              MAX-ACCESS  read-write
+              STATUS  current
+              DESCRIPTION
+                      "pvc admin status"
+              DEFVAL    {up}
+              ::= { zxDslUplinkPortPvcEntry 9 }     
+              
+     zxDslUplinkPortPvcOperstatus     OBJECT-TYPE
+              SYNTAX  Integer32{
+                            up(1),
+                            down(2)
+                            }
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "pvc operation status"
+              ::= { zxDslUplinkPortPvcEntry 10 }     
+
+      zxDslUplinkPortPvcAlias OBJECT-TYPE
+              SYNTAX      DisplayString (SIZE (32))
+              MAX-ACCESS  read-write
+              STATUS      current
+              DESCRIPTION
+                  "the pvc's alias name, the default form is :ifindex-vpi-vci-baseport"        
+              ::= { zxDslUplinkPortPvcEntry 11 }
+      
+      zxDslUplinkPortPvcUsage     OBJECT-TYPE
+                SYNTAX    Integer32{
+                              atmvcc(1),
+                              bridgeport(2)
+                              }
+                MAX-ACCESS  read-write
+                STATUS  current
+                DESCRIPTION
+                        "pvc operation status"
+                DEFVAL    {normalPvc}
+                ::= { zxDslUplinkPortPvcEntry 12 }     
+                        
+                        
+      zxDslUplinkPortPvcRowStatus     OBJECT-TYPE
+                SYNTAX        RowStatus
+                MAX-ACCESS    read-write
+                STATUS        current
+                DESCRIPTION
+                        " RowStatus of this entry.The available values are 
+                        active(1) and notReady(3), "
+                ::= { zxDslUplinkPortPvcEntry 13 }     
+                      
+
+
+------------------------------------------------------------------------------
+-- .Atm Vc link table
+------------------------------------------------------------------------------
+
+      zxDslAtmVclTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF ZxDslAtmVclEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+         "This table is atm vcl table"
+     ::= { zxAdslExtMib 6 }
+
+     zxDslAtmVclEntry  OBJECT-TYPE
+       SYNTAX      ZxDslAtmVclEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION
+               "An entry containing atm vcl information."
+       INDEX    { ifIndex,zxDslAtmVclVpi,zxDslAtmVclVci}
+     ::= { zxDslAtmVclTable 1 }
+
+     
+     ZxDslAtmVclEntry ::=
+          SEQUENCE {
+             zxDslAtmVclVpi         Integer32,
+             zxDslAtmVclVci          Integer32,
+             zxDslAtmPvcId          Integer32,
+             zxDslAtmVclUsage          Integer32,
+             zxDslAtmVclRowStatus    RowStatus
+          }
+              
+      
+      zxDslAtmVclVpi     OBJECT-TYPE
+              SYNTAX  Integer32 
+              MAX-ACCESS not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "the vpi of the atm vcl"
+              ::= { zxDslAtmVclEntry 1 } 
+              
+     zxDslAtmVclVci     OBJECT-TYPE
+              SYNTAX  Integer32 
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "the vci of the atm vcl"
+              ::= { zxDslAtmVclEntry 2 }               
+
+     zxDslAtmPvcId     OBJECT-TYPE
+              SYNTAX  Integer32(1..8) 
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "the pvc id of the pvc"
+              ::= { zxDslAtmVclEntry 3 }       
+                              
+     zxDslAtmVclUsage     OBJECT-TYPE
+              SYNTAX  Integer32{
+                            atmvcc(1),
+                            bridgeport(2)
+                            }
+              MAX-ACCESS  read-create
+              STATUS  current
+              DESCRIPTION
+                      "atm vcl usage"
+              DEFVAL    {normalPvc}
+              ::= { zxDslAtmVclEntry 4 }     
+                      
+    zxDslAtmVclRowStatus     OBJECT-TYPE
+              SYNTAX  RowStatus
+              MAX-ACCESS  read-create
+              STATUS  current
+              DESCRIPTION
+                      "the pvc row status"              
+              ::= { zxDslAtmVclEntry 5 }               
+    
+
+
+------------------------------------------------------------------------------
+-- .Atm Vc cross connect table
+------------------------------------------------------------------------------
+   
+    zxDslAtmVcxTable OBJECT-TYPE
+         SYNTAX         SEQUENCE OF ZxDslAtmVcxEntry
+         MAX-ACCESS     not-accessible
+         STATUS         current
+         DESCRIPTION
+          "The ATM VC Cross Connect table for PVCs.
+           An entry in this table models two
+           cross-connected VCLs.
+           Each VCL must be pvc."
+         ::= { zxAdslExtMib 7 }
+
+                       
+    zxDslAtmVcxEntry OBJECT-TYPE
+         SYNTAX       ZxDslAtmVcxEntry
+         MAX-ACCESS   not-accessible
+         STATUS       current
+         DESCRIPTION
+          "An entry in the ATM VC Cross Connect table.
+           This entry is used to model a bi-directional ATM
+           VC cross-connect cross-connecting two end points.
+             "
+         INDEX { 
+               zxDslAtmVcxUserSideIfIndex,
+               zxDslAtmVcxUserSideVpi,
+               zxDslAtmVcxUserSideVci,
+               zxDslAtmVcxWanSideIfIndex,
+               zxDslAtmVcxWanSideVpi,
+               zxDslAtmVcxWanSideVci }
+         ::= { zxDslAtmVcxTable 1 }
+    
+    ZxDslAtmVcxEntry ::= SEQUENCE {
+         zxDslAtmVcxUserSideIfIndex    Integer32,
+         zxDslAtmVcxUserSideVpi        Integer32,
+         zxDslAtmVcxUserSideVci        Integer32,
+         zxDslAtmVcxWanSideIfIndex     Integer32,
+         zxDslAtmVcxWanSideVpi         Integer32,
+         zxDslAtmVcxWanSideVci         Integer32,
+         zxDslAtmVcxAdminStatus        Integer32,
+         zxDslAtmVcxOperStatus         Integer32,
+         zxDslAtmVcxRowStatus          RowStatus
+                 }
+
+
+    zxDslAtmVcxUserSideIfIndex OBJECT-TYPE
+         SYNTAX         Integer32
+         MAX-ACCESS     not-accessible
+         STATUS         current
+         DESCRIPTION
+          "The ifIndex value of the ATM interface for this
+           VC cross-connect. The term UserSide implies
+           that this ATM interface has the numerically UserSide
+           ifIndex value than the other ATM interface
+           identified in the same zxDslAtmVcxEntry."
+         ::= { zxDslAtmVcxEntry 1 }
+
+    zxDslAtmVcxUserSideVpi OBJECT-TYPE
+         SYNTAX         Integer32
+         MAX-ACCESS     not-accessible
+         STATUS         current
+         DESCRIPTION
+          "The VPI value at the ATM interface
+           associated with the VC cross-connect that is
+           identified by zxDslAtmVcxUserSideIfIndex."
+         ::= { zxDslAtmVcxEntry 2 }
+
+    zxDslAtmVcxUserSideVci OBJECT-TYPE
+         SYNTAX         Integer32
+         MAX-ACCESS     not-accessible
+         STATUS         current
+         DESCRIPTION
+          "The VCI value at the ATM interface
+           associated with this VC cross-connect that is
+           identified by zxDslAtmVcxUserSideIfIndex."
+         ::= { zxDslAtmVcxEntry 3 }
+
+    zxDslAtmVcxWanSideIfIndex OBJECT-TYPE
+         SYNTAX         Integer32
+         MAX-ACCESS     not-accessible
+         STATUS         current
+         DESCRIPTION
+          "The ifIndex value for the ATM interface for
+           this VC cross-connect. The term WanSide implies
+           that this ATM interface has the numerically WanSide
+           ifIndex value than the other ATM interface
+           identified in the same zxDslAtmVcxEntry."
+         ::= { zxDslAtmVcxEntry 4 }
+
+    zxDslAtmVcxWanSideVpi OBJECT-TYPE
+         SYNTAX         Integer32
+         MAX-ACCESS     not-accessible
+         STATUS         current
+         DESCRIPTION
+          "The VPI value at the ATM interface
+           associated with the VC cross-connect that is
+           identified by zxDslAtmVcxWanSideIfIndex."
+         ::= { zxDslAtmVcxEntry 5 }
+
+    zxDslAtmVcxWanSideVci OBJECT-TYPE
+         SYNTAX         Integer32
+         MAX-ACCESS     not-accessible
+         STATUS         current
+         DESCRIPTION
+          "The VCI value at the ATM interface
+           associated with the VC cross-connect that is
+           identified by zxDslAtmVcxWanSideIfIndex."
+         ::= { zxDslAtmVcxEntry 6 }
+
+    zxDslAtmVcxAdminStatus OBJECT-TYPE
+         SYNTAX         Integer32
+         MAX-ACCESS     read-create
+         STATUS         current
+         DESCRIPTION
+          "The desired administrative status of this
+           bi-directional VC cross-connect."
+         DEFVAL { down }
+         ::= { zxDslAtmVcxEntry 7 }
+
+
+
+    zxDslAtmVcxOperStatus OBJECT-TYPE
+         SYNTAX         Integer32
+         MAX-ACCESS     read-only
+         STATUS         current
+         DESCRIPTION
+          "The current operational status of the
+           VC cross-connect in one direction; (i.e.,
+           from the WanSide to UserSide direction)."
+         ::= { zxDslAtmVcxEntry 8 }
+
+  
+    zxDslAtmVcxRowStatus OBJECT-TYPE
+         SYNTAX         RowStatus
+         MAX-ACCESS     read-create
+         STATUS         current
+         DESCRIPTION
+          "The status of this entry in the
+           zxDslAtmVcxTable.  This object is used to
+           create a new cross-connect for cross-connecting
+           VCLs which are created using the atmVclTable
+           or to change or delete existing cross-connect.
+           This object must be initially set to
+           `createAndWait' or 'createAndGo'.
+           To turn on a VC cross-connect,
+           the zxDslAtmVcxAdminStatus
+           is set to `up'."
+         DEFVAL { createAndWait }
+         ::= { zxDslAtmVcxEntry 9 }
+
+    
+
+END
